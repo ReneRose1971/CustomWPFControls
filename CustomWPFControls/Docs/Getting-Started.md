@@ -29,7 +29,7 @@ dotnet add package Microsoft.Extensions.DependencyInjection
 ```xml
 <ItemGroup>
   <ProjectReference Include="..\CustomWPFControls\CustomWPFControls.csproj" />
-  <ProjectReference Include="..\DataToolKit\DataToolKit.csproj" />
+  <ProjectReference Include="..\DataStores\DataStores.csproj" />
   <ProjectReference Include="..\Common.BootStrap\Common.BootStrap.csproj" />
 </ItemGroup>
 ```

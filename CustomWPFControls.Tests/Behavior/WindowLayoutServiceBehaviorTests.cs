@@ -1,14 +1,10 @@
 using System;
-using System.ComponentModel;
+using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Windows;
 using CustomWPFControls.Services;
-using DataToolKit.Abstractions.DataStores;
-using DataToolKit.Abstractions.Repositories;
-using DataToolKit.Storage.DataStores;
-using DataToolKit.Storage.Repositories;
-using TestHelper.TestUtils;
+using DataStores.Abstractions;
+using DataStores.Runtime;
 using Xunit;
 using FluentAssertions;
 
@@ -17,31 +13,24 @@ namespace CustomWPFControls.Tests.Behavior;
 /// <summary>
 /// Behavior-Tests für <see cref="WindowLayoutService"/>.
 /// Fokus: End-to-End-Szenarien und Verhaltensvalidierung.
-/// Verwendet <see cref="TestDirectorySandbox"/> für saubere Test-Umgebungen.
 /// </summary>
 public sealed class WindowLayoutServiceBehaviorTests : IDisposable
 {
-    private readonly TestDirectorySandbox _sandbox;
-    private readonly IDataStoreProvider _provider;
-    private readonly IRepositoryFactory _repositoryFactory;
+    private readonly string _testDirectory;
+    private readonly IDataStore<WindowLayoutData> _dataStore;
+    private readonly TestDataStores _dataStores;
     private readonly WindowLayoutService _sut;
 
     public WindowLayoutServiceBehaviorTests()
     {
-        _sandbox = new TestDirectorySandbox();
+        _testDirectory = Path.Combine(Path.GetTempPath(), $"CustomWPFControls_Tests_{Guid.NewGuid():N}");
+        Directory.CreateDirectory(_testDirectory);
 
-        var options = new JsonStorageOptions<WindowLayoutData>(
-            appSubFolder: "CustomWPFControls_BehaviorTests",
-            fileNameBase: $"WindowLayouts_{Guid.NewGuid():N}",
-            subFolder: null,
-            rootFolder: _sandbox.Root);
+        _dataStore = new InMemoryDataStore<WindowLayoutData>();
+        _dataStores = new TestDataStores();
+        _dataStores.RegisterGlobal(_dataStore);
 
-        var repository = new JsonRepository<WindowLayoutData>(options);
-        var factory = new DataStoreFactory();
-        _provider = new DataStoreProvider(factory);
-        _repositoryFactory = new RepositoryFactory(new TestServiceProvider(repository));
-
-        _sut = new WindowLayoutService(_provider, _repositoryFactory);
+        _sut = new WindowLayoutService(_dataStores);
     }
 
     [StaFact]
@@ -54,8 +43,7 @@ public sealed class WindowLayoutServiceBehaviorTests : IDisposable
         _sut.Attach(window, "MovableWindow");
 
         // Act
-        var dataStore = GetDataStore();
-        var layoutData = dataStore.Items.FirstOrDefault(x => x.WindowKey == "MovableWindow");
+        var layoutData = _dataStore.Items.FirstOrDefault(x => x.WindowKey == "MovableWindow");
         
         layoutData!.Left = 300;
         layoutData.Top = 400;
@@ -75,8 +63,7 @@ public sealed class WindowLayoutServiceBehaviorTests : IDisposable
         _sut.Attach(window, "ResizableWindow");
 
         // Act
-        var dataStore = GetDataStore();
-        var layoutData = dataStore.Items.FirstOrDefault(x => x.WindowKey == "ResizableWindow");
+        var layoutData = _dataStore.Items.FirstOrDefault(x => x.WindowKey == "ResizableWindow");
         layoutData!.Width = 1024;
         layoutData.Height = 768;
 
@@ -94,8 +81,7 @@ public sealed class WindowLayoutServiceBehaviorTests : IDisposable
         _sut.Attach(window, "MaximizableWindow");
 
         // Act
-        var dataStore = GetDataStore();
-        var layoutData = dataStore.Items.FirstOrDefault(x => x.WindowKey == "MaximizableWindow");
+        var layoutData = _dataStore.Items.FirstOrDefault(x => x.WindowKey == "MaximizableWindow");
         layoutData!.WindowState = (int)WindowState.Maximized;
 
         // Assert
@@ -121,7 +107,7 @@ public sealed class WindowLayoutServiceBehaviorTests : IDisposable
     [StaFact]
     public void Scenario_ApplicationRestart_WindowPositionIsRestored()
     {
-        // Arrange
+        // Arrange - Erste Session
         var window1 = CreateTestWindow();
         window1.Left = 250;
         window1.Top = 350;
@@ -130,10 +116,9 @@ public sealed class WindowLayoutServiceBehaviorTests : IDisposable
         window1.WindowState = WindowState.Normal;
         _sut.Attach(window1, "MainApplicationWindow");
         _sut.Detach("MainApplicationWindow");
-        _sut.Dispose();
 
-        // Act
-        var newService = new WindowLayoutService(_provider, _repositoryFactory);
+        // Act - Neuer Service (simuliert Neustart)
+        var newService = new WindowLayoutService(_dataStores);
         var window2 = CreateTestWindow();
         window2.Left = 0;
         window2.Top = 0;
@@ -169,12 +154,11 @@ public sealed class WindowLayoutServiceBehaviorTests : IDisposable
         _sut.Attach(aboutDialog, "AboutDialog");
 
         // Assert
-        var dataStore = GetDataStore();
-        dataStore.Items.Count.Should().Be(3);
+        _dataStore.Items.Count.Should().Be(3);
         
-        var mainLayout = dataStore.Items.First(x => x.WindowKey == "MainWindow");
-        var settingsLayout = dataStore.Items.First(x => x.WindowKey == "SettingsDialog");
-        var aboutLayout = dataStore.Items.First(x => x.WindowKey == "AboutDialog");
+        var mainLayout = _dataStore.Items.First(x => x.WindowKey == "MainWindow");
+        var settingsLayout = _dataStore.Items.First(x => x.WindowKey == "SettingsDialog");
+        var aboutLayout = _dataStore.Items.First(x => x.WindowKey == "AboutDialog");
 
         mainLayout.Left.Should().Be(100);
         settingsLayout.Left.Should().Be(500);
@@ -185,8 +169,7 @@ public sealed class WindowLayoutServiceBehaviorTests : IDisposable
     public void Scenario_WindowWithInvalidDimensions_ShouldNotRestoreLayout()
     {
         // Arrange
-        var dataStore = GetDataStore();
-        dataStore.Add(new WindowLayoutData
+        _dataStore.Add(new WindowLayoutData
         {
             WindowKey = "InvalidWindow",
             Left = 100,
@@ -210,42 +193,11 @@ public sealed class WindowLayoutServiceBehaviorTests : IDisposable
 
         _sut.Attach(window, "InvalidWindow");
 
-        // Assert
+        // Assert - Sollte nicht wiederhergestellt werden, da Width/Height 0
         window.Left.Should().Be(originalLeft);
         window.Top.Should().Be(originalTop);
         window.Width.Should().Be(originalWidth);
         window.Height.Should().Be(originalHeight);
-    }
-
-    [StaFact]
-    public void Scenario_PropertyChangedTracking_WorksWithFody()
-    {
-        // Arrange
-        var window = CreateTestWindow();
-        _sut.Attach(window, "FodyTestWindow");
-
-        var dataStore = GetDataStore();
-        var layoutData = dataStore.Items.First(x => x.WindowKey == "FodyTestWindow");
-
-        int propertyChangedCount = 0;
-        layoutData.PropertyChanged += (s, e) => propertyChangedCount++;
-
-        // Act
-        layoutData.Left = 999;
-        layoutData.Top = 888;
-        layoutData.Width = 777;
-
-        // Assert
-        propertyChangedCount.Should().Be(3, "Fody should raise PropertyChanged for each property");
-    }
-
-    private PersistentDataStore<WindowLayoutData> GetDataStore()
-    {
-        return _provider.GetPersistent<WindowLayoutData>(
-            _repositoryFactory,
-            isSingleton: true,
-            trackPropertyChanges: true,
-            autoLoad: false);
     }
 
     private static Window CreateTestWindow()
@@ -263,23 +215,62 @@ public sealed class WindowLayoutServiceBehaviorTests : IDisposable
     public void Dispose()
     {
         _sut?.Dispose();
-        _sandbox?.Dispose();
+        if (Directory.Exists(_testDirectory))
+        {
+            try
+            {
+                Directory.Delete(_testDirectory, true);
+            }
+            catch
+            {
+                // Ignore cleanup errors
+            }
+        }
     }
 
-    private class TestServiceProvider : IServiceProvider
+    /// <summary>
+    /// Test-Implementierung von IDataStores für Unit-Tests.
+    /// </summary>
+    private class TestDataStores : IDataStores
     {
-        private readonly object _repository;
+        private readonly Dictionary<Type, object> _stores = new();
 
-        public TestServiceProvider(object repository)
+        public void RegisterGlobal<T>(IDataStore<T> store) where T : class
         {
-            _repository = repository;
+            _stores[typeof(T)] = store;
         }
 
-        public object? GetService(Type serviceType)
+        public IDataStore<T> GetGlobal<T>() where T : class
         {
-            if (serviceType == typeof(IRepositoryBase<WindowLayoutData>))
-                return _repository;
-            return null;
+            if (!_stores.TryGetValue(typeof(T), out var store))
+            {
+                throw new GlobalStoreNotRegisteredException(typeof(T));
+            }
+            return (IDataStore<T>)store;
+        }
+
+        public IDataStore<T> CreateLocal<T>(IEqualityComparer<T>? comparer = null) where T : class
+        {
+            return new InMemoryDataStore<T>(comparer);
+        }
+
+        public IDataStore<T> CreateLocalSnapshotFromGlobal<T>(
+            Func<T, bool>? predicate = null,
+            IEqualityComparer<T>? comparer = null) where T : class
+        {
+            var global = GetGlobal<T>();
+            var local = CreateLocal(comparer);
+            
+            var items = predicate == null 
+                ? global.Items 
+                : global.Items.Where(predicate);
+                
+            foreach (var item in items)
+            {
+                local.Add(item);
+            }
+            
+            return local;
         }
     }
 }

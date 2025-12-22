@@ -1,7 +1,6 @@
 using System;
 using CustomWPFControls.Services;
-using DataToolKit.Abstractions.DataStores;
-using DataToolKit.Storage.DataStores;
+using DataStores.Abstractions;
 using Moq;
 using Xunit;
 using FluentAssertions;
@@ -14,43 +13,41 @@ namespace CustomWPFControls.Tests.Unit;
 /// </summary>
 public sealed class WindowLayoutServiceTests : IDisposable
 {
-    private readonly Mock<IDataStoreProvider> _mockProvider;
+    private readonly Mock<IDataStores> _mockDataStores;
+    private readonly Mock<IDataStore<WindowLayoutData>> _mockStore;
     private readonly WindowLayoutService _sut;
 
     public WindowLayoutServiceTests()
     {
-        _mockProvider = new Mock<IDataStoreProvider>();
+        _mockDataStores = new Mock<IDataStores>();
+        _mockStore = new Mock<IDataStore<WindowLayoutData>>();
         
-        // Repository-Mock
-        var mockRepo = new Mock<DataToolKit.Abstractions.Repositories.IRepositoryBase<WindowLayoutData>>();
-        mockRepo.Setup(r => r.Load()).Returns(Array.Empty<WindowLayoutData>());
-        
-        // Echten PersistentDataStore erstellen (sealed class kann nicht gemockt werden)
-        var persistentStore = new PersistentDataStore<WindowLayoutData>(mockRepo.Object, trackPropertyChanges: false);
+        // Leere Items-Collection
+        _mockStore.Setup(s => s.Items).Returns(new System.Collections.ObjectModel.ReadOnlyCollection<WindowLayoutData>(new WindowLayoutData[0]));
 
-        // Provider gibt den DataStore über GetDataStore zurück
-        _mockProvider
-            .Setup(p => p.GetDataStore<WindowLayoutData>())
-            .Returns(persistentStore);
+        // IDataStores gibt den gemockten Store zurück
+        _mockDataStores
+            .Setup(ds => ds.GetGlobal<WindowLayoutData>())
+            .Returns(_mockStore.Object);
 
-        _sut = new WindowLayoutService(_mockProvider.Object);
+        _sut = new WindowLayoutService(_mockDataStores.Object);
     }
 
     [Fact]
-    public void Constructor_ShouldThrowArgumentNullException_WhenProviderIsNull()
+    public void Constructor_ShouldThrowArgumentNullException_WhenDataStoresIsNull()
     {
         // Act
         Action act = () => new WindowLayoutService(null!);
 
         // Assert
-        act.Should().Throw<ArgumentNullException>().WithParameterName("provider");
+        act.Should().Throw<ArgumentNullException>().WithParameterName("dataStores");
     }
 
     [Fact]
-    public void Constructor_ShouldRequestDataStore()
+    public void Constructor_ShouldRequestGlobalDataStore()
     {
-        // Assert - Verify that GetDataStore was called
-        _mockProvider.Verify(p => p.GetDataStore<WindowLayoutData>(), Times.Once);
+        // Assert - Verify that GetGlobal was called
+        _mockDataStores.Verify(ds => ds.GetGlobal<WindowLayoutData>(), Times.Once);
     }
 
     [Theory]

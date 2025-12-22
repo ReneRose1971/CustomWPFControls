@@ -1,6 +1,6 @@
 using System.ComponentModel;
 using PropertyChanged;
-using DataToolKit.Abstractions.Repositories;
+using DataStores.Abstractions;
 
 namespace CustomWPFControls.Services;
 
@@ -9,14 +9,8 @@ namespace CustomWPFControls.Services;
 /// Verwendet Fody.PropertyChanged für automatische INotifyPropertyChanged-Implementierung.
 /// </summary>
 [AddINotifyPropertyChangedInterface]
-public sealed class WindowLayoutData : IEntity, INotifyPropertyChanged
+public sealed class WindowLayoutData : EntityBase, INotifyPropertyChanged
 {
-    /// <summary>
-    /// Eindeutige ID (für IEntity-Kompatibilität, wird automatisch beim Persistieren gesetzt).
-    /// </summary>
-    [DoNotNotify]
-    public int Id { get; set; }
-
     /// <summary>
     /// Eindeutiger Schlüssel zur Identifikation des Fensters.
     /// </summary>
@@ -48,9 +42,26 @@ public sealed class WindowLayoutData : IEntity, INotifyPropertyChanged
     public int WindowState { get; set; }
 
     /// <summary>
-    /// PropertyChanged-Event (wird von Fody automatisch aufgerufen).
+    /// PropertyChanged-Event (wird von Fody automatisch implementiert).
     /// </summary>
 #pragma warning disable CS0067 // Event wird nie verwendet (Fody injiziert den Code)
-    public event PropertyChangedEventHandler? PropertyChanged;
+    public new event PropertyChangedEventHandler? PropertyChanged;
 #pragma warning restore CS0067
+
+    public override string ToString()
+    {
+        return $"WindowLayout #{Id}: {WindowKey} ({Left},{Top},{Width}x{Height})";
+    }
+
+    public override bool Equals(object? obj)
+    {
+        if (obj is not WindowLayoutData other) return false;
+        if (Id > 0 && other.Id > 0) return Id == other.Id;
+        return WindowKey == other.WindowKey;
+    }
+
+    public override int GetHashCode()
+    {
+        return Id > 0 ? Id : HashCode.Combine(WindowKey);
+    }
 }

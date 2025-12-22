@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Windows.Input;
 using CustomWPFControls.Commands;
-using DataToolKit.Abstractions.DataStores;
+using DataStores.Abstractions;
 
 namespace CustomWPFControls.ViewModels
 {

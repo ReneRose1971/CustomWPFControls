@@ -139,22 +139,19 @@ private readonly Dictionary<TModel, TViewModel> _modelToViewModelMap;
 
 ```csharp
 using CustomWPFControls.ViewModels;
-using DataToolKit.Abstractions.DataStores;
+using DataStores.Abstractions;
 
 public class MainViewModel
 {
     private readonly CollectionViewModel<Customer, CustomerViewModel> _customers;
     
     public MainViewModel(
-        IDataStoreProvider provider,
-        IRepositoryFactory repositoryFactory,
+        IDataStores dataStores,
         IViewModelFactory<Customer, CustomerViewModel> viewModelFactory,
         IEqualityComparer<Customer> comparer)
     {
         // 1. DataStore abrufen
-        var dataStore = provider.GetPersistent<Customer>(
-            repositoryFactory,
-            autoLoad: true);
+        var dataStore = dataStores.GetGlobal<Customer>();
         
         // 2. CollectionViewModel erstellen
         _customers = new CollectionViewModel<Customer, CustomerViewModel>(
@@ -209,24 +206,24 @@ public class MainViewModel
 ```csharp
 using CustomWPFControls.Factories;
 using Microsoft.Extensions.DependencyInjection;
+using DataStores.Bootstrap;
 
 // Startup.cs oder ServiceModule
 public void ConfigureServices(IServiceCollection services)
 {
-    // 1. DataStore Provider
-    services.AddSingleton<IDataStoreProvider, DataStoreProvider>();
+    // 1. DataStores Kern-Services
+    services.AddSingleton<IGlobalStoreRegistry, GlobalStoreRegistry>();
+    services.AddSingleton<ILocalDataStoreFactory, LocalDataStoreFactory>();
+    services.AddSingleton<IDataStores, DataStoresFacade>();
     
-    // 2. Repository Factory
-    services.AddSingleton<IRepositoryFactory, RepositoryFactory>();
-    
-    // 3. ViewModelFactory
+    // 2. ViewModelFactory
     services.AddViewModelFactory<Customer, CustomerViewModel>();
     
-    // 4. EqualityComparer
+    // 3. EqualityComparer
     services.AddSingleton<IEqualityComparer<Customer>>(
         new FallbackEqualsComparer<Customer>());
     
-    // 5. ViewModel erstellt CollectionViewModel im Constructor
+    // 4. ViewModel erstellt CollectionViewModel im Constructor
     services.AddTransient<MainViewModel>();
 }
 ```

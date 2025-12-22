@@ -2,78 +2,35 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
-using DataToolKit.Abstractions.DataStores;
-using DataToolKit.Storage.DataStores;
+using DataStores.Abstractions;
 
 namespace CustomWPFControls.Services;
 
 /// <summary>
 /// Service zur Persistierung von WPF-Fenster-Positionen und -Größen.
-/// Nutzt einen PersistentDataStore über IDataStoreProvider.
+/// Nutzt einen global registrierten DataStore über IDataStores.
 /// </summary>
 public sealed class WindowLayoutService : IDisposable
 {
-    private readonly PersistentDataStore<WindowLayoutData> _store;
+    private readonly IDataStore<WindowLayoutData> _store;
     private readonly Dictionary<string, Window> _attachedWindows = new();
     private bool _disposed;
 
     /// <summary>
     /// Erstellt einen WindowLayoutService.
     /// </summary>
-    /// <param name="provider">Provider zum Abrufen des DataStores.</param>
-    /// <exception cref="ArgumentNullException">Wenn provider null ist.</exception>
-    /// <exception cref="InvalidOperationException">
-    /// Wenn der DataStore für <see cref="WindowLayoutData"/> nicht initialisiert wurde.
-    /// Stellen Sie sicher, dass <see cref="CustomWPFControlsDataStoreInitializer"/> 
-    /// vor der Erstellung des WindowLayoutService ausgeführt wurde.
+    /// <param name="dataStores">IDataStores-Facade zum Abrufen des globalen DataStores.</param>
+    /// <exception cref="ArgumentNullException">Wenn dataStores null ist.</exception>
+    /// <exception cref="GlobalStoreNotRegisteredException">
+    /// Wenn der DataStore für <see cref="WindowLayoutData"/> nicht registriert wurde.
+    /// Stellen Sie sicher, dass <see cref="DataStores.Bootstrap.DataStoreBootstrap.RunAsync"/> aufgerufen wurde.
     /// </exception>
-    /// <remarks>
-    /// <para>
-    /// <b>Wichtig:</b> Der DataStore für <see cref="WindowLayoutData"/> muss vorher
-    /// durch <see cref="CustomWPFControlsDataStoreInitializer"/> erstellt worden sein.
-    /// Dies geschieht automatisch durch <c>InitializeDataStores()</c> nach dem Build
-    /// des DI-Containers.
-    /// </para>
-    /// </remarks>
-    public WindowLayoutService(IDataStoreProvider provider)
+    public WindowLayoutService(IDataStores dataStores)
     {
-        if (provider == null) throw new ArgumentNullException(nameof(provider));
+        if (dataStores == null) throw new ArgumentNullException(nameof(dataStores));
 
-        // DataStore über Provider abrufen (muss bereits durch Initializer erstellt sein)
-        try
-        {
-            _store = (PersistentDataStore<WindowLayoutData>)provider.GetDataStore<WindowLayoutData>();
-        }
-        catch (InvalidOperationException ex)
-        {
-            throw new InvalidOperationException(
-                $"WindowLayoutData DataStore wurde nicht initialisiert. " +
-                $"Stellen Sie sicher, dass InitializeDataStores() nach BuildServiceProvider() aufgerufen wurde. " +
-                $"Siehe CustomWPFControlsDataStoreInitializer für Details.", 
-                ex);
-        }
-    }
-
-    /// <summary>
-    /// Veralteter Konstruktor für Rückwärtskompatibilität.
-    /// </summary>
-    /// <param name="provider">Provider zum Abrufen des DataStores.</param>
-    /// <param name="repositoryFactory">Repository Factory (wird für Rückwärtskompatibilität verwendet).</param>
-    [Obsolete("Verwenden Sie den Konstruktor mit nur IDataStoreProvider. DataStores sollten durch CustomWPFControlsDataStoreInitializer initialisiert werden.")]
-    public WindowLayoutService(
-        IDataStoreProvider provider,
-        DataToolKit.Storage.Repositories.IRepositoryFactory repositoryFactory)
-    {
-        if (provider == null) throw new ArgumentNullException(nameof(provider));
-        if (repositoryFactory == null) throw new ArgumentNullException(nameof(repositoryFactory));
-
-        // Alte Implementierung: Erstelle DataStore direkt
-        _store = provider.GetPersistent<WindowLayoutData>(
-            repositoryFactory,
-            isSingleton: true,
-            trackPropertyChanges: true,
-            autoLoad: true
-        );
+        // DataStore über IDataStores abrufen (global registriert)
+        _store = dataStores.GetGlobal<WindowLayoutData>();
     }
 
     /// <summary>
@@ -166,6 +123,5 @@ public sealed class WindowLayoutService : IDisposable
         _disposed = true;
 
         _attachedWindows.Clear();
-        _store?.Dispose();
     }
 }

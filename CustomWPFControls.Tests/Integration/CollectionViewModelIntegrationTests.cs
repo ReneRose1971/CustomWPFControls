@@ -4,7 +4,7 @@ using System.Linq;
 using CustomWPFControls.Factories;
 using CustomWPFControls.Tests.Testing;
 using CustomWPFControls.ViewModels;
-using DataToolKit.Abstractions.DataStores;
+using DataStores.Abstractions;
 using Xunit;
 
 namespace CustomWPFControls.Tests.Integration
@@ -229,7 +229,7 @@ namespace CustomWPFControls.Tests.Integration
 
             // Assert
             Assert.True(result);
-            Assert.Equal(1, dataStore.Count);
+            Assert.Equal(1, dataStore.Items.Count);
             Assert.Equal(1, viewModel.Count);
         }
 
@@ -247,7 +247,7 @@ namespace CustomWPFControls.Tests.Integration
 
             // Assert
             Assert.False(result);
-            Assert.Equal(1, dataStore.Count);
+            Assert.Equal(1, dataStore.Items.Count);
             Assert.Equal(1, viewModel.Count);
         }
 
@@ -265,7 +265,7 @@ namespace CustomWPFControls.Tests.Integration
 
             // Assert
             Assert.True(result);
-            Assert.Equal(0, dataStore.Count);
+            Assert.Equal(0, dataStore.Items.Count);
             Assert.Equal(0, viewModel.Count);
         }
 
@@ -284,7 +284,7 @@ namespace CustomWPFControls.Tests.Integration
 
             // Assert
             Assert.False(result);
-            Assert.Equal(1, dataStore.Count);
+            Assert.Equal(1, dataStore.Items.Count);
             Assert.Equal(1, viewModel.Count);
         }
 
@@ -303,7 +303,7 @@ namespace CustomWPFControls.Tests.Integration
 
             // Assert
             Assert.True(result);
-            Assert.Equal(0, dataStore.Count);
+            Assert.Equal(0, dataStore.Items.Count);
             Assert.Equal(0, viewModel.Count);
         }
 
@@ -323,7 +323,7 @@ namespace CustomWPFControls.Tests.Integration
             viewModel.Clear();
 
             // Assert
-            Assert.Equal(0, dataStore.Count);
+            Assert.Equal(0, dataStore.Items.Count);
             Assert.Equal(0, viewModel.Count);
         }
 

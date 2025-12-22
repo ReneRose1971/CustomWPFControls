@@ -38,7 +38,7 @@ public sealed class WindowLayoutDataTests
 
         // Assert
         data.Id.Should().Be(42);
-        data.Should().BeAssignableTo<DataToolKit.Abstractions.Repositories.IEntity>();
+        data.Should().BeAssignableTo<DataStores.Abstractions.IEntity>();
     }
 
     [Fact]

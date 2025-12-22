@@ -27,8 +27,20 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CustomWPFControls\CustomWPFControls.csproj" />
-    <ProjectReference Include="..\DataToolKit\DataToolKit.csproj" />
-    <ProjectReference Include="..\TestHelper\TestHelper.csproj" />
-    <ProjectReference Include="..\Common.BootStrap\Common.BootStrap.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Common.BootStrap">
+      <HintPath>..\..\Common.Bootstrap\Common.BootStrap\bin\Debug\net8.0\Common.BootStrap.dll</HintPath>
+    </Reference>
+    <Reference Include="DataStores">
+      <HintPath>..\..\DataStores\DataStores\bin\Debug\net8.0\DataStores.dll</HintPath>
+    </Reference>
+    <Reference Include="TestHelper">
+      <HintPath>..\..\..\..\Documents\Visual Studio 2022\Projects\CSharp\Projekte\TestHelper\bin\Debug\net8.0\TestHelper.dll</HintPath>
+    </Reference>
+    <Reference Include="TestHelper.DataStores">
+      <HintPath>..\..\DataStores\TestHelper.DataStores\bin\Debug\net8.0\TestHelper.DataStores.dll</HintPath>
+    </Reference>
   </ItemGroup>
 </Project>

@@ -1,11 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using DataToolKit.Abstractions.DataStores;
+using DataStores.Abstractions;
 
 namespace CustomWPFControls.ViewModels
 {
@@ -57,7 +56,7 @@ namespace CustomWPFControls.ViewModels
             }
             
             // Synchronisation: DataStore ? ViewModels
-            ((INotifyCollectionChanged)_dataStore.Items).CollectionChanged += OnDataStoreChanged;
+            _dataStore.Changed += OnDataStoreChanged;
             
             Items = new ReadOnlyObservableCollection<TViewModel>(_viewModels);
         }
@@ -102,8 +101,8 @@ namespace CustomWPFControls.ViewModels
             if (_modelToViewModelMap.ContainsKey(model))
                 return false;
 
-            return _dataStore.Add(model);
-            // ? OnDataStoreChanged wird automatisch aufgerufen
+            _dataStore.Add(model);
+            return true;
         }
 
         /// <summary>
@@ -115,7 +114,6 @@ namespace CustomWPFControls.ViewModels
                 throw new InvalidOperationException("DataStore nicht initialisiert.");
 
             return _dataStore.Remove(model);
-            // ? OnDataStoreChanged wird automatisch aufgerufen
         }
 
         /// <summary>
@@ -128,7 +126,6 @@ namespace CustomWPFControls.ViewModels
 
             var model = viewModel.Model;
             return _dataStore.Remove(model);
-            // ? OnDataStoreChanged wird automatisch aufgerufen
         }
 
         /// <summary>
@@ -140,20 +137,19 @@ namespace CustomWPFControls.ViewModels
                 throw new InvalidOperationException("DataStore nicht initialisiert.");
 
             _dataStore.Clear();
-            // ? OnDataStoreChanged wird automatisch aufgerufen
         }
 
         #region Private: Synchronisation DataStore ? ViewModels
 
-        private void OnDataStoreChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        private void OnDataStoreChanged(object? sender, DataStoreChangedEventArgs<TModel> e)
         {
             if (_modelToViewModelMap == null || _viewModelFactory == null)
                 return;
 
-            switch (e.Action)
+            switch (e.ChangeType)
             {
-                case NotifyCollectionChangedAction.Add:
-                    foreach (TModel model in e.NewItems!)
+                case DataStoreChangeType.Add:
+                    foreach (TModel model in e.AffectedItems)
                     {
                         if (!_modelToViewModelMap.ContainsKey(model))
                         {
@@ -164,12 +160,11 @@ namespace CustomWPFControls.ViewModels
                     OnPropertyChanged(nameof(Count));
                     break;
 
-                case NotifyCollectionChangedAction.Remove:
-                    foreach (TModel model in e.OldItems!)
+                case DataStoreChangeType.Remove:
+                    foreach (TModel model in e.AffectedItems)
                     {
                         if (_modelToViewModelMap.TryGetValue(model, out var viewModel))
                         {
-                            // Wenn das entfernte ViewModel das SelectedItem ist, setze es auf null
                             if (ReferenceEquals(_selectedItem, viewModel))
                             {
                                 SelectedItem = null;
@@ -182,8 +177,7 @@ namespace CustomWPFControls.ViewModels
                     OnPropertyChanged(nameof(Count));
                     break;
 
-                case NotifyCollectionChangedAction.Reset:
-                    // Bei Clear: SelectedItem immer auf null setzen
+                case DataStoreChangeType.Clear:
                     if (_selectedItem != null)
                     {
                         SelectedItem = null;
@@ -198,29 +192,34 @@ namespace CustomWPFControls.ViewModels
                     OnPropertyChanged(nameof(Count));
                     break;
 
-                case NotifyCollectionChangedAction.Replace:
-                    if (e.OldItems != null)
+                case DataStoreChangeType.Reset:
+                    if (_selectedItem != null)
                     {
-                        foreach (TModel oldModel in e.OldItems)
-                        {
-                            if (_modelToViewModelMap.TryGetValue(oldModel, out var oldVm))
-                            {
-                                // Wenn das ersetzte ViewModel das SelectedItem ist, setze es auf null
-                                if (ReferenceEquals(_selectedItem, oldVm))
-                                {
-                                    SelectedItem = null;
-                                }
-                                
-                                RemoveAndDisposeViewModel(oldModel, oldVm);
-                            }
-                        }
+                        SelectedItem = null;
                     }
-                    if (e.NewItems != null)
+                    
+                    foreach (var kvp in _modelToViewModelMap.ToList())
                     {
-                        foreach (TModel newModel in e.NewItems)
+                        _viewModels.Remove(kvp.Value);
+                        DisposeViewModel(kvp.Value);
+                    }
+                    _modelToViewModelMap.Clear();
+                    
+                    foreach (var model in _dataStore!.Items)
+                    {
+                        var viewModel = CreateAndMapViewModel(model);
+                        _viewModels.Add(viewModel);
+                    }
+                    OnPropertyChanged(nameof(Count));
+                    break;
+
+                case DataStoreChangeType.BulkAdd:
+                    foreach (TModel model in e.AffectedItems)
+                    {
+                        if (!_modelToViewModelMap.ContainsKey(model))
                         {
-                            var newVm = CreateAndMapViewModel(newModel);
-                            _viewModels.Add(newVm);
+                            var viewModel = CreateAndMapViewModel(model);
+                            _viewModels.Add(viewModel);
                         }
                     }
                     OnPropertyChanged(nameof(Count));
@@ -286,7 +285,7 @@ namespace CustomWPFControls.ViewModels
 
             if (_dataStore != null)
             {
-                ((INotifyCollectionChanged)_dataStore.Items).CollectionChanged -= OnDataStoreChanged;
+                _dataStore.Changed -= OnDataStoreChanged;
             }
 
             if (_modelToViewModelMap != null)

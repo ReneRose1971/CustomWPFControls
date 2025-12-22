@@ -1,37 +1,29 @@
 using Common.Bootstrap;
-using DataToolKit.Abstractions.DI;
+using DataStores.Bootstrap;
 using Microsoft.Extensions.DependencyInjection;
 using CustomWPFControls.Services;
+using CustomWPFControls.Bootstrap;
 
 namespace CustomWPFControls;
 
 /// <summary>
 /// Service-Modul für CustomWPFControls.
-/// Registriert Repositories und Services.
+/// Registriert Services und DataStore-Registrar.
 /// </summary>
 /// <remarks>
 /// <para>
 /// <b>DataStore-Initialisierung:</b> DataStores werden NICHT hier initialisiert,
-/// sondern durch <see cref="CustomWPFControlsDataStoreInitializer"/> nach dem Build
-/// des Containers. Siehe <see cref="IDataStoreInitializer"/> für Details.
+/// sondern durch <see cref="DataStoreBootstrap"/> nach dem Build des Containers.
 /// </para>
 /// </remarks>
 public sealed class CustomWPFControlsServiceModule : IServiceModule
 {
     public void Register(IServiceCollection services)
     {
-        // DataToolKit-Module registrieren (für IDataStoreProvider, falls noch nicht geschehen)
-        // Dies ist idempotent, falls bereits registriert
-        new DataToolKitServiceModule().Register(services);
-
-        // JSON Repository für WindowLayoutData registrieren
-        services.AddJsonRepository<WindowLayoutData>(
-            appSubFolder: "CustomWPFControls",
-            fileNameBase: "windowlayouts");
+        // DataStoreRegistrar für WindowLayoutData registrieren
+        services.AddDataStoreRegistrar<WindowLayoutDataStoreRegistrar>();
 
         // WindowLayoutService als Singleton
-        // WICHTIG: Der DataStore für WindowLayoutData wird durch CustomWPFControlsDataStoreInitializer
-        // nach BuildServiceProvider() erstellt
         services.AddSingleton<WindowLayoutService>();
     }
 }

@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using Common.Bootstrap.Defaults;
 using CustomWPFControls.Factories;
-using DataToolKit.Abstractions.DataStores;
-using DataToolKit.Storage.DataStores;
+using DataStores.Abstractions;
+using DataStores.Runtime;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace CustomWPFControls.Tests.Testing

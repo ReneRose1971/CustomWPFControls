@@ -5,7 +5,7 @@ using System.Windows.Input;
 using CustomWPFControls.Factories;
 using CustomWPFControls.Tests.Testing;
 using CustomWPFControls.ViewModels;
-using DataToolKit.Abstractions.DataStores;
+using DataStores.Abstractions;
 using Xunit;
 
 namespace CustomWPFControls.Tests.Behavior
