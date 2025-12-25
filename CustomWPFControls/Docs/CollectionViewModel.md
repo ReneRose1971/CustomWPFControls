@@ -207,24 +207,27 @@ public class MainViewModel
 using CustomWPFControls.Factories;
 using Microsoft.Extensions.DependencyInjection;
 using DataStores.Bootstrap;
+using Common.Bootstrap;
 
-// Startup.cs oder ServiceModule
-public void ConfigureServices(IServiceCollection services)
+// ServiceModule
+public class MyAppServiceModule : IServiceModule
 {
-    // 1. DataStores Kern-Services
-    services.AddSingleton<IGlobalStoreRegistry, GlobalStoreRegistry>();
-    services.AddSingleton<ILocalDataStoreFactory, LocalDataStoreFactory>();
-    services.AddSingleton<IDataStores, DataStoresFacade>();
-    
-    // 2. ViewModelFactory
-    services.AddViewModelFactory<Customer, CustomerViewModel>();
-    
-    // 3. EqualityComparer
-    services.AddSingleton<IEqualityComparer<Customer>>(
-        new FallbackEqualsComparer<Customer>());
-    
-    // 4. ViewModel erstellt CollectionViewModel im Constructor
-    services.AddTransient<MainViewModel>();
+    public void Register(IServiceCollection services)
+    {
+        // 1. DataStores Kern-Services
+        var dataStoresModule = new DataStoresServiceModule();
+        dataStoresModule.Register(services);
+        
+        // 2. ViewModelFactory
+        services.AddViewModelFactory<Customer, CustomerViewModel>();
+        
+        // 3. EqualityComparer
+        services.AddSingleton<IEqualityComparer<Customer>>(
+            new FallbackEqualsComparer<Customer>());
+        
+        // 4. ViewModel erstellt CollectionViewModel im Constructor
+        services.AddTransient<MainViewModel>();
+    }
 }
 ```
 
@@ -504,14 +507,12 @@ public class CustomerListViewModel : IDisposable
     private readonly CollectionViewModel<Customer, CustomerViewModel> _customers;
     
     public CustomerListViewModel(
-        IDataStoreProvider provider,
-        IRepositoryFactory repositoryFactory,
+        IDataStores dataStores,
         IViewModelFactory<Customer, CustomerViewModel> factory,
         IEqualityComparer<Customer> comparer)
     {
-        var dataStore = provider.GetPersistent<Customer>(
-            repositoryFactory,
-            autoLoad: true);
+        // DataStore abrufen (global registriert)
+        var dataStore = dataStores.GetGlobal<Customer>();
         
         _customers = new CollectionViewModel<Customer, CustomerViewModel>(
             dataStore,
@@ -658,4 +659,4 @@ public class CustomCollectionViewModel : CollectionViewModel<Order, OrderViewMod
 - ?? [EditableCollectionViewModel](EditableCollectionViewModel.md) - Mit Commands
 - ?? [ViewModelFactory](ViewModelFactory.md) - DI-basierte ViewModel-Erstellung
 - ?? [Getting Started](Getting-Started.md) - Schnellstart-Guide
-- ?? [DataStore Provider](../../DataToolKit/Docs/DataStore-Provider.md) - DataStore-Management
+- ?? [DataStores](https://github.com/ReneRose1971/DataStores) - DataStore-Framework

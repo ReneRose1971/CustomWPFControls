@@ -139,7 +139,7 @@ namespace MyWpfApp.ViewModels
 using System.Collections.Generic;
 using CustomWPFControls.Factories;
 using CustomWPFControls.ViewModels;
-using DataToolKit.Abstractions.DataStores;
+using DataStores.Abstractions;
 using MyWpfApp.Models;
 
 namespace MyWpfApp.ViewModels
@@ -181,7 +181,9 @@ using System.Collections.Generic;
 using Common.Bootstrap;
 using Common.Bootstrap.Defaults;
 using CustomWPFControls.Factories;
-using DataToolKit.Abstractions.DataStores;
+using DataStores.Abstractions;
+using DataStores.Bootstrap;
+using DataStores.Runtime;
 using Microsoft.Extensions.DependencyInjection;
 using MyWpfApp.Models;
 using MyWpfApp.ViewModels;
@@ -192,31 +194,48 @@ namespace MyWpfApp.DI
     {
         public void Register(IServiceCollection services)
         {
-            // 1. EqualityComparer für Customer registrieren
+            // 1. DataStores Core Services
+            var dataStoresModule = new DataStoresServiceModule();
+            dataStoresModule.Register(services);
+            
+            // 2. DataStore Registrar für Customer
+            services.AddDataStoreRegistrar<CustomerStoreRegistrar>();
+
+            // 3. EqualityComparer für Customer registrieren
             services.AddSingleton<IEqualityComparer<Customer>>(
                 new FallbackEqualsComparer<Customer>());
 
-            // 2. DataStore registrieren (JSON oder LiteDB)
-            services.AddSingleton<IDataStore<Customer>>(provider =>
-            {
-                var comparer = provider.GetRequiredService<IEqualityComparer<Customer>>();
-                
-                // Option A: In-Memory (für Development)
-                return new InMemoryDataStore<Customer>(comparer);
-                
-                // Option B: Persistent mit JSON
-                // var dataStoreProvider = provider.GetRequiredService<IDataStoreProvider>();
-                // var repositoryFactory = provider.GetRequiredService<IRepositoryFactory>();
-                // return dataStoreProvider.GetPersistent<Customer>(
-                //     repositoryFactory,
-                //     autoLoad: true);
-            });
-
-            // 3. ViewModelFactory registrieren
+            // 4. ViewModelFactory registrieren
             services.AddViewModelFactory<Customer, CustomerItemViewModel>();
 
-            // 4. CustomerListViewModel registrieren
+            // 5. CustomerListViewModel registrieren
             services.AddSingleton<CustomerListViewModel>();
+        }
+    }
+    
+    // DataStore-Registrar für Customer
+    public class CustomerStoreRegistrar : IDataStoreRegistrar
+    {
+        public void Register(IGlobalStoreRegistry registry, IServiceProvider serviceProvider)
+        {
+            // Option A: In-Memory (für Development/Testing)
+            var comparer = serviceProvider.GetRequiredService<IEqualityComparer<Customer>>();
+            var store = new InMemoryDataStore<Customer>(comparer);
+            registry.RegisterGlobal(store);
+            
+            // Option B: JSON-Persistierung
+            // registry.RegisterGlobalWithJsonFile<Customer>(
+            //     Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), 
+            //         "MyApp", "customers.json"),
+            //     autoLoad: true,
+            //     autoSave: true);
+            
+            // Option C: LiteDB-Persistierung (wenn Customer von EntityBase erbt)
+            // registry.RegisterGlobalWithLiteDb<Customer>(
+            //     Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+            //         "MyApp", "myapp.db"),
+            //     autoLoad: true,
+            //     autoSave: true);
         }
     }
 }
@@ -227,6 +246,7 @@ namespace MyWpfApp.DI
 ```csharp
 using System.Windows;
 using Common.Bootstrap;
+using DataStores.Bootstrap;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MyWpfApp.DI;
@@ -238,7 +258,7 @@ namespace MyWpfApp
     {
         private IHost? _host;
 
-        protected override void OnStartup(StartupEventArgs e)
+        protected override async void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
 
@@ -246,7 +266,7 @@ namespace MyWpfApp
             _host = Host.CreateDefaultBuilder()
                 .ConfigureServices((context, services) =>
                 {
-                    // Module registrieren
+                    // Module registrieren (scannt automatisch nach IServiceModule)
                     services.AddModulesFromAssemblies(
                         typeof(App).Assembly,
                         typeof(ViewModelModule).Assembly);
@@ -255,6 +275,9 @@ namespace MyWpfApp
                     services.AddSingleton<MainWindow>();
                 })
                 .Build();
+
+            // DataStores initialisieren (NACH Build, VOR Fenster-Anzeige)
+            await DataStoreBootstrap.RunAsync(_host.Services);
 
             // MainWindow anzeigen
             var mainWindow = _host.Services.GetRequiredService<MainWindow>();
@@ -379,6 +402,7 @@ dotnet run
 - ? **Commands** - Add, Edit, Delete, Clear
 - ? **DI-Integration** - Alles über DI-Container
 - ? **MVVM-Pattern** - Saubere Trennung
+- ? **Optionale Persistierung** - JSON oder LiteDB
 
 ---
 
@@ -386,7 +410,7 @@ dotnet run
 
 - ?? [Architecture](Architecture.md) - Architektur verstehen
 - ?? [ViewModelBase](ViewModelBase.md) - Basisklasse erweitern
-- ? [Best Practices](Best-Practices.md) - Tipps & Tricks
+- ?? [Best Practices](Best-Practices.md) - Tipps & Tricks
 
 ---
 
@@ -410,5 +434,12 @@ Prüfen Sie:
 
 Prüfen Sie:
 1. IEqualityComparer registriert
-2. DataStore via DI injiziert
+2. DataStores via `DataStoreBootstrap.RunAsync()` initialisiert
 3. Model.Equals/GetHashCode implementiert
+
+### **DataStores nicht verfügbar**
+
+Stellen Sie sicher:
+1. `DataStoreBootstrap.RunAsync()` wird **nach** `builder.Build()` aufgerufen
+2. `IDataStoreRegistrar` ist im DI-Container registriert
+3. Global Store wurde in `Register()` korrekt registriert

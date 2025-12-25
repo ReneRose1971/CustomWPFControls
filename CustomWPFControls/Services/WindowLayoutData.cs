@@ -9,7 +9,7 @@ namespace CustomWPFControls.Services;
 /// Verwendet Fody.PropertyChanged für automatische INotifyPropertyChanged-Implementierung.
 /// </summary>
 [AddINotifyPropertyChangedInterface]
-public sealed class WindowLayoutData : EntityBase, INotifyPropertyChanged
+public sealed class WindowLayoutData : EntityBase
 {
     /// <summary>
     /// Eindeutiger Schlüssel zur Identifikation des Fensters.
@@ -40,13 +40,6 @@ public sealed class WindowLayoutData : EntityBase, INotifyPropertyChanged
     /// Fensterstatus (0=Normal, 1=Minimized, 2=Maximized).
     /// </summary>
     public int WindowState { get; set; }
-
-    /// <summary>
-    /// PropertyChanged-Event (wird von Fody automatisch implementiert).
-    /// </summary>
-#pragma warning disable CS0067 // Event wird nie verwendet (Fody injiziert den Code)
-    public new event PropertyChangedEventHandler? PropertyChanged;
-#pragma warning restore CS0067
 
     public override string ToString()
     {
