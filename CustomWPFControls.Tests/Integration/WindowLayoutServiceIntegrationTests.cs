@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using Common.Bootstrap;
 using CustomWPFControls.Bootstrap;
 using CustomWPFControls.Services;
 using DataStores.Abstractions;
@@ -25,6 +26,54 @@ public sealed class WindowLayoutServiceIntegrationTests : IAsyncLifetime, IDispo
     private string _jsonFilePath = "";
 
     /// <summary>
+    /// Test-Implementierung des IDataStorePathProvider für Integrationstests.
+    /// Leitet alle Dateien in ein temporäres Test-Verzeichnis um.
+    /// </summary>
+    private sealed class TestDataStorePathProvider : IDataStorePathProvider
+    {
+        private readonly string _testDirectory;
+
+        public TestDataStorePathProvider(string testDirectory)
+        {
+            _testDirectory = testDirectory;
+        }
+
+        public string GetApplicationPath() => _testDirectory;
+        public string GetDataPath() => _testDirectory;
+        public string GetSettingsPath() => _testDirectory;
+        public string GetLogPath() => _testDirectory;
+        public string GetCachePath() => _testDirectory;
+        public string GetTempPath() => _testDirectory;
+        
+        public string GetCustomPath(string subPath) => Path.Combine(_testDirectory, subPath);
+
+        public string FormatJsonFileName(string fileName)
+        {
+            return Path.Combine(_testDirectory, $"{fileName}.json");
+        }
+
+        public string FormatLiteDbFileName(string databaseName)
+        {
+            return Path.Combine(_testDirectory, $"{databaseName}.db");
+        }
+
+        public string FormatSettingsFileName(string fileName)
+        {
+            return Path.Combine(_testDirectory, $"{fileName}.settings.json");
+        }
+
+        public string FormatLogFileName(string fileName)
+        {
+            return Path.Combine(_testDirectory, $"{fileName}.log");
+        }
+
+        public void EnsureDirectoriesExist()
+        {
+            Directory.CreateDirectory(_testDirectory);
+        }
+    }
+
+    /// <summary>
     /// xUnit IAsyncLifetime: Setup (async).
     /// Erstellt einen vollständigen DI-Container mit DataStores-Bootstrap.
     /// </summary>
@@ -38,24 +87,35 @@ public sealed class WindowLayoutServiceIntegrationTests : IAsyncLifetime, IDispo
         // DI-Container aufbauen
         var services = new ServiceCollection();
 
-        // DataStores Core Services registrieren
-        var dataStoresModule = new DataStoresServiceModule();
-        dataStoresModule.Register(services);
+        // 1. Test-PathProvider registrieren
+        var pathProvider = new TestDataStorePathProvider(_testDataPath);
+        services.AddSingleton<IDataStorePathProvider>(pathProvider);
 
-        // WindowLayoutDataStoreRegistrar mit Test-JSON-Pfad (DIREKT, nicht via CustomWPFControlsServiceModule)
-        // CustomWPFControlsServiceModule würde einen mit Standard-Pfad registrieren
-        services.AddDataStoreRegistrar(new WindowLayoutDataStoreRegistrar(_jsonFilePath));
+        // 2. DefaultBootstrapWrapper instanziieren
+        var defaultWrapper = new DefaultBootstrapWrapper();
 
-        // WindowLayoutService manuell registrieren
-        services.AddSingleton<WindowLayoutService>();
+        // 3. DataStoresBootstrapDecorator instanziieren
+        var bootstrap = new DataStoresBootstrapDecorator(defaultWrapper);
 
-        // ServiceProvider bauen
+        // 4. Services aus Assemblies registrieren
+        // Dies scannt automatisch:
+        // - IServiceModule (inkl. DataStoresServiceModule, CustomWPFControlsServiceModule)
+        // - IDataStoreRegistrar (inkl. WindowLayoutDataStoreRegistrar)
+        // - IEqualityComparer<T>
+        bootstrap.RegisterServices(
+            services,
+            typeof(DefaultBootstrapWrapper).Assembly,      // Common.Bootstrap
+            typeof(DataStoresBootstrapDecorator).Assembly, // DataStores
+            typeof(CustomWPFControlsServiceModule).Assembly // CustomWPFControls
+        );
+
+        // 5. ServiceProvider bauen
         _serviceProvider = services.BuildServiceProvider();
 
-        // DataStores initialisieren (lädt JSON, falls vorhanden)
+        // 6. DataStores Bootstrap ausführen (lädt JSON, falls vorhanden)
         await DataStoreBootstrap.RunAsync(_serviceProvider);
 
-        // WindowLayoutService aus DI holen
+        // 7. WindowLayoutService aus DI holen
         _service = _serviceProvider.GetRequiredService<WindowLayoutService>();
     }
 
@@ -292,17 +352,25 @@ public sealed class WindowLayoutServiceIntegrationTests : IAsyncLifetime, IDispo
         _service.Dispose();
         (_serviceProvider as IDisposable)?.Dispose();
 
-        // Neuen ServiceProvider mit DEMSELBEN JSON-Pfad
+        // Neuen ServiceProvider mit DEMSELBEN Test-Verzeichnis
         var services = new ServiceCollection();
+
+        // 1. Test-PathProvider registrieren (gleiches Verzeichnis!)
+        var pathProvider = new TestDataStorePathProvider(_testDataPath);
+        services.AddSingleton<IDataStorePathProvider>(pathProvider);
+
+        // 2-4. Bootstrap-Prozess
+        var defaultWrapper = new DefaultBootstrapWrapper();
+        var bootstrap = new DataStoresBootstrapDecorator(defaultWrapper);
         
-        // DataStores Core Services registrieren
-        var dataStoresModule = new DataStoresServiceModule();
-        dataStoresModule.Register(services);
-        
-        // WindowLayoutDataStoreRegistrar mit Test-JSON-Pfad
-        services.AddDataStoreRegistrar(new WindowLayoutDataStoreRegistrar(_jsonFilePath));
-        services.AddSingleton<WindowLayoutService>();
-        
+        bootstrap.RegisterServices(
+            services,
+            typeof(DefaultBootstrapWrapper).Assembly,
+            typeof(DataStoresBootstrapDecorator).Assembly,
+            typeof(CustomWPFControlsServiceModule).Assembly
+        );
+
+        // 5-6. ServiceProvider bauen und Bootstrap ausführen
         _serviceProvider = services.BuildServiceProvider();
         await DataStoreBootstrap.RunAsync(_serviceProvider);
         _service = _serviceProvider.GetRequiredService<WindowLayoutService>();

@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Common.Bootstrap.Defaults;
 using CustomWPFControls.Factories;
 using DataStores.Abstractions;
 using DataStores.Runtime;
@@ -27,9 +26,9 @@ namespace CustomWPFControls.Tests.Testing
         {
             var services = new ServiceCollection();
 
-            // EqualityComparer
+            // EqualityComparer - verwende Standard-Comparer
             services.AddSingleton<IEqualityComparer<TestModel>>(
-                new FallbackEqualsComparer<TestModel>());
+                EqualityComparer<TestModel>.Default);
 
             // DataStore
             services.AddSingleton<IDataStore<TestModel>>(
