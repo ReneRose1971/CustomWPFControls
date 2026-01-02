@@ -1,23 +1,23 @@
 using CustomWPFControls.ViewModels;
+using TestHelper.DataStores.Models;
 
 namespace CustomWPFControls.Tests.Testing
 {
     /// <summary>
     /// Test-ViewModel für Unit/Integration-Tests.
     /// </summary>
-    public class TestViewModel : ViewModelBase<TestModel>
+    public class TestViewModel : ViewModelBase<TestDto>
     {
         private bool _isSelected;
         private bool _isExpanded;
 
-        public TestViewModel(TestModel model) : base(model)
+        public TestViewModel(TestDto model) : base(model)
         {
         }
 
         // Domain-Properties (delegiert an Model)
-        public int Id => Model.Id;
+        public System.Guid Id => Model.Id;
         public string Name => Model.Name;
-        public string Description => Model.Description;
 
         // UI-Properties mit manuellem PropertyChanged für Tests
         public bool IsSelected

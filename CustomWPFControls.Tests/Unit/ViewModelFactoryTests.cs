@@ -2,6 +2,7 @@ using System;
 using CustomWPFControls.Factories;
 using CustomWPFControls.Tests.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using TestHelper.DataStores.Models;
 using Xunit;
 
 namespace CustomWPFControls.Tests.Unit
@@ -20,7 +21,7 @@ namespace CustomWPFControls.Tests.Unit
             var serviceProvider = WPFCOntrolsTestHelpers.CreateServiceProvider();
 
             // Act
-            var factory = new ViewModelFactory<TestModel, TestViewModel>(serviceProvider);
+            var factory = new ViewModelFactory<TestDto, TestViewModel>(serviceProvider);
 
             // Assert
             Assert.NotNull(factory);
@@ -31,7 +32,7 @@ namespace CustomWPFControls.Tests.Unit
         {
             // Act & Assert
             Assert.Throws<ArgumentNullException>(() =>
-                new ViewModelFactory<TestModel, TestViewModel>(null!));
+                new ViewModelFactory<TestDto, TestViewModel>(null!));
         }
 
         #endregion
@@ -43,8 +44,8 @@ namespace CustomWPFControls.Tests.Unit
         {
             // Arrange
             var serviceProvider = WPFCOntrolsTestHelpers.CreateServiceProvider();
-            var factory = new ViewModelFactory<TestModel, TestViewModel>(serviceProvider);
-            var model = WPFCOntrolsTestHelpers.CreateTestModel();
+            var factory = new ViewModelFactory<TestDto, TestViewModel>(serviceProvider);
+            var model = new TestDto { Name = "Test" };
 
             // Act
             var viewModel = factory.Create(model);
@@ -59,7 +60,7 @@ namespace CustomWPFControls.Tests.Unit
         {
             // Arrange
             var serviceProvider = WPFCOntrolsTestHelpers.CreateServiceProvider();
-            var factory = new ViewModelFactory<TestModel, TestViewModel>(serviceProvider);
+            var factory = new ViewModelFactory<TestDto, TestViewModel>(serviceProvider);
 
             // Act & Assert
             Assert.Throws<ArgumentNullException>(() => factory.Create(null!));
@@ -70,8 +71,8 @@ namespace CustomWPFControls.Tests.Unit
         {
             // Arrange
             var serviceProvider = WPFCOntrolsTestHelpers.CreateServiceProvider();
-            var factory = new ViewModelFactory<TestModel, TestViewModel>(serviceProvider);
-            var model = WPFCOntrolsTestHelpers.CreateTestModel();
+            var factory = new ViewModelFactory<TestDto, TestViewModel>(serviceProvider);
+            var model = new TestDto { Name = "Test" };
 
             // Act
             var vm1 = factory.Create(model);
@@ -87,9 +88,9 @@ namespace CustomWPFControls.Tests.Unit
         {
             // Arrange
             var serviceProvider = WPFCOntrolsTestHelpers.CreateServiceProvider();
-            var factory = new ViewModelFactory<TestModel, TestViewModel>(serviceProvider);
-            var model1 = WPFCOntrolsTestHelpers.CreateTestModel(1, "Model1");
-            var model2 = WPFCOntrolsTestHelpers.CreateTestModel(2, "Model2");
+            var factory = new ViewModelFactory<TestDto, TestViewModel>(serviceProvider);
+            var model1 = new TestDto { Name = "Model1" };
+            var model2 = new TestDto { Name = "Model2" };
 
             // Act
             var vm1 = factory.Create(model1);
@@ -114,11 +115,11 @@ namespace CustomWPFControls.Tests.Unit
             
             // Registriere ViewModel mit zusätzlicher Dependency (als Beispiel)
             // TestViewModel hat keine zusätzlichen Dependencies, aber das Prinzip wird getestet
-            services.AddViewModelFactory<TestModel, TestViewModel>();
+            services.AddViewModelFactory<TestDto, TestViewModel>();
             var serviceProvider = services.BuildServiceProvider();
 
-            var factory = serviceProvider.GetRequiredService<IViewModelFactory<TestModel, TestViewModel>>();
-            var model = WPFCOntrolsTestHelpers.CreateTestModel();
+            var factory = serviceProvider.GetRequiredService<IViewModelFactory<TestDto, TestViewModel>>();
+            var model = new TestDto { Name = "Test" };
 
             // Act
             var viewModel = factory.Create(model);

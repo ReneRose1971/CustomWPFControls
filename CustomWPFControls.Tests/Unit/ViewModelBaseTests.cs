@@ -1,5 +1,6 @@
 using System;
 using CustomWPFControls.Tests.Testing;
+using TestHelper.DataStores.Models;
 using Xunit;
 
 namespace CustomWPFControls.Tests.Unit
@@ -15,7 +16,7 @@ namespace CustomWPFControls.Tests.Unit
         public void Constructor_WithValidModel_SetsModelProperty()
         {
             // Arrange
-            var model = WPFCOntrolsTestHelpers.CreateTestModel();
+            var model = new TestDto { Name = "Test" };
 
             // Act
             var viewModel = new TestViewModel(model);
@@ -39,7 +40,7 @@ namespace CustomWPFControls.Tests.Unit
         public void Equals_SameModelReference_ReturnsTrue()
         {
             // Arrange
-            var model = WPFCOntrolsTestHelpers.CreateTestModel();
+            var model = new TestDto { Name = "Test" };
             var vm1 = new TestViewModel(model);
             var vm2 = new TestViewModel(model);
 
@@ -52,8 +53,8 @@ namespace CustomWPFControls.Tests.Unit
         public void Equals_DifferentModelInstances_ReturnsFalse()
         {
             // Arrange
-            var model1 = WPFCOntrolsTestHelpers.CreateTestModel(1, "Test");
-            var model2 = WPFCOntrolsTestHelpers.CreateTestModel(1, "Test"); // Gleiche Werte, andere Instanz
+            var model1 = new TestDto { Name = "Test" };
+            var model2 = new TestDto { Name = "Test" }; // Gleiche Werte, andere Instanz
             var vm1 = new TestViewModel(model1);
             var vm2 = new TestViewModel(model2);
 
@@ -65,7 +66,7 @@ namespace CustomWPFControls.Tests.Unit
         public void Equals_SameInstance_ReturnsTrue()
         {
             // Arrange
-            var model = WPFCOntrolsTestHelpers.CreateTestModel();
+            var model = new TestDto { Name = "Test" };
             var vm = new TestViewModel(model);
 
             // Act & Assert
@@ -76,7 +77,7 @@ namespace CustomWPFControls.Tests.Unit
         public void Equals_Null_ReturnsFalse()
         {
             // Arrange
-            var model = WPFCOntrolsTestHelpers.CreateTestModel();
+            var model = new TestDto { Name = "Test" };
             var vm = new TestViewModel(model);
 
             // Act & Assert
@@ -87,7 +88,7 @@ namespace CustomWPFControls.Tests.Unit
         public void Equals_DifferentType_ReturnsFalse()
         {
             // Arrange
-            var model = WPFCOntrolsTestHelpers.CreateTestModel();
+            var model = new TestDto { Name = "Test" };
             var vm = new TestViewModel(model);
 
             // Act & Assert
@@ -102,7 +103,7 @@ namespace CustomWPFControls.Tests.Unit
         public void GetHashCode_SameModelReference_ReturnsSameHash()
         {
             // Arrange
-            var model = WPFCOntrolsTestHelpers.CreateTestModel();
+            var model = new TestDto { Name = "Test" };
             var vm1 = new TestViewModel(model);
             var vm2 = new TestViewModel(model);
 
@@ -114,8 +115,8 @@ namespace CustomWPFControls.Tests.Unit
         public void GetHashCode_DifferentModelInstances_ReturnsDifferentHash()
         {
             // Arrange
-            var model1 = WPFCOntrolsTestHelpers.CreateTestModel(1, "Test");
-            var model2 = WPFCOntrolsTestHelpers.CreateTestModel(1, "Test");
+            var model1 = new TestDto { Name = "Test" };
+            var model2 = new TestDto { Name = "Test" };
             var vm1 = new TestViewModel(model1);
             var vm2 = new TestViewModel(model2);
 
@@ -127,7 +128,7 @@ namespace CustomWPFControls.Tests.Unit
         public void GetHashCode_ConsistentAcrossMultipleCalls()
         {
             // Arrange
-            var model = WPFCOntrolsTestHelpers.CreateTestModel();
+            var model = new TestDto { Name = "Test" };
             var vm = new TestViewModel(model);
 
             // Act
@@ -146,7 +147,7 @@ namespace CustomWPFControls.Tests.Unit
         public void ToString_DelegatesToModel()
         {
             // Arrange
-            var model = WPFCOntrolsTestHelpers.CreateTestModel(42, "TestModel");
+            var model = new TestDto { Name = "TestModel" };
             var vm = new TestViewModel(model);
 
             // Act
@@ -164,7 +165,7 @@ namespace CustomWPFControls.Tests.Unit
         public void PropertyChanged_UiProperty_RaisesEvent()
         {
             // Arrange
-            var model = WPFCOntrolsTestHelpers.CreateTestModel();
+            var model = new TestDto { Name = "Test" };
             var vm = new TestViewModel(model);
             var eventRaised = false;
             vm.PropertyChanged += (_, e) =>
