@@ -20,8 +20,12 @@ namespace CustomWPFControls.ViewModels
     /// synchronisiert und disposed.
     /// </para>
     /// <para>
+    /// <b>ObservableCollection-Sync:</b> Nutzt ToReadOnlyObservableCollection() für automatische
+    /// Synchronisation zwischen DataStore und WPF-bindbare ObservableCollection.
+    /// </para>
+    /// <para>
     /// <b>High-Level API:</b> Bietet Remove/RemoveRange/Clear Methoden für Commands.
-    /// SelectedItem/SelectedItems sind reine UI-Binding Properties - WPF cleared diese automatisch.
+    /// SelectedItem/SelectedItems werden automatisch invalidiert wenn Items via diese Methoden entfernt werden.
     /// </para>
     /// </remarks>
     public class CollectionViewModel<TModel, TViewModel> : INotifyPropertyChanged, IDisposable
@@ -30,7 +34,7 @@ namespace CustomWPFControls.ViewModels
     {
         private readonly IDataStore<TModel> _modelStore;
         private readonly IDataStore<TViewModel> _viewModelStore;
-        private readonly ObservableCollection<TViewModel> _items;
+        private readonly ReadOnlyObservableCollectionSynchronization<TViewModel> _itemsSync;
         private readonly ObservableCollection<TViewModel> _selectedItems;
         private readonly IDisposable _unidirectionalSync;
         private bool _disposed;
@@ -66,71 +70,45 @@ namespace CustomWPFControls.ViewModels
                 _viewModelStore, factoryFunc, comparerFunc);
             
             _selectedItems = new ObservableCollection<TViewModel>();
-            _items = new ObservableCollection<TViewModel>(_viewModelStore.Items);
+
+            // ════════════════════════════════════════════════════════════
+            // ToReadOnlyObservableCollection: ViewModel-Store → WPF ObservableCollection
+            // Automatische Synchronisation ohne manuelle Event-Handler!
+            // ════════════════════════════════════════════════════════════
+            var viewModelComparer = comparerService.GetComparer<TViewModel>();
+            _itemsSync = _viewModelStore.ToReadOnlyObservableCollection(
+                comparer: viewModelComparer);
             
-            Items = new ReadOnlyObservableCollection<TViewModel>(_items);
+            Items = _itemsSync.Collection;
             
-            // Synchronisation: _viewModelStore → _items
+            // PropertyChanged für Count bei Store-Änderungen
             _viewModelStore.Changed += OnViewModelStoreChanged;
         }
 
         private void OnViewModelStoreChanged(object? sender, DataStoreChangedEventArgs<TViewModel> e)
         {
-            switch (e.ChangeType)
-            {
-                case DataStoreChangeType.Add:
-                    foreach (var vm in e.AffectedItems)
-                    {
-                        if (!_items.Contains(vm))
-                            _items.Add(vm);
-                    }
-                    break;
-
-                case DataStoreChangeType.Remove:
-                    foreach (var vm in e.AffectedItems)
-                    {
-                        _items.Remove(vm);
-                    }
-                    break;
-
-                case DataStoreChangeType.Clear:
-                    _items.Clear();
-                    break;
-
-                case DataStoreChangeType.Reset:
-                    _items.Clear();
-                    foreach (var vm in _viewModelStore.Items)
-                    {
-                        _items.Add(vm);
-                    }
-                    break;
-
-                case DataStoreChangeType.BulkAdd:
-                    foreach (var vm in e.AffectedItems)
-                    {
-                        if (!_items.Contains(vm))
-                            _items.Add(vm);
-                    }
-                    break;
-            }
-            
             OnPropertyChanged(nameof(Count));
         }
 
         /// <summary>
         /// Schreibgeschützte Sicht auf die ViewModels (für View-Binding).
         /// </summary>
+        /// <remarks>
+        /// Wird automatisch via ToReadOnlyObservableCollection() synchronisiert.
+        /// Alle Änderungen am _viewModelStore werden automatisch in Items reflektiert.
+        /// </remarks>
         public ReadOnlyObservableCollection<TViewModel> Items { get; }
 
         /// <summary>
-        /// Ausgewähltes ViewModel (nur für UI-Binding, Single-Selection).
-        /// Wird automatisch von WPF gecleared, wenn Item aus Items entfernt wird.
+        /// Ausgewähltes ViewModel (Single-Selection).
+        /// Wird automatisch auf null gesetzt wenn das Item via Remove/RemoveRange/Clear entfernt wird.
         /// </summary>
         public TViewModel? SelectedItem { get; set; }
 
         /// <summary>
-        /// Ausgewählte ViewModels (nur für UI-Binding, Multi-Selection).
+        /// Ausgewählte ViewModels (Multi-Selection).
         /// Verwenden Sie MultiSelectBehavior für automatische Synchronisation mit ListBox.
+        /// Entfernte Items werden automatisch aus dieser Collection entfernt (via Remove/RemoveRange/Clear).
         /// </summary>
         /// <example>
         /// <code>
@@ -143,14 +121,15 @@ namespace CustomWPFControls.ViewModels
         /// <summary>
         /// Anzahl der ViewModels.
         /// </summary>
-        public int Count => _items.Count;
+        public int Count => _viewModelStore.Items.Count;
 
         #region Public API: Collection Manipulation
 
         /// <summary>
         /// Entfernt ein ViewModel und dessen zugehöriges Model aus dem DataStore.
-        /// TransformTo disposed das ViewModel automatisch.
-        /// SelectedItem wird automatisch von WPF gecleared.
+        /// TransformTo synchronisiert automatisch: ViewModel wird aus _viewModelStore entfernt und disposed.
+        /// ToReadOnlyObservableCollection synchronisiert automatisch: ViewModel wird aus Items entfernt.
+        /// Invalidiert automatisch SelectedItem und SelectedItems wenn das Item selektiert war.
         /// </summary>
         /// <param name="item">Das zu entfernende ViewModel.</param>
         /// <returns>True, wenn das Item entfernt wurde; andernfalls false.</returns>
@@ -158,13 +137,26 @@ namespace CustomWPFControls.ViewModels
         public bool Remove(TViewModel item)
         {
             if (item == null) throw new ArgumentNullException(nameof(item));
-            return _modelStore.Remove(item.Model);
+            
+            var removed = _modelStore.Remove(item.Model);
+            
+            if (removed)
+            {
+                // Invalidierung: SelectedItem/SelectedItems aktualisieren
+                if (SelectedItem == item)
+                    SelectedItem = null;
+                    
+                _selectedItems.Remove(item);
+            }
+            
+            return removed;
         }
 
         /// <summary>
         /// Entfernt mehrere ViewModels und deren zugehörige Models aus dem DataStore.
-        /// TransformTo disposed alle ViewModels automatisch.
-        /// SelectedItem/SelectedItems werden automatisch von WPF gecleared.
+        /// TransformTo synchronisiert automatisch: ViewViews werden aus _viewModelStore entfernt und disposed.
+        /// ToReadOnlyObservableCollection synchronisiert automatisch: ViewModels werden aus Items entfernt.
+        /// Invalidiert automatisch SelectedItem und SelectedItems für alle entfernten Items.
         /// </summary>
         /// <param name="items">Die zu entfernenden ViewModels.</param>
         /// <returns>Anzahl der erfolgreich entfernten Items.</returns>
@@ -180,7 +172,15 @@ namespace CustomWPFControls.ViewModels
             foreach (var item in itemList)
             {
                 if (_modelStore.Remove(item.Model))
+                {
                     removedCount++;
+                    
+                    // Invalidierung: SelectedItem/SelectedItems aktualisieren
+                    if (SelectedItem == item)
+                        SelectedItem = null;
+                        
+                    _selectedItems.Remove(item);
+                }
             }
             
             return removedCount;
@@ -188,22 +188,17 @@ namespace CustomWPFControls.ViewModels
 
         /// <summary>
         /// Entfernt alle ViewModels aus der Collection.
-        /// TransformTo disposed alle ViewModels automatisch.
-        /// SelectedItem/SelectedItems werden automatisch von WPF gecleared.
+        /// TransformTo synchronisiert automatisch: Alle ViewModels werden aus _viewModelStore entfernt und disposed.
+        /// ToReadOnlyObservableCollection synchronisiert automatisch: Items wird geleert.
+        /// Invalidiert automatisch SelectedItem und SelectedItems.
         /// </summary>
         public void Clear()
         {
             _modelStore.Clear();
-        }
-
-        /// <summary>
-        /// Prüft, ob ein ViewModel in der Collection enthalten ist.
-        /// </summary>
-        /// <param name="item">Das zu prüfende ViewModel.</param>
-        /// <returns>True, wenn das Item enthalten ist; andernfalls false.</returns>
-        public bool Contains(TViewModel item)
-        {
-            return item != null && _items.Contains(item);
+            
+            // Invalidierung: Selektion komplett zurücksetzen
+            SelectedItem = null;
+            _selectedItems.Clear();
         }
 
         #endregion
@@ -226,11 +221,14 @@ namespace CustomWPFControls.ViewModels
             if (_disposed) return;
             _disposed = true;
 
+            // Unsubscribe from ViewModel store events
+            _viewModelStore.Changed -= OnViewModelStoreChanged;
+
             // TransformTo-Sync disposed
             _unidirectionalSync?.Dispose();
 
-            // Unsubscribe from store events
-            _viewModelStore.Changed -= OnViewModelStoreChanged;
+            // ObservableCollection-Sync disposed
+            _itemsSync?.Dispose();
 
             // ViewModel-Store disposed (TransformTo disposed automatisch alle ViewModels!)
             if (_viewModelStore is IDisposable disposable)
@@ -238,7 +236,6 @@ namespace CustomWPFControls.ViewModels
                 disposable.Dispose();
             }
             
-            _items.Clear();
             _selectedItems.Clear();
         }
 

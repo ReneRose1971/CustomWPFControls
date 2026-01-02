@@ -16,17 +16,17 @@ namespace CustomWPFControls.Tests.Testing;
 /// - IDataStores Facade
 /// - IEqualityComparerService
 /// </remarks>
-public sealed class CollectionViewModelFixture : DataStoresFixtureBase
+public class CollectionViewModelFixture : DataStoresFixtureBase
 {
     /// <summary>
     /// Der globale TestDto DataStore.
     /// </summary>
-    public IDataStore<TestDto> TestDtoStore { get; private set; } = null!;
+    public IDataStore<TestDto> TestDtoStore { get; protected set; } = null!;
 
     /// <summary>
     /// ViewModelFactory für TestDto → TestViewModel.
     /// </summary>
-    public IViewModelFactory<TestDto, TestViewModel> ViewModelFactory { get; private set; } = null!;
+    public IViewModelFactory<TestDto, TestViewModel> ViewModelFactory { get; protected set; } = null!;
 
     /// <summary>
     /// Erstellt die Fixture und führt den kompletten Bootstrap-Prozess aus.
@@ -59,6 +59,7 @@ public sealed class CollectionViewModelFixture : DataStoresFixtureBase
     /// <remarks>
     /// Für CollectionViewModel-Tests bleibt der Store initial leer.
     /// Tests fügen ihre eigenen Daten hinzu.
+    /// Kann in abgeleiteten Klassen überschrieben werden.
     /// </remarks>
     protected override void InitializeData()
     {

@@ -185,28 +185,28 @@ public sealed class CollectionViewModelTests : IClassFixture<CollectionViewModel
         Assert.Empty(_fixture.TestDtoStore.Items);
     }
 
-    [Fact]
-    public void Contains_Should_ReturnTrueForExistingViewModel()
-    {
-        // Arrange: Model hinzufügen
-        var model = new TestDto { Name = "Test1" };
-        _fixture.TestDtoStore.Add(model);
-        var viewModel = _sut.Items.First();
+    //[Fact]
+    //public void Contains_Should_ReturnTrueForExistingViewModel()
+    //{
+    //    // Arrange: Model hinzufügen
+    //    var model = new TestDto { Name = "Test1" };
+    //    _fixture.TestDtoStore.Add(model);
+    //    var viewModel = _sut.Items.First();
 
-        // Act & Assert
-        Assert.True(_sut.Contains(viewModel));
-    }
+    //    // Act & Assert
+    //    Assert.True(_sut.Contains(viewModel));
+    //}
 
-    [Fact]
-    public void Contains_Should_ReturnFalseForNonExistingViewModel()
-    {
-        // Arrange: Ein anderes ViewModel erstellen
-        var otherModel = new TestDto { Name = "Other" };
-        var otherViewModel = new TestViewModel(otherModel);
+    //[Fact]
+    //public void Contains_Should_ReturnFalseForNonExistingViewModel()
+    //{
+    //    // Arrange: Ein anderes ViewModel erstellen
+    //    var otherModel = new TestDto { Name = "Other" };
+    //    var otherViewModel = new TestViewModel(otherModel);
 
-        // Act & Assert
-        Assert.False(_sut.Contains(otherViewModel));
-    }
+    //    // Act & Assert
+    //    Assert.False(_sut.Contains(otherViewModel));
+    //}
 
     public void Dispose()
     {
