@@ -38,4 +38,8 @@
       <HintPath>..\..\DataStores\DataStores\bin\Debug\net8.0\DataStores.dll</HintPath>
     </Reference>
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Unit\CollectionViewModel\DataStoreRemove\" />
+  </ItemGroup>
 </Project>

@@ -1,54 +1,47 @@
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using DataStores.Abstractions;
+using DataStores.Extensions;
 
 namespace CustomWPFControls.ViewModels
 {
     /// <summary>
-    /// Collection-ViewModel mit DataStore-Integration und bidirektionaler Synchronisation.
+    /// Collection-ViewModel mit DataStore-Integration und automatischer Synchronisation via TransformTo.
     /// </summary>
     /// <typeparam name="TModel">Model-Typ (Domain-Objekt).</typeparam>
     /// <typeparam name="TViewModel">ViewModel-Typ (muss IViewModelWrapper&lt;TModel&gt; implementieren).</typeparam>
     /// <remarks>
     /// <para>
-    /// <b>DataStores Facade:</b> Diese Klasse nutzt IDataStores f�r den Zugriff auf den Model-Store.
+    /// <b>TransformTo-Integration:</b> Diese Klasse nutzt die TransformTo-Extension für automatische
+    /// Synchronisation zwischen Model-Store und ViewModel-Store. ViewModels werden automatisch erstellt,
+    /// synchronisiert und disposed.
     /// </para>
     /// <para>
-    /// <b>Comparer-Aufl�sung:</b> Der EqualityComparer f�r TModel wird �ber IEqualityComparerService
-    /// aufgel�st und f�llt automatisch auf EqualityComparer&lt;T&gt;.Default zur�ck.
-    /// </para>
-    /// <para>
-    /// <b>Bidirektionale Synchronisation:</b> �nderungen im DataStore werden automatisch
-    /// in die ViewModel-Collection �bernommen und umgekehrt.
+    /// <b>High-Level API:</b> Bietet Remove/RemoveRange/Clear Methoden für Commands.
+    /// SelectedItem/SelectedItems sind reine UI-Binding Properties - WPF cleared diese automatisch.
     /// </para>
     /// </remarks>
     public class CollectionViewModel<TModel, TViewModel> : INotifyPropertyChanged, IDisposable
         where TModel : class
         where TViewModel : class, IViewModelWrapper<TModel>
     {
-        private readonly IDataStore<TModel> _dataStore;
-        private readonly Factories.IViewModelFactory<TModel, TViewModel> _viewModelFactory;
-        private readonly IEqualityComparer<TModel> _modelComparer;
-        
-        private readonly ObservableCollection<TViewModel> _viewModels;
-        private readonly Dictionary<TModel, TViewModel> _modelToViewModelMap;
-        
-        private TViewModel? _selectedItem;
+        private readonly IDataStore<TModel> _modelStore;
+        private readonly IDataStore<TViewModel> _viewModelStore;
+        private readonly ObservableCollection<TViewModel> _items;
+        private readonly ObservableCollection<TViewModel> _selectedItems;
+        private readonly IDisposable _unidirectionalSync;
         private bool _disposed;
 
         /// <summary>
-        /// Erstellt ein CollectionViewModel mit DataStore-Integration.
+        /// Erstellt ein CollectionViewModel mit DataStore-Integration via TransformTo.
         /// </summary>
-        /// <param name="dataStores">IDataStores Facade f�r Zugriff auf Stores.</param>
+        /// <param name="dataStores">IDataStores Facade für Zugriff auf Stores.</param>
         /// <param name="viewModelFactory">Factory zur Erstellung von ViewModels.</param>
-        /// <param name="comparerService">Service zur Aufl�sung von EqualityComparern.</param>
-        /// <exception cref="ArgumentNullException">
-        /// Wenn einer der Parameter null ist.
-        /// </exception>
+        /// <param name="comparerService">Service zur Auflösung von EqualityComparern.</param>
+        /// <exception cref="ArgumentNullException">Wenn einer der Parameter null ist.</exception>
         public CollectionViewModel(
             IDataStores dataStores,
             Factories.IViewModelFactory<TModel, TViewModel> viewModelFactory,
@@ -58,171 +51,159 @@ namespace CustomWPFControls.ViewModels
             if (viewModelFactory == null) throw new ArgumentNullException(nameof(viewModelFactory));
             if (comparerService == null) throw new ArgumentNullException(nameof(comparerService));
 
-            // Model-Store aus Facade abrufen
-            _dataStore = dataStores.GetGlobal<TModel>();
-            _viewModelFactory = viewModelFactory;
+            _modelStore = dataStores.GetGlobal<TModel>();
+            var modelComparer = comparerService.GetComparer<TModel>();
+            _viewModelStore = dataStores.CreateLocal<TViewModel>();
+
+            // ════════════════════════════════════════════════════════════
+            // TransformTo: Model-Store → ViewModel-Store
+            // Automatische Synchronisation, ViewModel-Erstellung und Dispose!
+            // ════════════════════════════════════════════════════════════
+            Func<TModel, TViewModel> factoryFunc = model => viewModelFactory.Create(model);
+            Func<TModel, TViewModel, bool> comparerFunc = (m, vm) => modelComparer.Equals(m, vm.Model);
+
+            _unidirectionalSync = _modelStore.TransformTo<TModel, TViewModel>(
+                _viewModelStore, factoryFunc, comparerFunc);
             
-            // Model-Comparer �ber ComparerService aufl�sen (automatischer Fallback auf Default)
-            _modelComparer = comparerService.GetComparer<TModel>();
+            _selectedItems = new ObservableCollection<TViewModel>();
+            _items = new ObservableCollection<TViewModel>(_viewModelStore.Items);
             
-            _modelToViewModelMap = new Dictionary<TModel, TViewModel>(_modelComparer);
-            _viewModels = new ObservableCollection<TViewModel>();
+            Items = new ReadOnlyObservableCollection<TViewModel>(_items);
             
-            // Initiale ViewModels erstellen
-            foreach (var model in _dataStore.Items)
-            {
-                var viewModel = CreateAndMapViewModel(model);
-                _viewModels.Add(viewModel);
-            }
-            
-            // Synchronisation: DataStore ? ViewModels
-            _dataStore.Changed += OnDataStoreChanged;
-            
-            Items = new ReadOnlyObservableCollection<TViewModel>(_viewModels);
+            // Synchronisation: _viewModelStore → _items
+            _viewModelStore.Changed += OnViewModelStoreChanged;
         }
 
-        /// <summary>
-        /// Schreibgesch�tzte Sicht auf die ViewModels (f�r View-Binding).
-        /// </summary>
-        public ReadOnlyObservableCollection<TViewModel> Items { get; }
-
-        /// <summary>
-        /// Ausgew�hltes ViewModel.
-        /// </summary>
-        public TViewModel? SelectedItem
-        {
-            get => _selectedItem;
-            set
-            {
-                if (!Equals(_selectedItem, value))
-                {
-                    _selectedItem = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Anzahl der ViewModels.
-        /// </summary>
-        public int Count => _viewModels.Count;
-
-        #region Private: Synchronisation DataStore ? ViewModels
-
-        private void OnDataStoreChanged(object? sender, DataStoreChangedEventArgs<TModel> e)
+        private void OnViewModelStoreChanged(object? sender, DataStoreChangedEventArgs<TViewModel> e)
         {
             switch (e.ChangeType)
             {
                 case DataStoreChangeType.Add:
-                    foreach (TModel model in e.AffectedItems)
+                    foreach (var vm in e.AffectedItems)
                     {
-                        if (!_modelToViewModelMap.ContainsKey(model))
-                        {
-                            var viewModel = CreateAndMapViewModel(model);
-                            _viewModels.Add(viewModel);
-                        }
+                        if (!_items.Contains(vm))
+                            _items.Add(vm);
                     }
-                    OnPropertyChanged(nameof(Count));
                     break;
 
                 case DataStoreChangeType.Remove:
-                    foreach (TModel model in e.AffectedItems)
+                    foreach (var vm in e.AffectedItems)
                     {
-                        if (_modelToViewModelMap.TryGetValue(model, out var viewModel))
-                        {
-                            if (ReferenceEquals(_selectedItem, viewModel))
-                            {
-                                SelectedItem = null;
-                            }
-                            
-                            _viewModels.Remove(viewModel);
-                            RemoveAndDisposeViewModel(model, viewModel);
-                        }
+                        _items.Remove(vm);
                     }
-                    OnPropertyChanged(nameof(Count));
                     break;
 
                 case DataStoreChangeType.Clear:
-                    if (_selectedItem != null)
-                    {
-                        SelectedItem = null;
-                    }
-                    
-                    foreach (var kvp in _modelToViewModelMap.ToList())
-                    {
-                        _viewModels.Remove(kvp.Value);
-                        DisposeViewModel(kvp.Value);
-                    }
-                    _modelToViewModelMap.Clear();
-                    OnPropertyChanged(nameof(Count));
+                    _items.Clear();
                     break;
 
                 case DataStoreChangeType.Reset:
-                    if (_selectedItem != null)
+                    _items.Clear();
+                    foreach (var vm in _viewModelStore.Items)
                     {
-                        SelectedItem = null;
+                        _items.Add(vm);
                     }
-                    
-                    foreach (var kvp in _modelToViewModelMap.ToList())
-                    {
-                        _viewModels.Remove(kvp.Value);
-                        DisposeViewModel(kvp.Value);
-                    }
-                    _modelToViewModelMap.Clear();
-                    
-                    foreach (var model in _dataStore.Items)
-                    {
-                        var viewModel = CreateAndMapViewModel(model);
-                        _viewModels.Add(viewModel);
-                    }
-                    OnPropertyChanged(nameof(Count));
                     break;
 
                 case DataStoreChangeType.BulkAdd:
-                    foreach (TModel model in e.AffectedItems)
+                    foreach (var vm in e.AffectedItems)
                     {
-                        if (!_modelToViewModelMap.ContainsKey(model))
-                        {
-                            var viewModel = CreateAndMapViewModel(model);
-                            _viewModels.Add(viewModel);
-                        }
+                        if (!_items.Contains(vm))
+                            _items.Add(vm);
                     }
-                    OnPropertyChanged(nameof(Count));
                     break;
             }
-        }
-
-        #endregion
-
-        #region Private: ViewModel Lifecycle
-
-        private TViewModel CreateAndMapViewModel(TModel model)
-        {
-            var viewModel = _viewModelFactory.Create(model);
-            _modelToViewModelMap[model] = viewModel;
-            return viewModel;
-        }
-
-        private void RemoveAndDisposeViewModel(TModel model, TViewModel viewModel)
-        {
-            _modelToViewModelMap.Remove(model);
-            OnViewModelRemoving(viewModel);
-            DisposeViewModel(viewModel);
-        }
-
-        private void DisposeViewModel(TViewModel viewModel)
-        {
-            if (viewModel is IDisposable disposable)
-            {
-                disposable.Dispose();
-            }
+            
+            OnPropertyChanged(nameof(Count));
         }
 
         /// <summary>
-        /// Hook: Wird aufgerufen, bevor ein ViewModel disposed wird.
+        /// Schreibgeschützte Sicht auf die ViewModels (für View-Binding).
         /// </summary>
-        protected virtual void OnViewModelRemoving(TViewModel viewModel)
+        public ReadOnlyObservableCollection<TViewModel> Items { get; }
+
+        /// <summary>
+        /// Ausgewähltes ViewModel (nur für UI-Binding, Single-Selection).
+        /// Wird automatisch von WPF gecleared, wenn Item aus Items entfernt wird.
+        /// </summary>
+        public TViewModel? SelectedItem { get; set; }
+
+        /// <summary>
+        /// Ausgewählte ViewModels (nur für UI-Binding, Multi-Selection).
+        /// Verwenden Sie MultiSelectBehavior für automatische Synchronisation mit ListBox.
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// &lt;ListBox SelectionMode="Multiple"
+        ///          behaviors:MultiSelectBehavior.SelectedItems="{Binding SelectedItems}" /&gt;
+        /// </code>
+        /// </example>
+        public ObservableCollection<TViewModel> SelectedItems => _selectedItems;
+
+        /// <summary>
+        /// Anzahl der ViewModels.
+        /// </summary>
+        public int Count => _items.Count;
+
+        #region Public API: Collection Manipulation
+
+        /// <summary>
+        /// Entfernt ein ViewModel und dessen zugehöriges Model aus dem DataStore.
+        /// TransformTo disposed das ViewModel automatisch.
+        /// SelectedItem wird automatisch von WPF gecleared.
+        /// </summary>
+        /// <param name="item">Das zu entfernende ViewModel.</param>
+        /// <returns>True, wenn das Item entfernt wurde; andernfalls false.</returns>
+        /// <exception cref="ArgumentNullException">Wenn <paramref name="item"/> null ist.</exception>
+        public bool Remove(TViewModel item)
         {
+            if (item == null) throw new ArgumentNullException(nameof(item));
+            return _modelStore.Remove(item.Model);
+        }
+
+        /// <summary>
+        /// Entfernt mehrere ViewModels und deren zugehörige Models aus dem DataStore.
+        /// TransformTo disposed alle ViewModels automatisch.
+        /// SelectedItem/SelectedItems werden automatisch von WPF gecleared.
+        /// </summary>
+        /// <param name="items">Die zu entfernenden ViewModels.</param>
+        /// <returns>Anzahl der erfolgreich entfernten Items.</returns>
+        /// <exception cref="ArgumentNullException">Wenn <paramref name="items"/> null ist.</exception>
+        public int RemoveRange(IEnumerable<TViewModel> items)
+        {
+            if (items == null) throw new ArgumentNullException(nameof(items));
+
+            var itemList = items.ToList();
+            if (itemList.Count == 0) return 0;
+
+            int removedCount = 0;
+            foreach (var item in itemList)
+            {
+                if (_modelStore.Remove(item.Model))
+                    removedCount++;
+            }
+            
+            return removedCount;
+        }
+
+        /// <summary>
+        /// Entfernt alle ViewModels aus der Collection.
+        /// TransformTo disposed alle ViewModels automatisch.
+        /// SelectedItem/SelectedItems werden automatisch von WPF gecleared.
+        /// </summary>
+        public void Clear()
+        {
+            _modelStore.Clear();
+        }
+
+        /// <summary>
+        /// Prüft, ob ein ViewModel in der Collection enthalten ist.
+        /// </summary>
+        /// <param name="item">Das zu prüfende ViewModel.</param>
+        /// <returns>True, wenn das Item enthalten ist; andernfalls false.</returns>
+        public bool Contains(TViewModel item)
+        {
+            return item != null && _items.Contains(item);
         }
 
         #endregion
@@ -245,15 +226,20 @@ namespace CustomWPFControls.ViewModels
             if (_disposed) return;
             _disposed = true;
 
-            _dataStore.Changed -= OnDataStoreChanged;
+            // TransformTo-Sync disposed
+            _unidirectionalSync?.Dispose();
 
-            foreach (var viewModel in _modelToViewModelMap.Values)
+            // Unsubscribe from store events
+            _viewModelStore.Changed -= OnViewModelStoreChanged;
+
+            // ViewModel-Store disposed (TransformTo disposed automatisch alle ViewModels!)
+            if (_viewModelStore is IDisposable disposable)
             {
-                DisposeViewModel(viewModel);
+                disposable.Dispose();
             }
-            _modelToViewModelMap.Clear();
             
-            _viewModels.Clear();
+            _items.Clear();
+            _selectedItems.Clear();
         }
 
         #endregion

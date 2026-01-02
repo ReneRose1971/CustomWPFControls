@@ -7,7 +7,7 @@ namespace CustomWPFControls.ViewModels
 {
     /// <summary>
     /// Erweitert CollectionViewModel um Bearbeitungs-Commands (Add, Delete, Clear, Edit).
-    /// Unterstützt DataStore-Integration mit bidirektionaler Synchronisation via TransformTo.
+    /// Unterstützt DataStore-Integration mit automatischer Synchronisation via TransformTo.
     /// </summary>
     /// <typeparam name="TModel">Model-Typ (Domain-Objekt).</typeparam>
     /// <typeparam name="TViewModel">ViewModel-Typ (muss IViewModelWrapper&lt;TModel&gt; implementieren).</typeparam>
@@ -17,8 +17,8 @@ namespace CustomWPFControls.ViewModels
     /// <c>dataStores.GetGlobal&lt;TModel&gt;().Add(model)</c>
     /// </para>
     /// <para>
-    /// <b>Commands:</b> AddCommand und ClearCommand arbeiten mit dem Model-Store.
-    /// DeleteCommand arbeitet mit dem aktuell ausgewählten ViewModel.
+    /// <b>Commands:</b> AddCommand arbeitet mit dem Model-Store.
+    /// DeleteCommand nutzt die Remove()-Methode des CollectionViewModel.
     /// </para>
     /// </remarks>
     public class EditableCollectionViewModel<TModel, TViewModel> : CollectionViewModel<TModel, TViewModel>
@@ -71,24 +71,24 @@ namespace CustomWPFControls.ViewModels
         private ICommand? _deleteCommand;
         /// <summary>
         /// Command zum Löschen des ausgewählten Elements.
+        /// Nutzt die Remove()-Methode des CollectionViewModel.
         /// </summary>
         public ICommand DeleteCommand => _deleteCommand ??= new RelayCommand(_ =>
         {
             if (SelectedItem != null)
             {
-                var modelStore = _dataStores.GetGlobal<TModel>();
-                modelStore.Remove(SelectedItem.Model);
+                Remove(SelectedItem);
             }
         }, _ => SelectedItem != null);
 
         private ICommand? _clearCommand;
         /// <summary>
         /// Command zum Löschen aller Elemente.
+        /// Nutzt die Clear()-Methode des CollectionViewModel.
         /// </summary>
         public ICommand ClearCommand => _clearCommand ??= new RelayCommand(_ =>
         {
-            var modelStore = _dataStores.GetGlobal<TModel>();
-            modelStore.Clear();
+            Clear();
         }, _ => Count > 0);
 
         private ICommand? _editCommand;
@@ -102,6 +102,19 @@ namespace CustomWPFControls.ViewModels
                 EditModel(SelectedItem.Model);
             }
         }, _ => SelectedItem != null && EditModel != null);
+
+        private ICommand? _deleteSelectedCommand;
+        /// <summary>
+        /// Command zum Löschen aller ausgewählten Elemente (Multi-Selection).
+        /// Nutzt die RemoveRange()-Methode des CollectionViewModel.
+        /// </summary>
+        public ICommand DeleteSelectedCommand => _deleteSelectedCommand ??= new RelayCommand(_ =>
+        {
+            if (SelectedItems != null && SelectedItems.Count > 0)
+            {
+                RemoveRange(SelectedItems.ToList());
+            }
+        }, _ => SelectedItems != null && SelectedItems.Count > 0);
 
         #endregion
     }
