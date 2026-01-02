@@ -1,0 +1,43 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 18
+VisualStudioVersion = 18.1.11312.151
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomWPFControls", "CustomWPFControls\CustomWPFControls.csproj", "{0BBC9619-9ADA-BB06-9D4F-5F1BD81531DF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomWPFControls.Tests", "CustomWPFControls.Tests\CustomWPFControls.Tests.csproj", "{76DA744C-02EF-7970-4AC2-74605FEC5392}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Projektmappenelemente", "Projektmappenelemente", "{0AA79FD4-F620-49AE-ABEA-AFDD4C35711A}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\..\Documents\Visual Studio 2022\Projects\CSharp\copilot\global-copilot-instructions.md = ..\..\..\Documents\Visual Studio 2022\Projects\CSharp\copilot\global-copilot-instructions.md
+		..\..\..\Documents\Visual Studio 2022\Projects\CSharp\copilot\user-libraries-knowhow.md = ..\..\..\Documents\Visual Studio 2022\Projects\CSharp\copilot\user-libraries-knowhow.md
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomWPFControls.TestHelpers", "CustomWPFControls.TestHelpers\CustomWPFControls.TestHelpers.csproj", "{27FAE11A-6A60-A52C-F3F2-D4BAF4F495BA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0BBC9619-9ADA-BB06-9D4F-5F1BD81531DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0BBC9619-9ADA-BB06-9D4F-5F1BD81531DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0BBC9619-9ADA-BB06-9D4F-5F1BD81531DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0BBC9619-9ADA-BB06-9D4F-5F1BD81531DF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{76DA744C-02EF-7970-4AC2-74605FEC5392}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{76DA744C-02EF-7970-4AC2-74605FEC5392}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{76DA744C-02EF-7970-4AC2-74605FEC5392}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{76DA744C-02EF-7970-4AC2-74605FEC5392}.Release|Any CPU.Build.0 = Release|Any CPU
+		{27FAE11A-6A60-A52C-F3F2-D4BAF4F495BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{27FAE11A-6A60-A52C-F3F2-D4BAF4F495BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{27FAE11A-6A60-A52C-F3F2-D4BAF4F495BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{27FAE11A-6A60-A52C-F3F2-D4BAF4F495BA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {9B64A3C2-90FD-4BD0-9138-D70F6B8A6E88}
+	EndGlobalSection
+EndGlobal
