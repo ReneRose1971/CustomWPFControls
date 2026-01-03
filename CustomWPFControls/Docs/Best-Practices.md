@@ -2,53 +2,34 @@
 
 Bewährte Praktiken, Tipps und Tricks für die Verwendung von CustomWPFControls.
 
-## ?? Inhaltsverzeichnis
+## Inhaltsverzeichnis
 
 - [ViewModel-Design](#viewmodel-design)
 - [DataStore-Integration](#datastore-integration)
 - [Commands](#commands)
+- [Controls](#controls)
 - [Performance](#performance)
 - [Testing](#testing)
-- [Common Pitfalls](#common-pitfalls)
 
 ---
 
-## ?? ViewModel-Design
+## ViewModel-Design
 
-### **? DO: Properties von Model delegieren**
+### Properties von Model delegieren
 
 ```csharp
 public class CustomerViewModel : ViewModelBase<Customer>
 {
-    // ? RICHTIG: Read-only, delegiert an Model
+    // Read-only, delegiert an Model
     public string Name => Model.Name;
     public string Email => Model.Email;
     
-    // ? UI-spezifische Properties
+    // UI-spezifische Properties
     public bool IsSelected { get; set; }
 }
 ```
 
-### **? DON'T: Model-Properties duplizieren**
-
-```csharp
-// ? FALSCH: Duplikation mit Backing-Field
-private string _name;
-public string Name
-{
-    get => _name;
-    set { _name = value; OnPropertyChanged(); }
-}
-```
-
-**Warum?**
-- Redundanz ? Fehlerquelle
-- Synchronisation nötig ? Komplexität
-- Model ist Source of Truth
-
----
-
-### **? DO: Computed Properties für UI-Logik**
+### Computed Properties für UI-Logik
 
 ```csharp
 public class CustomerViewModel : ViewModelBase<Customer>
@@ -56,7 +37,7 @@ public class CustomerViewModel : ViewModelBase<Customer>
     public string Name => Model.Name;
     public string Email => Model.Email;
     
-    // ? Computed Property für Display
+    // Computed Property für Display
     public string DisplayName => $"{Name} ({Email})";
     public string ShortName => Name.Length > 20 
         ? Name.Substring(0, 20) + "..." 
@@ -64,38 +45,34 @@ public class CustomerViewModel : ViewModelBase<Customer>
 }
 ```
 
----
-
-### **? DO: ViewModelBase als Basis verwenden**
+### ViewModelBase als Basis verwenden
 
 ```csharp
-// ? RICHTIG: Von ViewModelBase<T> ableiten
 public class CustomerViewModel : ViewModelBase<Customer>
 {
     public CustomerViewModel(Customer model) : base(model) { }
 }
-
-// ? FALSCH: INotifyPropertyChanged manuell
-public class CustomerViewModel : INotifyPropertyChanged
-{
-    private Customer _model;
-    // ... manuelles PropertyChanged-Handling
-}
 ```
+
+**Warum?**
+- Automatisches PropertyChanged via Fody
+- Model-Property bereits vorhanden
+- Equals/GetHashCode implementiert
 
 ---
 
-## ??? DataStore-Integration
+## DataStore-Integration
 
-### **? DO: IEqualityComparer implementieren**
+### IEqualityComparer implementieren
 
 ```csharp
 public class CustomerComparer : IEqualityComparer<Customer>
 {
     public bool Equals(Customer? x, Customer? y)
     {
-        if (x == null || y == null) return false;
-        return x.Id == y.Id; // ? Stabile Property (Id)
+        if (x == null || y == null) return false
+;
+        return x.Id == y.Id; // Stabile Property (Id)
     }
 
     public int GetHashCode(Customer obj)
@@ -113,69 +90,39 @@ services.AddSingleton<IEqualityComparer<Customer>>(new CustomerComparer());
 - HashCode bleibt stabil
 - Dictionary-Lookups funktionieren zuverlässig
 
----
-
-### **? DON'T: Mutable Properties in Comparer**
-
-```csharp
-// ? FALSCH: Name kann sich ändern!
-public bool Equals(Customer? x, Customer? y)
-    => x?.Name == y?.Name;
-
-public int GetHashCode(Customer obj)
-    => obj.Name?.GetHashCode() ?? 0;
-```
-
-**Problem:**
-```csharp
-var customer = new Customer { Id = 1, Name = "Alice" };
-var vm = factory.Create(customer);
-dict[vm] = "Value";
-
-customer.Name = "Bob"; // ? Name ändert sich!
-// ? dict[vm] findet nichts mehr! ? HashCode hat sich geändert
-```
-
----
-
-### **? DO: DataStore via DI injizieren**
+### DataStore via DI injizieren
 
 ```csharp
 public class ViewModelModule : IServiceModule
 {
     public void Register(IServiceCollection services)
     {
-        // ? Singleton für shared state
-        services.AddSingleton<IDataStore<Customer>>(provider =>
-        {
-            var comparer = provider.GetRequiredService<IEqualityComparer<Customer>>();
-            return new InMemoryDataStore<Customer>(comparer);
-        });
+        // Singleton für shared state
+        services.AddSingleton<IEqualityComparer<Customer>>(
+            new FallbackEqualsComparer<Customer>());
     }
 }
 ```
 
 ---
 
-## ?? Commands
+## Commands
 
-### **? DO: CreateModel für neue Objekte**
+### CreateModel für neue Objekte
 
 ```csharp
 var viewModel = new EditableCollectionViewModel<Customer, CustomerViewModel>(
-    dataStore, factory, comparer);
+    dataStores, factory, comparerService);
 
 viewModel.CreateModel = () => new Customer
 {
-    Name = "New Customer",
-    Email = "new@example.com",
+    Name = "Neuer Kunde",
+    Email = "neu@example.com",
     CreatedAt = DateTime.Now
 };
 ```
 
----
-
-### **? DO: EditModel für Bearbeitung**
+### EditModel für Bearbeitung
 
 ```csharp
 viewModel.EditModel = customer =>
@@ -188,58 +135,92 @@ viewModel.EditModel = customer =>
     if (dialog.ShowDialog() == true)
     {
         // Model wurde bearbeitet
-        // DataStore-PropertyChanged-Tracking aktualisiert automatisch
+        // DataStore aktualisiert automatisch
     }
 };
 ```
 
----
-
-### **? DO: Commands via Binding verwenden**
+### Commands via Binding verwenden
 
 ```xml
-<Button Content="Add" 
+<Button Content="Hinzufügen" 
         Command="{Binding AddCommand}"
-        ToolTip="Add new customer"/>
+        ToolTip="Neuen Kunden hinzufügen"/>
 
-<Button Content="Delete" 
+<Button Content="Löschen" 
         Command="{Binding DeleteCommand}"
-        ToolTip="Delete selected customer"
-        IsEnabled="{Binding DeleteCommand.CanExecute}"/>
+        ToolTip="Ausgewählten Kunden löschen"/>
 ```
 
 ---
 
-### **? DON'T: Commands manuell aufrufen**
+## Controls
 
-```csharp
-// ? FALSCH: Manueller Aufruf
-private void AddButton_Click(object sender, RoutedEventArgs e)
-{
-    viewModel.AddCommand.Execute(null);
-}
+### ListEditorView verwenden
+
+```xml
+<controls:ListEditorView 
+    ItemsSource="{Binding Customers}"
+    SelectedItem="{Binding SelectedCustomer, Mode=TwoWay}"
+    AddCommand="{Binding AddCommand}"
+    EditCommand="{Binding EditCommand}"
+    DeleteCommand="{Binding DeleteCommand}"
+    AddButtonText="Neu"
+    EditButtonText="Bearbeiten"
+    DeleteButtonText="Löschen"/>
 ```
 
-**Besser:**
+### DropDownEditorView mit ButtonPlacement
+
 ```xml
-<!-- ? RICHTIG: XAML-Binding -->
-<Button Content="Add" Command="{Binding AddCommand}"/>
+<!-- Right: Kompakt für Formulare -->
+<controls:DropDownEditorView 
+    ItemsSource="{Binding Categories}"
+    ButtonPlacement="Right"
+    AddCommand="{Binding AddCommand}"/>
+
+<!-- Bottom: Ähnlich wie ListView -->
+<controls:DropDownEditorView 
+    ItemsSource="{Binding Categories}"
+    ButtonPlacement="Bottom"
+    AddCommand="{Binding AddCommand}"/>
+
+<!-- Top: Professionell mit ToolBar -->
+<controls:DropDownEditorView 
+    ItemsSource="{Binding Categories}"
+    ButtonPlacement="Top"
+    AddCommand="{Binding AddCommand}"/>
+```
+
+### Button-Texte lokalisieren
+
+```xml
+<controls:ListEditorView 
+    AddButtonText="{x:Static resx:Resources.ButtonAdd}"
+    EditButtonText="{x:Static resx:Resources.ButtonEdit}"
+    DeleteButtonText="{x:Static resx:Resources.ButtonDelete}"/>
+```
+
+### Selektive Button-Sichtbarkeit
+
+```xml
+<controls:DropDownEditorView 
+    IsEditVisible="False"
+    IsClearVisible="False"/>
 ```
 
 ---
 
-## ? Performance
+## Performance
 
-### **? DO: Virtualization für große Listen**
+### Virtualization für große Listen
 
 ```xml
-<ListBox ItemsSource="{Binding Items}"
-         VirtualizingPanel.IsVirtualizing="True"
-         VirtualizingPanel.VirtualizationMode="Recycling"
-         VirtualizingPanel.CacheLength="20"
-         VirtualizingPanel.CacheLengthUnit="Item">
-    <!-- ItemTemplate -->
-</ListBox>
+<controls:ListEditorView 
+    ItemsSource="{Binding Items}"
+    VirtualizingPanel.IsVirtualizing="True"
+    VirtualizingPanel.VirtualizationMode="Recycling"
+    VirtualizingPanel.CacheLength="20"/>
 ```
 
 **Vorteile:**
@@ -247,9 +228,7 @@ private void AddButton_Click(object sender, RoutedEventArgs e)
 - Recycling reduziert Memory-Footprint
 - Performance bleibt konstant bei 10.000+ Items
 
----
-
-### **? DO: ICollectionView für Filtering**
+### ICollectionView für Filtering
 
 ```csharp
 var view = CollectionViewSource.GetDefaultView(viewModel.Items);
@@ -260,40 +239,10 @@ view.Filter = item =>
 };
 
 // Filter aktualisieren
-searchTextBox.TextChanged += (s, e) =>
-{
-    view.Refresh();
-};
+searchTextBox.TextChanged += (s, e) => view.Refresh();
 ```
 
-**Vorteile:**
-- Kein Re-Rendering der gesamten Liste
-- Filter läuft auf UI-Thread (smooth)
-- DataStore bleibt unberührt
-
----
-
-### **? DON'T: LINQ in Binding**
-
-```xml
-<!-- ? FALSCH: LINQ in Binding -->
-<ListBox ItemsSource="{Binding Items.Where(x => x.IsActive)}"/>
-```
-
-**Problem:**
-- Wird bei jedem PropertyChanged neu evaluiert
-- Performance-Killer bei großen Listen
-
-**Besser:**
-```csharp
-// ? RICHTIG: Separate Property
-public ObservableCollection<CustomerViewModel> ActiveItems 
-    => new(Items.Where(x => x.IsActive));
-```
-
----
-
-### **? DO: Lazy Loading bei Bedarf**
+### Lazy Loading bei Bedarf
 
 ```csharp
 public class LazyCustomerViewModel : ViewModelBase<Customer>
@@ -304,7 +253,7 @@ public class LazyCustomerViewModel : ViewModelBase<Customer>
     {
         get
         {
-            // ? Lazy Load: Nur wenn benötigt
+            // Lazy Load: Nur wenn benötigt
             if (_orders == null)
             {
                 _orders = new ObservableCollection<OrderViewModel>(
@@ -319,9 +268,9 @@ public class LazyCustomerViewModel : ViewModelBase<Customer>
 
 ---
 
-## ?? Testing
+## Testing
 
-### **? DO: Unit-Tests für ViewModels**
+### Unit-Tests für ViewModels
 
 ```csharp
 [Fact]
@@ -336,21 +285,18 @@ public void CustomerViewModel_Name_ReturnsModelName()
 }
 ```
 
----
-
-### **? DO: Integration-Tests für Synchronisation**
+### Integration-Tests für Synchronisation
 
 ```csharp
 [Fact]
 public void CollectionViewModel_DataStoreAdd_CreatesViewModel()
 {
     // Arrange
-    var dataStore = new InMemoryDataStore<Customer>();
     var viewModel = new CollectionViewModel<Customer, CustomerViewModel>(
-        dataStore, factory, comparer);
+        dataStores, factory, comparerService);
     
     // Act
-    dataStore.Add(new Customer { Name = "Bob" });
+    dataStores.GetGlobal<Customer>().Add(new Customer { Name = "Bob" });
     
     // Assert
     Assert.Equal(1, viewModel.Count);
@@ -358,9 +304,7 @@ public void CollectionViewModel_DataStoreAdd_CreatesViewModel()
 }
 ```
 
----
-
-### **? DO: Behavior-Tests für Commands**
+### Behavior-Tests für Commands
 
 ```csharp
 [Fact]
@@ -368,7 +312,7 @@ public void AddCommand_WithCreateModel_AddsToDataStore()
 {
     // Arrange
     var viewModel = new EditableCollectionViewModel<Customer, CustomerViewModel>(
-        dataStore, factory, comparer);
+        dataStores, factory, comparerService);
     viewModel.CreateModel = () => new Customer { Name = "New" };
     
     // Act
@@ -381,176 +325,40 @@ public void AddCommand_WithCreateModel_AddsToDataStore()
 
 ---
 
-## ?? Common Pitfalls
+## Quick Reference
 
-### **1. ViewModel ohne Model-Property**
+### ViewModel-Checklist
 
-```csharp
-// ? FALSCH: Kein Model-Property
-public class CustomerViewModel : INotifyPropertyChanged
-{
-    private Customer _customer;
-    // ... kein public Model-Property
-}
-```
+- Von `ViewModelBase<TModel>` ableiten
+- Constructor mit `TModel` Parameter
+- Domain-Properties read-only (delegiert an Model)
+- UI-Properties mit Auto-Property
+- Computed Properties für UI-Logik
 
-**Problem:**
-- `IViewModelWrapper<T>` nicht implementiert
-- CollectionViewModel kann Model nicht extrahieren
-- Compiler-Fehler: Constraint nicht erfüllt
+### DI-Registrierung-Checklist
 
-**Lösung:**
-```csharp
-// ? RICHTIG: Von ViewModelBase ableiten
-public class CustomerViewModel : ViewModelBase<Customer>
-{
-    public CustomerViewModel(Customer model) : base(model) { }
-    // Model-Property von ViewModelBase geerbt
-}
-```
+- IEqualityComparer registriert
+- ViewModelFactory registriert (via AddViewModelFactory)
+- CollectionViewModel registriert
 
----
+### Control-Checklist
 
-### **2. Vergessene IEqualityComparer-Registrierung**
+- SelectedItem mit Mode=TwoWay binden
+- ButtonPlacement je nach Kontext wählen
+- Button-Texte für Lokalisierung konfigurieren
+- Nicht benötigte Buttons ausblenden
 
-```csharp
-// ? FALSCH: Kein Comparer registriert
-services.AddSingleton<IDataStore<Customer>>(
-    provider => new InMemoryDataStore<Customer>());
-```
+### Performance-Checklist
 
-**Problem:**
-- DataStore verwendet `EqualityComparer<Customer>.Default`
-- Duplikate werden nicht erkannt
-- Synchronisation funktioniert nicht richtig
-
-**Lösung:**
-```csharp
-// ? RICHTIG: Comparer explizit registrieren
-services.AddSingleton<IEqualityComparer<Customer>>(
-    new FallbackEqualsComparer<Customer>());
-
-services.AddSingleton<IDataStore<Customer>>(provider =>
-{
-    var comparer = provider.GetRequiredService<IEqualityComparer<Customer>>();
-    return new InMemoryDataStore<Customer>(comparer);
-});
-```
+- Virtualization aktiviert (bei > 100 Items)
+- ICollectionView für Filtering
+- Lazy Loading für Child-Collections
 
 ---
 
-### **3. SelectedItem-Binding ohne Mode=TwoWay**
+## Siehe auch
 
-```xml
-<!-- ? FALSCH: OneWay-Binding (Default) -->
-<ListBox SelectedItem="{Binding SelectedItem}"/>
-```
-
-**Problem:**
-- User-Selection wird nicht an ViewModel propagiert
-- DeleteCommand.CanExecute() bleibt false
-- Keine Interaktion möglich
-
-**Lösung:**
-```xml
-<!-- ? RICHTIG: TwoWay-Binding -->
-<ListBox SelectedItem="{Binding SelectedItem, Mode=TwoWay}"/>
-```
-
----
-
-### **4. Memory-Leaks durch nicht-disposed ViewModels**
-
-```csharp
-// ? FALSCH: DataStore wird nicht disposed
-public class MainWindow : Window
-{
-    private CollectionViewModel<Customer, CustomerViewModel> _viewModel;
-    
-    public MainWindow(CollectionViewModel<Customer, CustomerViewModel> viewModel)
-    {
-        _viewModel = viewModel;
-        DataContext = _viewModel;
-        // ? Kein Dispose beim Schließen!
-    }
-}
-```
-
-**Problem:**
-- Event-Handler bleiben subscribed
-- Dictionary behält Referenzen
-- Memory-Leak!
-
-**Lösung:**
-```csharp
-// ? RICHTIG: Dispose beim Schließen
-public class MainWindow : Window
-{
-    private CollectionViewModel<Customer, CustomerViewModel> _viewModel;
-    
-    public MainWindow(CollectionViewModel<Customer, CustomerViewModel> viewModel)
-    {
-        _viewModel = viewModel;
-        DataContext = _viewModel;
-        
-        Closed += (s, e) => _viewModel.Dispose(); // ? Dispose
-    }
-}
-```
-
----
-
-### **5. Fody PropertyChanged nicht konfiguriert**
-
-```xml
-<!-- ? FALSCH: Kein FodyWeavers.xml -->
-<!-- Datei fehlt im Projekt-Root -->
-```
-
-**Problem:**
-- PropertyChanged wird nicht geweaved
-- UI aktualisiert nicht
-- Bindings funktionieren nicht
-
-**Lösung:**
-```xml
-<!-- ? RICHTIG: FodyWeavers.xml erstellen -->
-<?xml version="1.0" encoding="utf-8"?>
-<Weavers xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <PropertyChanged FilterType="Explicit" InjectOnPropertyNameChanged="false" />
-</Weavers>
-```
-
----
-
-## ?? Quick Reference
-
-### **ViewModel-Checklist**
-
-- ? Von `ViewModelBase<TModel>` ableiten
-- ? Constructor mit `TModel` Parameter
-- ? Domain-Properties read-only (delegiert an Model)
-- ? UI-Properties mit Auto-Property
-- ? Computed Properties für UI-Logik
-
-### **DI-Registrierung-Checklist**
-
-- ? IEqualityComparer registriert
-- ? IDataStore registriert
-- ? ViewModelFactory registriert (via AddViewModelFactory)
-- ? CollectionViewModel registriert
-
-### **Performance-Checklist**
-
-- ? Virtualization aktiviert (bei > 100 Items)
-- ? ICollectionView für Filtering
-- ? Lazy Loading für Child-Collections
-- ? Avoid LINQ in Bindings
-
----
-
-## ?? See Also
-
-- [Getting Started](Getting-Started.md) - Schnellstart
-- [Architecture](Architecture.md) - Architektur-Übersicht
-- [API Reference](API-Reference.md) - Vollständige API
+- [Getting Started](Getting-Started.md)
+- [Controls-Guide](Controls-Guide.md)
+- [Architecture](Architecture.md)
+- [API Reference](API-Reference.md)

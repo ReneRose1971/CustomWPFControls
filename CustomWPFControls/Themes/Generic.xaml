@@ -3,7 +3,9 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:controls="clr-namespace:CustomWPFControls.Controls">
 
+    <!-- ════════════════════════════════════════════════════════════════════════════ -->
     <!-- BaseListView style -->
+    <!-- ════════════════════════════════════════════════════════════════════════════ -->
     <Style TargetType="{x:Type controls:BaseListView}">
         <Setter Property="Template">
             <Setter.Value>
@@ -28,7 +30,9 @@
         </Setter>
     </Style>
 
+    <!-- ════════════════════════════════════════════════════════════════════════════ -->
     <!-- ListEditorView style -->
+    <!-- ════════════════════════════════════════════════════════════════════════════ -->
     <Style TargetType="{x:Type controls:ListEditorView}">
         <Setter Property="Template">
             <Setter.Value>
@@ -42,8 +46,12 @@
                                            Margin="6,0" />
 
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="6,0">
-                                    <!-- Add -->
-                                    <Button Content="+" Command="{TemplateBinding AddCommand}" Margin="2,0">
+                                    <!-- Add Button -->
+                                    <Button Content="{TemplateBinding AddButtonText}" 
+                                            Command="{TemplateBinding AddCommand}" 
+                                            Margin="2,0"
+                                            MinWidth="80"
+                                            Padding="5,2">
                                         <Button.Style>
                                             <Style TargetType="Button">
                                                 <Setter Property="Visibility" Value="Visible" />
@@ -59,8 +67,33 @@
                                         </Button.Style>
                                     </Button>
 
-                                    <!-- Delete -->
-                                    <Button Content="-" Command="{TemplateBinding DeleteCommand}" Margin="2,0">
+                                    <!-- Edit Button -->
+                                    <Button Content="{TemplateBinding EditButtonText}" 
+                                            Command="{TemplateBinding EditCommand}" 
+                                            Margin="2,0"
+                                            MinWidth="80"
+                                            Padding="5,2">
+                                        <Button.Style>
+                                            <Style TargetType="Button">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding EditCommand, RelativeSource={RelativeSource TemplatedParent}}" Value="{x:Null}">
+                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding IsEditVisible, RelativeSource={RelativeSource TemplatedParent}}" Value="False">
+                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Button.Style>
+                                    </Button>
+
+                                    <!-- Delete Button -->
+                                    <Button Content="{TemplateBinding DeleteButtonText}" 
+                                            Command="{TemplateBinding DeleteCommand}" 
+                                            Margin="2,0"
+                                            MinWidth="80"
+                                            Padding="5,2">
                                         <Button.Style>
                                             <Style TargetType="Button">
                                                 <Setter Property="Visibility" Value="Visible" />
@@ -76,8 +109,12 @@
                                         </Button.Style>
                                     </Button>
 
-                                    <!-- Clear -->
-                                    <Button Content="L&#246;schen" Command="{TemplateBinding ClearCommand}" Margin="2,0">
+                                    <!-- Clear Button -->
+                                    <Button Content="{TemplateBinding ClearButtonText}" 
+                                            Command="{TemplateBinding ClearCommand}" 
+                                            Margin="2,0"
+                                            MinWidth="80"
+                                            Padding="5,2">
                                         <Button.Style>
                                             <Style TargetType="Button">
                                                 <Setter Property="Visibility" Value="Visible" />
@@ -92,23 +129,6 @@
                                             </Style>
                                         </Button.Style>
                                     </Button>
-
-                                    <!-- Edit -->
-                                    <Button Content="Bearbeiten" Command="{TemplateBinding EditCommand}" Margin="2,0">
-                                        <Button.Style>
-                                            <Style TargetType="Button">
-                                                <Setter Property="Visibility" Value="Visible" />
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding EditCommand, RelativeSource={RelativeSource TemplatedParent}}" Value="{x:Null}">
-                                                        <Setter Property="Visibility" Value="Collapsed" />
-                                                    </DataTrigger>
-                                                    <DataTrigger Binding="{Binding IsEditVisible, RelativeSource={RelativeSource TemplatedParent}}" Value="False">
-                                                        <Setter Property="Visibility" Value="Collapsed" />
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </Button.Style>
-                                    </Button>
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -117,6 +137,306 @@
                             <ItemsPresenter />
                         </ScrollViewer>
                     </DockPanel>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ════════════════════════════════════════════════════════════════════════════ -->
+    <!-- BaseComboBoxView style -->
+    <!-- ════════════════════════════════════════════════════════════════════════════ -->
+    <Style TargetType="{x:Type controls:BaseComboBoxView}" BasedOn="{StaticResource {x:Type ComboBox}}">
+        <!-- Erbt alle Standard-ComboBox-Eigenschaften -->
+    </Style>
+
+    <!-- ════════════════════════════════════════════════════════════════════════════ -->
+    <!-- DropDownEditorView style -->
+    <!-- ════════════════════════════════════════════════════════════════════════════ -->
+    <Style x:Key="DropDownEditorViewStyle" TargetType="{x:Type controls:DropDownEditorView}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type controls:DropDownEditorView}">
+                    <Grid>
+                        <!-- Default: Buttons rechts (ButtonPlacement.Right) -->
+                        <Grid x:Name="RightLayout">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- ComboBox -->
+                            <ComboBox Grid.Column="0"
+                                      ItemsSource="{TemplateBinding ItemsSource}"
+                                      SelectedItem="{Binding SelectedItem, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                                      DisplayMemberPath="{TemplateBinding DisplayMemberPath}"
+                                      SelectedValuePath="{TemplateBinding SelectedValuePath}"
+                                      IsEditable="{TemplateBinding IsEditable}"
+                                      IsReadOnly="{TemplateBinding IsReadOnly}"/>
+
+                            <!-- Buttons rechts -->
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="5,0,0,0">
+                                <!-- Add Button -->
+                                <Button Content="{TemplateBinding AddButtonText}" 
+                                        Command="{TemplateBinding AddCommand}" 
+                                        Margin="2,0"
+                                        Padding="5,2">
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding AddCommand, RelativeSource={RelativeSource TemplatedParent}}" Value="{x:Null}">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding IsAddVisible, RelativeSource={RelativeSource TemplatedParent}}" Value="False">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+
+                                <!-- Edit Button -->
+                                <Button Content="{TemplateBinding EditButtonText}" 
+                                        Command="{TemplateBinding EditCommand}" 
+                                        Margin="2,0"
+                                        Padding="5,2">
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding EditCommand, RelativeSource={RelativeSource TemplatedParent}}" Value="{x:Null}">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding IsEditVisible, RelativeSource={RelativeSource TemplatedParent}}" Value="False">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+
+                                <!-- Delete Button -->
+                                <Button Content="{TemplateBinding DeleteButtonText}" 
+                                        Command="{TemplateBinding DeleteCommand}" 
+                                        Margin="2,0"
+                                        Padding="5,2">
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding DeleteCommand, RelativeSource={RelativeSource TemplatedParent}}" Value="{x:Null}">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding IsDeleteVisible, RelativeSource={RelativeSource TemplatedParent}}" Value="False">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+
+                                <!-- Clear Button -->
+                                <Button Content="{TemplateBinding ClearButtonText}" 
+                                        Command="{TemplateBinding ClearCommand}" 
+                                        Margin="2,0"
+                                        Padding="5,2">
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding ClearCommand, RelativeSource={RelativeSource TemplatedParent}}" Value="{x:Null}">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding IsClearVisible, RelativeSource={RelativeSource TemplatedParent}}" Value="False">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Bottom Layout (wird via Trigger aktiviert) -->
+                        <Grid x:Name="BottomLayout" Visibility="Collapsed">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- ComboBox -->
+                            <ComboBox Grid.Row="0"
+                                      ItemsSource="{TemplateBinding ItemsSource}"
+                                      SelectedItem="{Binding SelectedItem, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                                      DisplayMemberPath="{TemplateBinding DisplayMemberPath}"
+                                      SelectedValuePath="{TemplateBinding SelectedValuePath}"
+                                      IsEditable="{TemplateBinding IsEditable}"
+                                      IsReadOnly="{TemplateBinding IsReadOnly}"/>
+
+                            <!-- Buttons unten -->
+                            <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,5,0,0">
+                                <Button Content="{TemplateBinding AddButtonText}" Command="{TemplateBinding AddCommand}" Margin="2,0" MinWidth="80" Padding="5,2">
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding AddCommand, RelativeSource={RelativeSource TemplatedParent}}" Value="{x:Null}">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding IsAddVisible, RelativeSource={RelativeSource TemplatedParent}}" Value="False">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+                                <Button Content="{TemplateBinding EditButtonText}" Command="{TemplateBinding EditCommand}" Margin="2,0" MinWidth="80" Padding="5,2">
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding EditCommand, RelativeSource={RelativeSource TemplatedParent}}" Value="{x:Null}">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding IsEditVisible, RelativeSource={RelativeSource TemplatedParent}}" Value="False">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+                                <Button Content="{TemplateBinding DeleteButtonText}" Command="{TemplateBinding DeleteCommand}" Margin="2,0" MinWidth="80" Padding="5,2">
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding DeleteCommand, RelativeSource={RelativeSource TemplatedParent}}" Value="{x:Null}">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding IsDeleteVisible, RelativeSource={RelativeSource TemplatedParent}}" Value="False">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+                                <Button Content="{TemplateBinding ClearButtonText}" Command="{TemplateBinding ClearCommand}" Margin="2,0" MinWidth="80" Padding="5,2">
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding ClearCommand, RelativeSource={RelativeSource TemplatedParent}}" Value="{x:Null}">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding IsClearVisible, RelativeSource={RelativeSource TemplatedParent}}" Value="False">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Top Layout (wird via Trigger aktiviert) -->
+                        <Grid x:Name="TopLayout" Visibility="Collapsed">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- ToolBar oben -->
+                            <ToolBar Grid.Row="0">
+                                <Button Content="{TemplateBinding AddButtonText}" Command="{TemplateBinding AddCommand}">
+                                    <Button.Style>
+                                        <Style TargetType="Button" BasedOn="{StaticResource {x:Static ToolBar.ButtonStyleKey}}">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding AddCommand, RelativeSource={RelativeSource TemplatedParent}}" Value="{x:Null}">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding IsAddVisible, RelativeSource={RelativeSource TemplatedParent}}" Value="False">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+                                <Button Content="{TemplateBinding EditButtonText}" Command="{TemplateBinding EditCommand}">
+                                    <Button.Style>
+                                        <Style TargetType="Button" BasedOn="{StaticResource {x:Static ToolBar.ButtonStyleKey}}">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding EditCommand, RelativeSource={RelativeSource TemplatedParent}}" Value="{x:Null}">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding IsEditVisible, RelativeSource={RelativeSource TemplatedParent}}" Value="False">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+                                <Separator/>
+                                <Button Content="{TemplateBinding DeleteButtonText}" Command="{TemplateBinding DeleteCommand}">
+                                    <Button.Style>
+                                        <Style TargetType="Button" BasedOn="{StaticResource {x:Static ToolBar.ButtonStyleKey}}">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding DeleteCommand, RelativeSource={RelativeSource TemplatedParent}}" Value="{x:Null}">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding IsDeleteVisible, RelativeSource={RelativeSource TemplatedParent}}" Value="False">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+                                <Button Content="{TemplateBinding ClearButtonText}" Command="{TemplateBinding ClearCommand}">
+                                    <Button.Style>
+                                        <Style TargetType="Button" BasedOn="{StaticResource {x:Static ToolBar.ButtonStyleKey}}">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding ClearCommand, RelativeSource={RelativeSource TemplatedParent}}" Value="{x:Null}">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding IsClearVisible, RelativeSource={RelativeSource TemplatedParent}}" Value="False">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+                            </ToolBar>
+
+                            <!-- ComboBox -->
+                            <ComboBox Grid.Row="1"
+                                      ItemsSource="{TemplateBinding ItemsSource}"
+                                      SelectedItem="{Binding SelectedItem, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                                      DisplayMemberPath="{TemplateBinding DisplayMemberPath}"
+                                      SelectedValuePath="{TemplateBinding SelectedValuePath}"
+                                      IsEditable="{TemplateBinding IsEditable}"
+                                      IsReadOnly="{TemplateBinding IsReadOnly}"
+                                      Margin="0,5,0,0"/>
+                        </Grid>
+                    </Grid>
+
+                    <!-- Triggers für Layout-Umschaltung -->
+                    <ControlTemplate.Triggers>
+                        <!-- Bottom Layout -->
+                        <Trigger Property="ButtonPlacement" Value="Bottom">
+                            <Setter TargetName="RightLayout" Property="Visibility" Value="Collapsed"/>
+                            <Setter TargetName="BottomLayout" Property="Visibility" Value="Visible"/>
+                            <Setter TargetName="TopLayout" Property="Visibility" Value="Collapsed"/>
+                        </Trigger>
+                        <!-- Top Layout -->
+                        <Trigger Property="ButtonPlacement" Value="Top">
+                            <Setter TargetName="RightLayout" Property="Visibility" Value="Collapsed"/>
+                            <Setter TargetName="BottomLayout" Property="Visibility" Value="Collapsed"/>
+                            <Setter TargetName="TopLayout" Property="Visibility" Value="Visible"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

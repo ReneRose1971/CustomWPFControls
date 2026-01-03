@@ -2,10 +2,13 @@
 
 Vollständige API-Dokumentation aller öffentlichen Typen, Methoden und Properties.
 
-## ?? Namespaces
+## Namespaces
 
 - [CustomWPFControls.ViewModels](#customwpfcontrolsviewmodels)
 - [CustomWPFControls.Factories](#customwpfcontrolsfactories)
+- [CustomWPFControls.Controls](#customwpfcontrolscontrols)
+- [CustomWPFControls.Commands](#customwpfcontrolscommands)
+- [CustomWPFControls.Services](#customwpfcontrolsservices)
 
 ---
 
@@ -51,158 +54,31 @@ public abstract class ViewModelBase<TModel> : IViewModelWrapper<TModel>, INotify
 }
 ```
 
-#### Constructor
-
-```csharp
-protected ViewModelBase(TModel model)
-```
-
-**Parameter:**
-- `model` - Das zu wrappende Domain-Model
-
-**Exceptions:**
-- `ArgumentNullException` - Wenn `model` null ist
-
-#### Properties
-
-| Property | Type | Description |
-|----------|------|-------------|
-| **Model** | `TModel` | Das gewrappte Domain-Model |
-
-#### Methods
-
-| Method | Return | Description |
-|--------|--------|-------------|
-| **GetHashCode()** | `int` | Basiert auf Model-Referenz (RuntimeHelpers) |
-| **Equals(obj)** | `bool` | Prüft auf gleiche Model-Referenz (ReferenceEquals) |
-| **ToString()** | `string` | Delegiert an Model.ToString() |
-| **OnPropertyChanged(propertyName)** | `void` | Feuert PropertyChanged-Event |
-
-#### Events
-
-| Event | Type | Description |
-|-------|------|-------------|
-| **PropertyChanged** | `PropertyChangedEventHandler` | INotifyPropertyChanged-Event |
-
-#### Example
-
-```csharp
-public class CustomerViewModel : ViewModelBase<Customer>
-{
-    public CustomerViewModel(Customer model) : base(model) { }
-    
-    // Domain-Properties
-    public string Name => Model.Name;
-    
-    // UI-Properties (mit PropertyChanged)
-    public bool IsSelected { get; set; }
-}
-```
+[Vollständige Dokumentation](ViewModelBase.md)
 
 ---
 
 ### `CollectionViewModel<TModel, TViewModel>`
 
-Collection-ViewModel mit bidirektionaler DataStore-Synchronisation.
+Collection-ViewModel mit automatischer DataStore-Synchronisation.
 
 ```csharp
 public class CollectionViewModel<TModel, TViewModel> : INotifyPropertyChanged, IDisposable
     where TModel : class
     where TViewModel : class, IViewModelWrapper<TModel>
 {
-    public CollectionViewModel(
-        IDataStore<TModel> dataStore,
-        IViewModelFactory<TModel, TViewModel> viewModelFactory,
-        IEqualityComparer<TModel> modelComparer);
-    
     public ReadOnlyObservableCollection<TViewModel> Items { get; }
     public TViewModel? SelectedItem { get; set; }
+    public ObservableCollection<TViewModel> SelectedItems { get; }
     public int Count { get; }
     
-    public bool AddModel(TModel model);
-    public bool RemoveModel(TModel model);
-    public bool RemoveViewModel(TViewModel viewModel);
+    public bool Remove(TViewModel item);
+    public int RemoveRange(IEnumerable<TViewModel> items);
     public void Clear();
-    public void Dispose();
-    
-    protected virtual void OnViewModelRemoving(TViewModel viewModel);
-    
-    public event PropertyChangedEventHandler? PropertyChanged;
-    protected void OnPropertyChanged([CallerMemberName] string? propertyName = null);
 }
 ```
 
-#### Constructor
-
-```csharp
-public CollectionViewModel(
-    IDataStore<TModel> dataStore,
-    IViewModelFactory<TModel, TViewModel> viewModelFactory,
-    IEqualityComparer<TModel> modelComparer)
-```
-
-**Parameter:**
-- `dataStore` - DataStore für Models
-- `viewModelFactory` - Factory zur Erstellung von ViewModels
-- `modelComparer` - Comparer zum Vergleich von Models
-
-**Exceptions:**
-- `ArgumentNullException` - Wenn einer der Parameter null ist
-
-#### Properties
-
-| Property | Type | Description |
-|----------|------|-------------|
-| **Items** | `ReadOnlyObservableCollection<TViewModel>` | Schreibgeschützte ViewModels-Collection |
-| **SelectedItem** | `TViewModel?` | Aktuell ausgewähltes ViewModel |
-| **Count** | `int` | Anzahl der ViewModels |
-
-#### Methods
-
-| Method | Return | Description |
-|--------|--------|-------------|
-| **AddModel(model)** | `bool` | Fügt Model hinzu (erstellt ViewModel). Returns true wenn hinzugefügt |
-| **RemoveModel(model)** | `bool` | Entfernt Model (disposed ViewModel). Returns true wenn entfernt |
-| **RemoveViewModel(viewModel)** | `bool` | Entfernt ViewModel (entfernt Model). Returns true wenn entfernt |
-| **Clear()** | `void` | Leert Collection (disposed alle ViewModels) |
-| **Dispose()** | `void` | Gibt Ressourcen frei, unsubscribed Events |
-| **OnViewModelRemoving(viewModel)** | `void` | Hook vor Dispose (protected virtual) |
-| **OnPropertyChanged(propertyName)** | `void` | Feuert PropertyChanged-Event |
-
-#### Events
-
-| Event | Type | Description |
-|-------|------|-------------|
-| **PropertyChanged** | `PropertyChangedEventHandler` | INotifyPropertyChanged-Event |
-
-#### Behavior
-
-**Bidirektionale Synchronisation:**
-
-| Aktion | Ergebnis |
-|--------|----------|
-| `dataStore.Add(model)` | ? ViewModel erstellt ? `Items` aktualisiert |
-| `dataStore.Remove(model)` | ? ViewModel disposed ? `Items` aktualisiert |
-| `AddModel(model)` | ? DataStore.Add() ? ViewModel erstellt |
-| `RemoveViewModel(vm)` | ? DataStore.Remove() ? ViewModel disposed |
-
-**SelectedItem Auto-Nullsetzung:**
-- Bei Remove: SelectedItem = null wenn entferntes Item ausgewählt war
-- Bei Clear: SelectedItem = null immer
-
-#### Example
-
-```csharp
-var viewModel = new CollectionViewModel<Customer, CustomerViewModel>(
-    dataStore, factory, comparer);
-
-viewModel.AddModel(new Customer { Name = "Alice" });
-Console.WriteLine(viewModel.Count); // 1
-
-viewModel.SelectedItem = viewModel.Items.First();
-viewModel.RemoveViewModel(viewModel.SelectedItem);
-Console.WriteLine(viewModel.SelectedItem); // null
-```
+[Vollständige Dokumentation](CollectionViewModel.md)
 
 ---
 
@@ -215,11 +91,6 @@ public class EditableCollectionViewModel<TModel, TViewModel> : CollectionViewMod
     where TModel : class
     where TViewModel : class, IViewModelWrapper<TModel>
 {
-    public EditableCollectionViewModel(
-        IDataStore<TModel> dataStore,
-        IViewModelFactory<TModel, TViewModel> viewModelFactory,
-        IEqualityComparer<TModel> modelComparer);
-    
     public Func<TModel>? CreateModel { get; set; }
     public Action<TModel>? EditModel { get; set; }
     
@@ -227,47 +98,11 @@ public class EditableCollectionViewModel<TModel, TViewModel> : CollectionViewMod
     public ICommand DeleteCommand { get; }
     public ICommand ClearCommand { get; }
     public ICommand EditCommand { get; }
+    public ICommand DeleteSelectedCommand { get; }
 }
 ```
 
-#### Constructor
-
-Siehe [CollectionViewModel](#collectionviewmodeltmodel-tviewmodel) Constructor.
-
-#### Properties
-
-| Property | Type | Description |
-|----------|------|-------------|
-| **CreateModel** | `Func<TModel>?` | Factory-Funktion für neue Models |
-| **EditModel** | `Action<TModel>?` | Callback zum Bearbeiten eines Models |
-| **AddCommand** | `ICommand` | Command zum Hinzufügen eines neuen Elements |
-| **DeleteCommand** | `ICommand` | Command zum Löschen des ausgewählten Elements |
-| **ClearCommand** | `ICommand` | Command zum Löschen aller Elemente |
-| **EditCommand** | `ICommand` | Command zum Bearbeiten des ausgewählten Elements |
-
-#### Commands
-
-| Command | CanExecute | Execute |
-|---------|-----------|---------|
-| **AddCommand** | `CreateModel != null` | `AddModel(CreateModel())` |
-| **DeleteCommand** | `SelectedItem != null` | `RemoveViewModel(SelectedItem)` |
-| **EditCommand** | `SelectedItem != null && EditModel != null` | `EditModel(SelectedItem.Model)` |
-| **ClearCommand** | `Count > 0` | `Clear()` |
-
-#### Example
-
-```csharp
-var viewModel = new EditableCollectionViewModel<Customer, CustomerViewModel>(
-    dataStore, factory, comparer);
-
-viewModel.CreateModel = () => new Customer { Name = "New" };
-viewModel.EditModel = customer => OpenDialog(customer);
-
-viewModel.AddCommand.Execute(null); // Fügt "New" hinzu
-viewModel.SelectedItem = viewModel.Items.First();
-viewModel.EditCommand.Execute(null); // Öffnet Dialog
-viewModel.DeleteCommand.Execute(null); // Löscht "New"
-```
+[Vollständige Dokumentation](EditableCollectionViewModel.md)
 
 ---
 
@@ -286,16 +121,6 @@ public interface IViewModelFactory<in TModel, out TViewModel>
 }
 ```
 
-#### Methods
-
-| Method | Return | Description |
-|--------|--------|-------------|
-| **Create(model)** | `TViewModel` | Erstellt ViewModel für das gegebene Model |
-
-**Exceptions:**
-- `ArgumentNullException` - Wenn `model` null ist
-- `InvalidOperationException` - Wenn ViewModel nicht erstellt werden kann
-
 ---
 
 ### `ViewModelFactory<TModel, TViewModel>`
@@ -312,56 +137,7 @@ public sealed class ViewModelFactory<TModel, TViewModel> : IViewModelFactory<TMo
 }
 ```
 
-#### Constructor
-
-```csharp
-public ViewModelFactory(IServiceProvider serviceProvider)
-```
-
-**Parameter:**
-- `serviceProvider` - DI-Container für Dependency-Auflösung
-
-**Exceptions:**
-- `ArgumentNullException` - Wenn `serviceProvider` null ist
-
-#### Methods
-
-| Method | Return | Description |
-|--------|--------|-------------|
-| **Create(model)** | `TViewModel` | Erstellt ViewModel via ActivatorUtilities |
-
-**Exceptions:**
-- `ArgumentNullException` - Wenn `model` null ist
-- `InvalidOperationException` - Wenn ViewModel nicht erstellt werden kann
-
-#### Behavior
-
-Verwendet `ActivatorUtilities.CreateInstance<TViewModel>()`:
-1. Sucht Constructor mit `TModel` als ersten Parameter
-2. Löst weitere Constructor-Parameter via DI auf
-3. Erstellt ViewModel-Instanz
-
-**Beispiel:**
-```csharp
-// ViewModel mit DI-Dependencies
-public class CustomerViewModel : ViewModelBase<Customer>
-{
-    public CustomerViewModel(
-        Customer model,                    // ? Von Factory übergeben
-        IDialogService dialogService)      // ? Von DI aufgelöst
-    {
-        // ...
-    }
-}
-```
-
-#### Example
-
-```csharp
-var factory = new ViewModelFactory<Customer, CustomerViewModel>(serviceProvider);
-var customer = new Customer { Name = "Alice" };
-var viewModel = factory.Create(customer);
-```
+[Vollständige Dokumentation](ViewModelFactory.md)
 
 ---
 
@@ -379,108 +155,317 @@ public static class ViewModelFactoryExtensions
 }
 ```
 
-#### Methods
+---
 
-| Method | Return | Description |
-|--------|--------|-------------|
-| **AddViewModelFactory<TModel, TViewModel>(services)** | `IServiceCollection` | Registriert ViewModelFactory als Singleton |
+## CustomWPFControls.Controls
 
-#### Example
+### `BaseListView`
+
+Basisklasse für ListView mit Count-Property.
 
 ```csharp
-services.AddViewModelFactory<Customer, CustomerViewModel>();
+public class BaseListView : ListView
+{
+    public int Count { get; set; }
+}
+```
 
-// Equivalent zu:
-services.AddSingleton<IViewModelFactory<Customer, CustomerViewModel>, 
-                      ViewModelFactory<Customer, CustomerViewModel>>();
+#### Properties
+
+| Property | Type | Description |
+|----------|------|-------------|
+| **Count** | `int` | Anzahl der Items (auto-updated) |
+
+---
+
+### `ListEditorView`
+
+ListView mit integrierten CRUD-Buttons.
+
+```csharp
+public class ListEditorView : BaseListView
+{
+    // Command Properties
+    public ICommand? AddCommand { get; set; }
+    public ICommand? EditCommand { get; set; }
+    public ICommand? DeleteCommand { get; set; }
+    public ICommand? ClearCommand { get; set; }
+    
+    // Visibility Properties
+    public bool IsAddVisible { get; set; }
+    public bool IsEditVisible { get; set; }
+    public bool IsDeleteVisible { get; set; }
+    public bool IsClearVisible { get; set; }
+    
+    // Button Text Properties
+    public string AddButtonText { get; set; }
+    public string EditButtonText { get; set; }
+    public string DeleteButtonText { get; set; }
+    public string ClearButtonText { get; set; }
+}
+```
+
+#### Properties
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| **AddCommand** | `ICommand` | null | Command zum Hinzufügen |
+| **EditCommand** | `ICommand` | null | Command zum Bearbeiten |
+| **DeleteCommand** | `ICommand` | null | Command zum Löschen |
+| **ClearCommand** | `ICommand` | null | Command zum Leeren |
+| **IsAddVisible** | `bool` | true | Sichtbarkeit Add-Button |
+| **IsEditVisible** | `bool` | true | Sichtbarkeit Edit-Button |
+| **IsDeleteVisible** | `bool` | true | Sichtbarkeit Delete-Button |
+| **IsClearVisible** | `bool` | true | Sichtbarkeit Clear-Button |
+| **AddButtonText** | `string` | "Hinzufügen" | Text Add-Button |
+| **EditButtonText** | `string` | "Bearbeiten" | Text Edit-Button |
+| **DeleteButtonText** | `string` | "Löschen" | Text Delete-Button |
+| **ClearButtonText** | `string` | "Alle löschen" | Text Clear-Button |
+
+[Vollständige Dokumentation](Controls-Guide.md#listeditorview)
+
+---
+
+### `ButtonPlacement`
+
+Enum für Button-Positionierung in DropDownEditorView.
+
+```csharp
+public enum ButtonPlacement
+{
+    Right,   // Buttons rechts neben Control
+    Bottom,  // Buttons unter Control
+    Top      // Buttons in ToolBar über Control
+}
 ```
 
 ---
 
-## ?? Type Constraints
+### `BaseComboBoxView`
 
-### **TModel Constraints**
+Basisklasse für ComboBox mit Count-Property.
+
+```csharp
+public class BaseComboBoxView : ComboBox
+{
+    public int Count { get; set; }
+}
+```
+
+---
+
+### `DropDownEditorView`
+
+ComboBox mit integrierten CRUD-Buttons und konfigurierbarem Layout.
+
+```csharp
+public class DropDownEditorView : BaseComboBoxView
+{
+    // Layout
+    public ButtonPlacement ButtonPlacement { get; set; }
+    
+    // Command Properties
+    public ICommand? AddCommand { get; set; }
+    public ICommand? EditCommand { get; set; }
+    public ICommand? DeleteCommand { get; set; }
+    public ICommand? ClearCommand { get; set; }
+    
+    // Visibility Properties
+    public bool IsAddVisible { get; set; }
+    public bool IsEditVisible { get; set; }
+    public bool IsDeleteVisible { get; set; }
+    public bool IsClearVisible { get; set; }
+    
+    // Button Text Properties
+    public string AddButtonText { get; set; }
+    public string EditButtonText { get; set; }
+    public string DeleteButtonText { get; set; }
+    public string ClearButtonText { get; set; }
+}
+```
+
+#### Properties
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| **ButtonPlacement** | `ButtonPlacement` | Right | Position der Buttons |
+| **IsClearVisible** | `bool` | false | Clear für ComboBox unüblich |
+
+[Vollständige Dokumentation](Controls-Guide.md#dropdowneditorview)
+
+---
+
+## CustomWPFControls.Commands
+
+### `RelayCommand`
+
+Standard ICommand-Implementierung.
+
+```csharp
+public class RelayCommand : ICommand
+{
+    public RelayCommand(Action<object?> execute, Func<object?, bool>? canExecute = null);
+    
+    public bool CanExecute(object? parameter);
+    public void Execute(object? parameter);
+    public event EventHandler? CanExecuteChanged;
+}
+```
+
+#### Example
+
+```csharp
+var command = new RelayCommand(
+    execute: _ => DoSomething(),
+    canExecute: _ => CanDoSomething());
+```
+
+---
+
+### `AsyncRelayCommand`
+
+Asynchrone ICommand-Implementierung.
+
+```csharp
+public class AsyncRelayCommand : ICommand
+{
+    public AsyncRelayCommand(Func<object?, Task> execute, Func<object?, bool>? canExecute = null);
+    
+    public bool CanExecute(object? parameter);
+    public async void Execute(object? parameter);
+    public event EventHandler? CanExecuteChanged;
+}
+```
+
+#### Example
+
+```csharp
+var command = new AsyncRelayCommand(
+    execute: async _ => await LoadDataAsync(),
+    canExecute: _ => !IsLoading);
+```
+
+---
+
+## CustomWPFControls.Services
+
+### `IDialogService`
+
+Service für modale Dialoge.
+
+```csharp
+public interface IDialogService
+{
+    bool? ShowDialog(IDialogViewModel viewModel);
+    void ShowWindow(IDialogViewModel viewModel);
+}
+```
+
+---
+
+### `IMessageBoxService`
+
+Service für MessageBoxes.
+
+```csharp
+public interface IMessageBoxService
+{
+    MessageBoxResult Show(string message, string caption = "", 
+        MessageBoxButton buttons = MessageBoxButton.OK,
+        MessageBoxImage icon = MessageBoxImage.None);
+}
+```
+
+---
+
+### `IWindowLayoutService`
+
+Service für Window-Layout-Persistierung.
+
+```csharp
+public interface IWindowLayoutService
+{
+    void SaveLayout(Window window, string key);
+    void RestoreLayout(Window window, string key);
+}
+```
+
+---
+
+## Type Constraints
+
+### TModel Constraints
 
 ```csharp
 where TModel : class
 ```
 
-- **Muss Referenztyp sein** - Keine Structs/Value-Types
-- **Für IDataStore kompatibel** - DataStore akzeptiert nur `class`
+- Muss Referenztyp sein
+- Für IDataStore kompatibel
 
-### **TViewModel Constraints**
+### TViewModel Constraints
 
 ```csharp
 where TViewModel : class, IViewModelWrapper<TModel>
 ```
 
-- **Muss Referenztyp sein** - Keine Structs
-- **Muss IViewModelWrapper implementieren** - Model-Property vorhanden
-- **Typischerweise von ViewModelBase<TModel> abgeleitet**
+- Muss Referenztyp sein
+- Muss IViewModelWrapper implementieren
+- Typischerweise von ViewModelBase abgeleitet
 
 ---
 
-## ?? Best Practices
+## Code-Beispiele
 
-### **1. ViewModel Constructor**
-
-```csharp
-// ? RICHTIG: Model als erster Parameter
-public CustomerViewModel(Customer model, IDialogService dialog)
-    : base(model) { }
-
-// ? FALSCH: Model nicht als erster Parameter
-public CustomerViewModel(IDialogService dialog, Customer model)
-    : base(model) { }
-```
-
-### **2. Property-Delegation**
+### ViewModel erstellen
 
 ```csharp
-// ? RICHTIG: Read-only Domain-Properties
-public string Name => Model.Name;
-
-// ? FALSCH: Backing-Field für Domain-Property
-private string _name;
-public string Name { get => _name; set => _name = value; }
-```
-
-### **3. UI-Properties**
-
-```csharp
-// ? RICHTIG: Auto-Property mit PropertyChanged
-public bool IsSelected { get; set; }
-
-// ? FALSCH: Manuelles PropertyChanged (Fody macht das)
-private bool _isSelected;
-public bool IsSelected
+public class ProductViewModel : ViewModelBase<Product>
 {
-    get => _isSelected;
-    set { _isSelected = value; OnPropertyChanged(); }
+    public ProductViewModel(Product model, IDialogService dialogService) 
+        : base(model)
+    {
+        // Model als erster Parameter
+        // Weitere Dependencies via DI
+    }
+    
+    public string Name => Model.Name;
+    public decimal Price => Model.Price;
+    public bool IsSelected { get; set; }
 }
 ```
 
-### **4. IEqualityComparer**
+### Factory registrieren
 
 ```csharp
-// ? RICHTIG: Basiert auf stabilen Properties (Id)
-public class CustomerComparer : IEqualityComparer<Customer>
-{
-    public bool Equals(Customer? x, Customer? y)
-        => x?.Id == y?.Id;
-    public int GetHashCode(Customer obj)
-        => obj.Id.GetHashCode();
-}
+services.AddViewModelFactory<Product, ProductViewModel>();
+```
 
-// ? FALSCH: Basiert auf mutable Properties
-public bool Equals(Customer? x, Customer? y)
-    => x?.Name == y?.Name; // Name kann sich ändern!
+### CollectionViewModel verwenden
+
+```csharp
+var viewModel = new CollectionViewModel<Product, ProductViewModel>(
+    dataStores,
+    viewModelFactory,
+    comparerService);
+```
+
+### Control in XAML
+
+```xml
+<controls:ListEditorView 
+    ItemsSource="{Binding Products}"
+    SelectedItem="{Binding SelectedProduct}"
+    AddCommand="{Binding AddCommand}"
+    EditCommand="{Binding EditCommand}"
+    DeleteCommand="{Binding DeleteCommand}"/>
 ```
 
 ---
 
-## ?? See Also
+## Siehe auch
 
-- [Getting Started](Getting-Started.md) - Schnellstart-Guide
-- [Architecture](Architecture.md) - Architektur-Übersicht
-- [Best Practices](Best-Practices.md) - Tipps & Tricks
+- [Getting Started](Getting-Started.md)
+- [Architecture](Architecture.md)
+- [Controls-Guide](Controls-Guide.md)
+- [Best Practices](Best-Practices.md)
