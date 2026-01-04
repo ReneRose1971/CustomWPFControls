@@ -48,33 +48,46 @@ public class CustomerViewModel : ViewModelBase<Customer>
 ```
 
 ### 2. CollectionViewModel<TModel, TViewModel>
-Bidirektionale Synchronisation zwischen DataStore und ViewModels.
+Collection-ViewModel mit **lokalem DataStore** und automatischer Synchronisation via TransformTo.
+
+**Wichtig:** Jede `CollectionViewModel`-Instanz hat ihren **eigenen lokalen ModelStore** (keine globale Shared State)!
 
 ```csharp
 var viewModel = new CollectionViewModel<Customer, CustomerViewModel>(
-    dataStores,
-    viewModelFactory,
-    comparerService);
+    services,  // ICustomWPFServices Facade
+    viewModelFactory);
 
-// Items sind automatisch synchronisiert
-dataStores.GetGlobal<Customer>().Add(new Customer { Name = "Alice" });
-// ViewModel wird automatisch erstellt und in Items angezeigt
+// ? Lokaler ModelStore für diese Instanz
+viewModel.ModelStore.Add(new Customer { Name = "Alice" });
+// ? ViewModel wird automatisch erstellt und zu Items hinzugefügt
+
+// ? Items sind automatisch synchronisiert (via TransformTo)
+<ListBox ItemsSource="{Binding Items}"/>
 ```
+
+**Features:**
+- ?? **Lokaler ModelStore** - Jede Instanz isoliert
+- ?? **TransformTo-Integration** - Automatische Model?ViewModel Synchronisation
+- ??? **Remove API** - Remove()/RemoveRange()/Clear() mit automatischem Dispose
+- ?? **Selection-Tracking** - SelectedItem/SelectedItems Management
 
 ### 3. EditableCollectionViewModel<TModel, TViewModel>
 Erweitert CollectionViewModel um Commands (Add, Delete, Edit, Clear).
 
 ```csharp
 var viewModel = new EditableCollectionViewModel<Customer, CustomerViewModel>(
-    dataStores, factory, comparerService);
+    services,  // ICustomWPFServices Facade  
+    viewModelFactory);
 
 viewModel.CreateModel = () => new Customer();
 viewModel.EditModel = customer => OpenEditDialog(customer);
 
-// Commands sind bereit
-viewModel.AddCommand.Execute(null);
+// ? Commands sind bereit
+viewModel.AddCommand.Execute(null);  // Fügt zu lokalem ModelStore hinzu
 viewModel.DeleteCommand.Execute(null);
 ```
+
+**Wichtig:** `AddCommand` fügt Models zum **lokalen ModelStore** hinzu (nicht zu globalem Store)!
 
 ### 4. ListEditorView
 ListView mit integrierten CRUD-Buttons.

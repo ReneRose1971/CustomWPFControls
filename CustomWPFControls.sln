@@ -10,6 +10,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Projektmappenelemente", "Projektmappenelemente", "{0AA79FD4-F620-49AE-ABEA-AFDD4C35711A}"
 	ProjectSection(SolutionItems) = preProject
 		..\..\..\Documents\Visual Studio 2022\Projects\CSharp\copilot\Common_Bootstrap_TechDocu.md = ..\..\..\Documents\Visual Studio 2022\Projects\CSharp\copilot\Common_Bootstrap_TechDocu.md
+		..\..\..\Documents\Visual Studio 2022\Projects\CSharp\copilot\CustomWPFControls_TechDocu.md = ..\..\..\Documents\Visual Studio 2022\Projects\CSharp\copilot\CustomWPFControls_TechDocu.md
 		..\..\..\Documents\Visual Studio 2022\Projects\CSharp\copilot\DataStores_TechDocu.md = ..\..\..\Documents\Visual Studio 2022\Projects\CSharp\copilot\DataStores_TechDocu.md
 		..\..\..\Documents\Visual Studio 2022\Projects\CSharp\copilot\global-copilot-instructions.md = ..\..\..\Documents\Visual Studio 2022\Projects\CSharp\copilot\global-copilot-instructions.md
 	EndProjectSection

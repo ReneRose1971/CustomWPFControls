@@ -60,23 +60,39 @@ public abstract class ViewModelBase<TModel> : IViewModelWrapper<TModel>, INotify
 
 ### `CollectionViewModel<TModel, TViewModel>`
 
-Collection-ViewModel mit automatischer DataStore-Synchronisation.
+Collection-ViewModel mit **lokalem ModelStore** und automatischer Synchronisation via TransformTo.
 
 ```csharp
 public class CollectionViewModel<TModel, TViewModel> : INotifyPropertyChanged, IDisposable
     where TModel : class
     where TViewModel : class, IViewModelWrapper<TModel>
 {
+    // ?? Lokaler Store (readonly Property)
+    public IDataStore<TModel> ModelStore { get; }
+    
+    // ?? UI-Binding Collections
     public ReadOnlyObservableCollection<TViewModel> Items { get; }
     public TViewModel? SelectedItem { get; set; }
     public ObservableCollection<TViewModel> SelectedItems { get; }
     public int Count { get; }
     
+    // ??? Removal API
     public bool Remove(TViewModel item);
     public int RemoveRange(IEnumerable<TViewModel> items);
     public void Clear();
+    
+    // ??? Constructor mit CustomWPFServices Facade
+    public CollectionViewModel(
+        ICustomWPFServices services,
+        IViewModelFactory<TModel, TViewModel> viewModelFactory);
 }
 ```
+
+**Wichtige Änderungen:**
+- ? **ModelStore Property** - Lokaler DataStore für diese Instanz
+- ? **Constructor** - Verwendet CustomWPFServices Facade (kein dataStore Parameter mehr)
+- ? **Isolation** - Jede Instanz hat eigene Daten (kein globaler Shared State)
+- ? **Removed** - `AddModel()`/`RemoveModel()` Methoden (verwende `ModelStore.Add()`)
 
 [Vollständige Dokumentation](CollectionViewModel.md)
 
@@ -84,7 +100,7 @@ public class CollectionViewModel<TModel, TViewModel> : INotifyPropertyChanged, I
 
 ### `EditableCollectionViewModel<TModel, TViewModel>`
 
-Erweitert CollectionViewModel um Commands.
+Erweitert CollectionViewModel um Commands mit **lokalem ModelStore**.
 
 ```csharp
 public class EditableCollectionViewModel<TModel, TViewModel> : CollectionViewModel<TModel, TViewModel>
@@ -99,8 +115,17 @@ public class EditableCollectionViewModel<TModel, TViewModel> : CollectionViewMod
     public ICommand ClearCommand { get; }
     public ICommand EditCommand { get; }
     public ICommand DeleteSelectedCommand { get; }
+    
+    public EditableCollectionViewModel(
+        ICustomWPFServices services,
+        IViewModelFactory<TModel, TViewModel> viewModelFactory);
 }
 ```
+
+**Wichtige Änderungen:**
+- ? **AddCommand** - Fügt jetzt zu **lokalem** ModelStore hinzu (nicht global!)
+- ? **Constructor** - Verwendet CustomWPFServices Facade
+- ? **Isolation** - Commands arbeiten mit lokalem Store
 
 [Vollständige Dokumentation](EditableCollectionViewModel.md)
 

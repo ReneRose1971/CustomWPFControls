@@ -1,26 +1,28 @@
 # CollectionViewModel<TModel, TViewModel>
 
-Bidirektionale Synchronisation zwischen DataStore (Models) und ObservableCollection (ViewModels) mit automatischem Lifecycle-Management.
+Collection-ViewModel mit **lokalem DataStore** und automatischer Synchronisation via TransformTo.
 
 ## ?? Inhaltsverzeichnis
 
-- [Übersicht](#übersicht)
+- [Überblick](#überblick)
 - [Features](#features)
 - [Verwendung](#verwendung)
-- [Bidirektionale Synchronisation](#bidirektionale-synchronisation)
+- [Lokaler ModelStore](#lokaler-modelstore)
+- [TransformTo-Integration](#transformto-integration)
 - [ViewModel-Lifecycle](#viewmodel-lifecycle)
 - [Best Practices](#best-practices)
 - [Beispiele](#beispiele)
 
-## Übersicht
+## Überblick
 
 `CollectionViewModel<TModel, TViewModel>` ist die **zentrale Klasse** für Collection-Verwaltung in CustomWPFControls. Sie:
 
-- ? **Synchronisiert** DataStore ? ViewModels bidirektional
-- ? **Erstellt** ViewModels automatisch via Factory
-- ? **Disposed** ViewModels automatisch bei Remove
-- ? **Tracked** SelectedItem für UI-Binding
-- ? **Bietet** Thread-Safe Operations via DataStore
+- ?? **Synchronisiert** lokalen ModelStore ? ViewModels automatisch (via TransformTo)
+- ??? **Erstellt** ViewModels automatisch via Factory
+- ??? **Disposed** ViewModels automatisch bei Entfernung
+- ?? **Isoliert** Daten in eigenem lokalen Store
+- ?? **Tracked** SelectedItem/SelectedItems für UI-Binding
+- ??? **Bietet** Remove/RemoveRange/Clear API
 
 ### Definition
 
@@ -31,106 +33,120 @@ public class CollectionViewModel<TModel, TViewModel> : INotifyPropertyChanged, I
     where TModel : class
     where TViewModel : class, IViewModelWrapper<TModel>
 {
+    // ?? Readonly Access - Lokaler Store für diese Instanz
+    public IDataStore<TModel> ModelStore { get; }
+    
+    // ?? UI-Binding Collections
     public ReadOnlyObservableCollection<TViewModel> Items { get; }
     public TViewModel? SelectedItem { get; set; }
+    public ObservableCollection<TViewModel> SelectedItems { get; }
     public int Count { get; }
     
-    public CollectionViewModel(
-        IDataStore<TModel> dataStore,
-        IViewModelFactory<TModel, TViewModel> viewModelFactory,
-        IEqualityComparer<TModel> modelComparer);
-    
-    public bool AddModel(TModel model);
-    public bool RemoveModel(TModel model);
-    public bool RemoveViewModel(TViewModel viewModel);
+    // ??? Removal API
+    public bool Remove(TViewModel item);
+    public int RemoveRange(IEnumerable<TViewModel> items);
     public void Clear();
+    
+    // ??? Constructor mit CustomWPFServices Facade
+    public CollectionViewModel(
+        ICustomWPFServices services,
+        IViewModelFactory<TModel, TViewModel> viewModelFactory);
 }
 ```
 
 ## Features
 
-### 1. Bidirektionale Synchronisation
+### 1. Lokaler ModelStore (Isolierte Daten)
 
-**DataStore ? ViewModels:**
+**Jede CollectionViewModel-Instanz hat ihren eigenen lokalen Store:**
 ```csharp
-// DataStore ändert sich
-dataStore.Add(customer);
-// ? Automatisch: ViewModel wird erstellt und zu Items hinzugefügt
+var customerList1 = new CollectionViewModel<Customer, CustomerViewModel>(services, factory);
+var customerList2 = new CollectionViewModel<Customer, CustomerViewModel>(services, factory);
 
-dataStore.Remove(customer);
-// ? Automatisch: ViewModel wird entfernt und disposed
+// ? Beide Instanzen sind vollständig isoliert!
+customerList1.ModelStore.Add(customer1);  // Nur in customerList1 sichtbar
+customerList2.ModelStore.Add(customer2);  // Nur in customerList2 sichtbar
+
+// ? Kein globaler Shared State!
 ```
 
-**ViewModels ? DataStore:**
+**ModelStore Property:**
 ```csharp
-// ViewModel-Methode aufrufen
-collectionViewModel.AddModel(newCustomer);
-// ? Automatisch: Model wird zu DataStore hinzugefügt
-// ? Automatisch: ViewModel wird erstellt (via CollectionChanged)
+// Lokaler Store ist readonly accessible
+collectionViewModel.ModelStore.Add(newCustomer);
+collectionViewModel.ModelStore.Remove(customer);
+collectionViewModel.ModelStore.Clear();
 
-collectionViewModel.RemoveViewModel(viewModel);
-// ? Automatisch: Model wird aus DataStore entfernt
-// ? Automatisch: ViewModel wird disposed
+// ? Alle Änderungen werden automatisch via TransformTo synchronisiert!
 ```
 
-### 2. Automatisches ViewModel-Lifecycle
+### 2. TransformTo-Integration (Automatische Synchronisation)
 
-**Erstellen:**
+**ModelStore ? ViewModelStore:**
 ```csharp
-// DataStore erhält neues Model
-dataStore.Add(customer);
+// Internal: Wird im Constructor erstellt
+_modelStore.TransformTo<TModel, TViewModel>(
+    _viewModelStore,
+    factoryFunc: model => _viewModelFactory.Create(model),
+    comparerFunc: (m, vm) => _modelComparer.Equals(m, vm.Model));
 
-// Intern:
-// 1. ViewModelFactory.Create(customer) wird aufgerufen
-// 2. ViewModel wird in _modelToViewModelMap registriert
-// 3. ViewModel wird zu Items hinzugefügt
-// ? UI zeigt automatisch neues Item
+// ? ViewModels werden automatisch erstellt und synchronisiert!
 ```
 
-**Entfernen:**
+**Automatischer Lifecycle:**
 ```csharp
-// Model wird aus DataStore entfernt
-dataStore.Remove(customer);
+// Model hinzufügen
+collectionViewModel.ModelStore.Add(customer);
+// ? TransformTo erstellt automatisch CustomerViewModel
+// ? ViewModel wird zu Items hinzugefügt
+// ? UI wird automatisch aktualisiert
 
-// Intern:
-// 1. ViewModel wird aus Items entfernt
-// 2. ViewModel wird aus _modelToViewModelMap entfernt
-// 3. OnViewModelRemoving(viewModel) wird aufgerufen (Hook)
-// 4. viewModel.Dispose() wird aufgerufen (falls IDisposable)
-// ? UI-Update und Cleanup automatisch
+// Model entfernen
+collectionViewModel.ModelStore.Remove(customer);
+// ? TransformTo entfernt automatisch CustomerViewModel
+// ? ViewModel wird disposed
+// ? UI wird automatisch aktualisiert
 ```
 
-### 3. SelectedItem-Tracking
+### 3. ToReadOnlyObservableCollection (Items-Sync)
 
-**Automatisches SelectedItem-Management:**
+**ViewModelStore ? Items (ReadOnlyObservableCollection):**
 ```csharp
-// Normaler Fall: SelectedItem bleibt
+// Internal: Wird im Constructor erstellt
+_itemsSync = _viewModelStore.ToReadOnlyObservableCollection(
+    comparer: services.ComparerService.GetComparer<TViewModel>());
+
+Items = _itemsSync.Collection;
+
+// ? Items ist automatisch synchronisiert mit ViewModelStore!
+```
+
+**UI-Binding:**
+```xml
+<ListBox ItemsSource="{Binding Customers}"/>
+<!-- Bindet an ReadOnlyObservableCollection<CustomerViewModel> -->
+<!-- Alle Änderungen am ModelStore werden automatisch angezeigt! -->
+```
+
+### 4. SelectedItem/SelectedItems-Management
+
+**Automatisches Selection-Tracking:**
+```csharp
+// SelectedItem wird automatisch invalidiert bei Remove
 collectionViewModel.SelectedItem = viewModel1;
-dataStore.Add(newCustomer);  // SelectedItem bleibt viewModel1
-
-// Entfernen des ausgewählten Items
-collectionViewModel.SelectedItem = viewModel1;
-dataStore.Remove(viewModel1.Model);
+collectionViewModel.Remove(viewModel1);
 // ? SelectedItem wird automatisch auf null gesetzt
 
-// Clear der Collection
-collectionViewModel.SelectedItem = viewModel1;
-dataStore.Clear();
-// ? SelectedItem wird automatisch auf null gesetzt
-```
+// SelectedItems werden automatisch bereinigt
+collectionViewModel.SelectedItems.Add(viewModel1);
+collectionViewModel.SelectedItems.Add(viewModel2);
+collectionViewModel.Remove(viewModel1);
+// ? viewModel1 wird automatisch aus SelectedItems entfernt
 
-### 4. Model-to-ViewModel-Mapping
-
-Interne Dictionary für effizientes Lookup:
-
-```csharp
-// Intern: Dictionary<TModel, TViewModel> mit Custom Comparer
-private readonly Dictionary<TModel, TViewModel> _modelToViewModelMap;
-
-// Verwendet IEqualityComparer<TModel> für Vergleiche
-// ? Kein teures LINQ-Searching
-// ? O(1) Lookup-Performance
-// ? Duplikat-Prevention
+// Clear invalidiert alle Selections
+collectionViewModel.Clear();
+// ? SelectedItem = null
+// ? SelectedItems.Clear()
 ```
 
 ## Verwendung
@@ -139,28 +155,23 @@ private readonly Dictionary<TModel, TViewModel> _modelToViewModelMap;
 
 ```csharp
 using CustomWPFControls.ViewModels;
-using DataStores.Abstractions;
+using CustomWPFControls.Services;
 
-public class MainViewModel
+public class MainViewModel : IDisposable
 {
     private readonly CollectionViewModel<Customer, CustomerViewModel> _customers;
     
     public MainViewModel(
-        IDataStores dataStores,
-        IViewModelFactory<Customer, CustomerViewModel> viewModelFactory,
-        IEqualityComparer<Customer> comparer)
+        ICustomWPFServices services,
+        IViewModelFactory<Customer, CustomerViewModel> viewModelFactory)
     {
-        // 1. DataStore abrufen
-        var dataStore = dataStores.GetGlobal<Customer>();
-        
-        // 2. CollectionViewModel erstellen
+        // ? Erstellt CollectionViewModel mit lokalem Store
         _customers = new CollectionViewModel<Customer, CustomerViewModel>(
-            dataStore,
-            viewModelFactory,
-            comparer);
+            services,
+            viewModelFactory);
     }
     
-    // UI bindet an diese Collection
+    // UI bindet an Items
     public ReadOnlyObservableCollection<CustomerViewModel> Customers 
         => _customers.Items;
     
@@ -170,6 +181,63 @@ public class MainViewModel
         get => _customers.SelectedItem;
         set => _customers.SelectedItem = value;
     }
+    
+    // Daten-Operationen via ModelStore
+    public void AddCustomer(string name, string email)
+    {
+        var customer = new Customer 
+        { 
+            Name = name, 
+            Email = email 
+        };
+        
+        // ? Fügt zum lokalen ModelStore hinzu
+        _customers.ModelStore.Add(customer);
+        // ? TransformTo erstellt automatisch CustomerViewModel
+        // ? UI wird automatisch aktualisiert
+    }
+    
+    public void DeleteSelectedCustomer()
+    {
+        if (_customers.SelectedItem != null)
+        {
+            // ? Remove-API der CollectionViewModel
+            _customers.Remove(_customers.SelectedItem);
+            // ? Entfernt aus ModelStore
+            // ? ViewModel wird disposed
+            // ? SelectedItem = null
+        }
+    }
+    
+    public void Dispose()
+    {
+        _customers.Dispose();
+    }
+}
+```
+
+### Mit DI-Registrierung
+
+```csharp
+using CustomWPFControls.Services;
+using Microsoft.Extensions.DependencyInjection;
+using DataStores.Bootstrap;
+using Common.Bootstrap;
+
+public class MyAppServiceModule : IServiceModule
+{
+    public void Register(IServiceCollection services)
+    {
+        // 1. DataStores Core-Services
+        var dataStoresModule = new DataStoresServiceModule();
+        dataStoresModule.Register(services);
+        
+        // 2. CustomWPFControls Services (Facade + ViewModelPackage)
+        services.AddCustomWPFControls<Customer, CustomerViewModel>();
+        
+        // 3. ViewModel (erstellt CollectionViewModel im Constructor)
+        services.AddTransient<MainViewModel>();
+    }
 }
 ```
 
@@ -178,7 +246,7 @@ public class MainViewModel
 ```xml
 <Window>
     <Grid>
-        <!-- ListBox bindet an Customers -->
+        <!-- ListBox bindet an Items -->
         <ListBox ItemsSource="{Binding Customers}"
                  SelectedItem="{Binding SelectedCustomer}">
             <ListBox.ItemTemplate>
@@ -195,129 +263,134 @@ public class MainViewModel
         <StackPanel DataContext="{Binding SelectedCustomer}">
             <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"/>
             <TextBox Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}"/>
-            <CheckBox IsChecked="{Binding IsActive}"/>
+        </StackPanel>
+        
+        <!-- Buttons für Daten-Operationen -->
+        <StackPanel Orientation="Horizontal">
+            <Button Content="Hinzufügen" Command="{Binding AddCommand}"/>
+            <Button Content="Löschen" Command="{Binding DeleteCommand}"/>
         </StackPanel>
     </Grid>
 </Window>
 ```
 
-### Mit DI-Registrierung
+## Lokaler ModelStore
 
+### Warum lokaler Store?
+
+**? Vorteile:**
+- **Isolation:** Jede CollectionViewModel-Instanz hat ihre eigenen Daten
+- **Testbarkeit:** Tests können isoliert laufen ohne globalen State
+- **Flexibilität:** Mehrere Listen desselben Typs möglich
+- **Klarheit:** Datenquelle ist explizit (ModelStore Property)
+
+**? NICHT wie früher (globaler Store):**
 ```csharp
-using CustomWPFControls.Factories;
-using Microsoft.Extensions.DependencyInjection;
-using DataStores.Bootstrap;
-using Common.Bootstrap;
+// ? Alt: Globaler Store, Shared State
+var dataStore = dataStores.GetGlobal<Customer>();
+var collectionVM = new CollectionViewModel<Customer, CustomerViewModel>(
+    dataStore, factory, comparer);
+// Problem: Alle Instanzen teilen denselben Store!
+```
 
-// ServiceModule
-public class MyAppServiceModule : IServiceModule
+**? NEU: Lokaler Store, Isolation:**
+```csharp
+// ? Neu: Lokaler Store wird intern erstellt
+var collectionVM = new CollectionViewModel<Customer, CustomerViewModel>(
+    services, viewModelFactory);
+    
+// ? Zugriff via ModelStore Property
+collectionVM.ModelStore.Add(customer);
+```
+
+### ModelStore Property
+
+**Public Readonly Access:**
+```csharp
+public IDataStore<TModel> ModelStore { get; }
+// ? Readonly Property - kann nicht ersetzt werden
+// ? Store wird im Constructor erstellt via services.DataStores.CreateLocal<TModel>()
+// ? Alle DataStore-Operations verfügbar
+```
+
+**Usage:**
+```csharp
+// Hinzufügen
+collectionVM.ModelStore.Add(customer);
+collectionVM.ModelStore.AddRange(customers);
+
+// Entfernen (direkt via Store)
+collectionVM.ModelStore.Remove(customer);
+collectionVM.ModelStore.Clear();
+
+// Oder via CollectionViewModel Remove-API
+collectionVM.Remove(viewModel);  // Entfernt Model UND disposed ViewModel
+collectionVM.Clear();  // Leert Store UND invalidiert Selection
+```
+
+## TransformTo-Integration
+
+### Architektur-Überblick
+
+```
+???????????????????????????????????????????????
+?  ModelStore (local)                         ?
+?  Created via services.DataStores.Create..() ?
+?  IDataStore<TModel>                         ?
+???????????????????????????????????????????????
+                  ?
+           TransformTo
+         (automatische Sync)
+                  ?
+                  ?
+???????????????????????????????????????????????
+?  ViewModelStore (internal)                  ?
+?  IDataStore<TViewModel>                     ?
+???????????????????????????????????????????????
+                  ?
+  ToReadOnlyObservableCollection
+      (automatische Sync)
+                  ?
+                  ?
+???????????????????????????????????????????????
+?  Items (public)                             ?
+?  ReadOnlyObservableCollection<TViewModel>   ?
+???????????????????????????????????????????????
+                  ?
+             UI Binding
+                  ?
+                  ?
+          ????????????????
+          ?   ListView   ?
+          ????????????????
+```
+
+### TransformTo Details
+
+**Constructor-Setup:**
+```csharp
+public CollectionViewModel(
+    ICustomWPFServices services,
+    IViewModelFactory<TModel, TViewModel> viewModelFactory)
 {
-    public void Register(IServiceCollection services)
-    {
-        // 1. DataStores Kern-Services
-        var dataStoresModule = new DataStoresServiceModule();
-        dataStoresModule.Register(services);
-        
-        // 2. ViewModelFactory
-        services.AddViewModelFactory<Customer, CustomerViewModel>();
-        
-        // 3. EqualityComparer
-        services.AddSingleton<IEqualityComparer<Customer>>(
-            new FallbackEqualsComparer<Customer>());
-        
-        // 4. ViewModel erstellt CollectionViewModel im Constructor
-        services.AddTransient<MainViewModel>();
-    }
+    // 1. Lokalen ModelStore erstellen
+    _modelStore = services.DataStores.CreateLocal<TModel>();
+    
+    // 2. Internen ViewModelStore erstellen
+    _viewModelStore = services.DataStores.CreateLocal<TViewModel>();
+    
+    // 3. TransformTo einrichten (bidirektionale Sync)
+    _unidirectionalSync = _modelStore.TransformTo<TModel, TViewModel>(
+        _viewModelStore,
+        factoryFunc: model => _viewModelFactory.Create(model),
+        comparerFunc: (m, vm) => _modelComparer.Equals(m, vm.Model));
+    
+    // 4. Items-Collection einrichten (UI-Binding)
+    _itemsSync = _viewModelStore.ToReadOnlyObservableCollection(
+        comparer: services.ComparerService.GetComparer<TViewModel>());
+    
+    Items = _itemsSync.Collection;
 }
-```
-
-## Bidirektionale Synchronisation
-
-### Synchronisation im Detail
-
-```
-                     ????????????????
-                     ?  DataStore   ?
-                     ?  (Models)    ?
-                     ????????????????
-                            ?
-                  ?????????????????????
-                  ?                   ?
-        Add/Remove/Clear    CollectionChanged Event
-                  ?                   ?
-                  ?                   ?
-         ??????????????????????????????????
-         ?   CollectionViewModel          ?
-         ?   - ViewModelFactory           ?
-         ?   - ModelToViewModelMap        ?
-         ??????????????????????????????????
-                      ?
-            Creates/Disposes ViewModels
-                      ?
-                      ?
-         ??????????????????????????????
-         ?   Items (ReadOnly)         ?
-         ?   ObservableCollection     ?
-         ?   (ViewModels)             ?
-         ??????????????????????????????
-                      ?
-                  UI Binding
-                      ?
-                      ?
-              ?????????????????
-              ?   ListView    ?
-              ?????????????????
-```
-
-### CollectionChanged-Events
-
-**Add-Event:**
-```csharp
-dataStore.Add(customer);
-
-// OnDataStoreChanged wird aufgerufen:
-// 1. Prüfe: Ist Model bereits in Map? (Duplikat-Check)
-// 2. ViewModelFactory.Create(model)
-// 3. _modelToViewModelMap[model] = viewModel
-// 4. _viewModels.Add(viewModel)
-// 5. OnPropertyChanged(nameof(Count))
-// ? UI zeigt neues Item
-```
-
-**Remove-Event:**
-```csharp
-dataStore.Remove(customer);
-
-// OnDataStoreChanged wird aufgerufen:
-// 1. Lookup in _modelToViewModelMap
-// 2. Ist ViewModel == SelectedItem? ? SelectedItem = null
-// 3. _viewModels.Remove(viewModel)
-// 4. _modelToViewModelMap.Remove(model)
-// 5. OnViewModelRemoving(viewModel) (Hook für Subclasses)
-// 6. viewModel.Dispose() (falls IDisposable)
-// 7. OnPropertyChanged(nameof(Count))
-// ? UI-Update und Cleanup
-```
-
-**Reset-Event (Clear):**
-```csharp
-dataStore.Clear();
-
-// OnDataStoreChanged wird aufgerufen:
-// 1. SelectedItem = null (immer!)
-// 2. Für jedes ViewModel in Map:
-//    - _viewModels.Remove(viewModel)
-//    - viewModel.Dispose()
-// 3. _modelToViewModelMap.Clear()
-// 4. OnPropertyChanged(nameof(Count))
-// ? Alle ViewModels entfernt und disposed
-```
-
-**Replace-Event:**
-```csharp
-// Nicht direkt via API, aber bei ObservableCollection[index] = newItem
-// 1. Remove old ViewModel (siehe Remove-Event)
-// 2. Add new ViewModel (siehe Add-Event)
 ```
 
 ## ViewModel-Lifecycle
@@ -325,59 +398,31 @@ dataStore.Clear();
 ### Lifecycle-Phasen
 
 ```
-???????????????????????????????????????????????????????????
-? 1. CREATION                                             ?
-?    DataStore.Add(model)                                 ?
-?    ?                                                    ?
-?    ViewModelFactory.Create(model)                       ?
-?    ?                                                    ?
-?    _modelToViewModelMap[model] = viewModel              ?
-?    ?                                                    ?
-?    _viewModels.Add(viewModel)                           ?
-???????????????????????????????????????????????????????????
+????????????????????????????????????????????????????????
+? 1. CREATION                                          ?
+?    ModelStore.Add(model)                             ?
+?    ?                                                 ?
+?    TransformTo: ViewModelFactory.Create(model)       ?
+?    ?                                                 ?
+?    ViewModel wird zu ViewModelStore hinzugefügt      ?
+?    ?                                                 ?
+?    ToReadOnlyObservableCollection: Items aktualisiert?
+????????????????????????????????????????????????????????
                          ?
+????????????????????????????????????????????????????????
+? 2. ACTIVE                                            ?
+?    ViewModel ist in Items                            ?
+?    UI kann binden                                    ?
+????????????????????????????????????????????????????????
                          ?
-???????????????????????????????????????????????????????????
-? 2. ACTIVE                                               ?
-?    ViewModel ist in Items                               ?
-?    UI kann binden an Properties                         ?
-?    PropertyChanged-Events werden gefeuert               ?
-???????????????????????????????????????????????????????????
-                         ?
-                         ?
-???????????????????????????????????????????????????????????
-? 3. REMOVAL                                              ?
-?    DataStore.Remove(model)                              ?
-?    ?                                                    ?
-?    _viewModels.Remove(viewModel)                        ?
-?    ?                                                    ?
-?    _modelToViewModelMap.Remove(model)                   ?
-?    ?                                                    ?
-?    OnViewModelRemoving(viewModel) [Hook]                ?
-?    ?                                                    ?
-?    viewModel.Dispose() [falls IDisposable]              ?
-???????????????????????????????????????????????????????????
-```
-
-### Hook: OnViewModelRemoving
-
-Für benutzerdefinierte Cleanup-Logik:
-
-```csharp
-public class MyCollectionViewModel : CollectionViewModel<Customer, CustomerViewModel>
-{
-    public MyCollectionViewModel(/* ... */) : base(/* ... */) { }
-    
-    protected override void OnViewModelRemoving(CustomerViewModel viewModel)
-    {
-        // Custom Cleanup vor Dispose
-        viewModel.CancelPendingOperations();
-        viewModel.UnsubscribeFromEvents();
-        
-        // Base aufrufen ist optional (base macht nichts)
-        base.OnViewModelRemoving(viewModel);
-    }
-}
+????????????????????????????????????????????????????????
+? 3. REMOVAL                                           ?
+?    ModelStore.Remove(model) ODER Remove(viewModel)   ?
+?    ?                                                 ?
+?    TransformTo: ViewModel wird entfernt              ?
+?    ?                                                 ?
+?    viewModel.Dispose() [falls IDisposable]           ?
+????????????????????????????????????????????????????????
 ```
 
 ### Dispose-Pattern
@@ -388,24 +433,25 @@ public void Dispose()
     if (_disposed) return;
     _disposed = true;
 
-    // 1. DataStore-Event abmelden
-    if (_dataStore != null)
-    {
-        ((INotifyCollectionChanged)_dataStore.Items).CollectionChanged -= OnDataStoreChanged;
-    }
+    // 1. Store-Events abmelden
+    _viewModelStore.Changed -= OnViewModelStoreChanged;
 
-    // 2. Alle ViewModels disposen
-    if (_modelToViewModelMap != null)
+    // 2. ModelStore leeren (disposed ViewModels via TransformTo)
+    _modelStore.Clear();
+
+    // 3. TransformTo-Sync disposed
+    _unidirectionalSync?.Dispose();
+
+    // 4. ObservableCollection-Sync disposed
+    _itemsSync?.Dispose();
+
+    // 5. Stores disposed
+    if (_viewModelStore is IDisposable disposable)
     {
-        foreach (var viewModel in _modelToViewModelMap.Values)
-        {
-            DisposeViewModel(viewModel);
-        }
-        _modelToViewModelMap.Clear();
+        disposable.Dispose();
     }
     
-    // 3. ViewModels-Collection leeren
-    _viewModels.Clear();
+    _selectedItems.Clear();
 }
 ```
 
@@ -413,29 +459,22 @@ public void Dispose()
 
 ### ? Do's
 
-**1. IEqualityComparer registrieren:**
+**1. ModelStore für Daten-Operationen:**
 ```csharp
-// Wichtig für ModelToViewModelMap!
-services.AddSingleton<IEqualityComparer<Customer>>(
-    new FallbackEqualsComparer<Customer>());
+// ? Gut: Via ModelStore
+collectionVM.ModelStore.Add(customer);
+collectionVM.ModelStore.AddRange(customers);
 
-var collectionVM = new CollectionViewModel<Customer, CustomerViewModel>(
-    dataStore,
-    factory,
-    comparer);  // ? Comparer übergeben
+// ? Gut: Via Remove-API (disposed ViewModel)
+collectionVM.Remove(viewModel);
 ```
 
-**2. ViewModelFactory verwenden:**
+**2. CustomWPFServices Facade verwenden:**
 ```csharp
-// ? Gut: DI-basierte Factory
-services.AddViewModelFactory<Customer, CustomerViewModel>();
-var factory = sp.GetRequiredService<IViewModelFactory<Customer, CustomerViewModel>>();
-
-// ? Schlecht: Manuelle Erstellung
-var collectionVM = new CollectionViewModel<Customer, CustomerViewModel>(
-    dataStore,
-    new ManualFactory(),  // Keine DI!
-    comparer);
+// ? Gut: Services Facade
+services.AddCustomWPFControls<Customer, CustomerViewModel>();
+var collectionVM = serviceProvider.GetRequiredService<
+    CollectionViewModel<Customer, CustomerViewModel>>();
 ```
 
 **3. Dispose aufrufen:**
@@ -451,20 +490,6 @@ public class MainViewModel : IDisposable
 }
 ```
 
-**4. SelectedItem für UI-Binding:**
-```csharp
-// XAML
-<ListBox ItemsSource="{Binding Customers}"
-         SelectedItem="{Binding SelectedCustomer}"/>
-
-// ViewModel
-public CustomerViewModel? SelectedCustomer
-{
-    get => _customers.SelectedItem;
-    set => _customers.SelectedItem = value;
-}
-```
-
 ### ? Don'ts
 
 **1. Keine direkte Items-Mutation:**
@@ -472,29 +497,17 @@ public CustomerViewModel? SelectedCustomer
 // ? Schlecht: ReadOnlyObservableCollection ist read-only!
 collectionVM.Items.Add(viewModel);  // Compile-Error!
 
-// ? Gut: Via AddModel
-collectionVM.AddModel(customer);
+// ? Gut: Via ModelStore
+collectionVM.ModelStore.Add(model);
 ```
 
-**2. Kein manuelles ViewModel-Disposal:**
+**2. Kein globaler Store mehr:**
 ```csharp
-// ? Schlecht: CollectionViewModel managt Lifecycle!
-var viewModel = collectionVM.Items.First();
-viewModel.Dispose();  // Kann zu Problemen führen!
+// ? Alt: Globaler Store (veraltet)
+var globalStore = dataStores.GetGlobal<Customer>();
 
-// ? Gut: Via RemoveViewModel
-collectionVM.RemoveViewModel(viewModel);  // Entfernt und disposed automatisch
-```
-
-**3. Keine konkurrierenden Änderungen:**
-```csharp
-// ? Schlecht: DataStore und CollectionViewModel parallel ändern
-Task.Run(() => dataStore.Add(customer1));
-collectionVM.AddModel(customer2);  // Race Condition!
-
-// ? Gut: Alle Änderungen über eine Schnittstelle
-collectionVM.AddModel(customer1);
-collectionVM.AddModel(customer2);
+// ? Neu: Lokaler Store via ModelStore Property
+collectionVM.ModelStore.Add(customer);
 ```
 
 ## Beispiele
@@ -507,17 +520,13 @@ public class CustomerListViewModel : IDisposable
     private readonly CollectionViewModel<Customer, CustomerViewModel> _customers;
     
     public CustomerListViewModel(
-        IDataStores dataStores,
-        IViewModelFactory<Customer, CustomerViewModel> factory,
-        IEqualityComparer<Customer> comparer)
+        ICustomWPFServices services,
+        IViewModelFactory<Customer, CustomerViewModel> factory)
     {
-        // DataStore abrufen (global registriert)
-        var dataStore = dataStores.GetGlobal<Customer>();
-        
+        // ? Lokaler Store wird automatisch erstellt
         _customers = new CollectionViewModel<Customer, CustomerViewModel>(
-            dataStore,
-            factory,
-            comparer);
+            services,
+            factory);
     }
     
     public ReadOnlyObservableCollection<CustomerViewModel> Customers 
@@ -531,26 +540,20 @@ public class CustomerListViewModel : IDisposable
     
     public void AddCustomer(string name, string email)
     {
-        var customer = new Customer 
-        { 
-            Id = 0, 
-            Name = name, 
-            Email = email 
-        };
-        _customers.AddModel(customer);
-        // ? Automatisch persistiert via DataStore
-        // ? Automatisch ViewModel erstellt
-        // ? Automatisch UI aktualisiert
+        var customer = new Customer { Name = name, Email = email };
+        
+        // ? Fügt zum lokalen ModelStore hinzu
+        _customers.ModelStore.Add(customer);
+        // ? TransformTo erstellt automatisch ViewModel
+        // ? UI wird automatisch aktualisiert
     }
     
     public void DeleteSelectedCustomer()
     {
         if (SelectedCustomer != null)
         {
-            _customers.RemoveViewModel(SelectedCustomer);
-            // ? Automatisch aus DataStore entfernt
-            // ? Automatisch ViewModel disposed
-            // ? SelectedItem = null
+            // ? Remove-API entfernt und disposed
+            _customers.Remove(SelectedCustomer);
         }
     }
     
@@ -561,102 +564,42 @@ public class CustomerListViewModel : IDisposable
 }
 ```
 
-### Beispiel 2: Mit Filterung
+### Beispiel 2: Mehrere isolierte Listen
 
 ```csharp
-public class FilteredCustomerViewModel : INotifyPropertyChanged
+public class MultiListViewModel : IDisposable
 {
-    private readonly CollectionViewModel<Customer, CustomerViewModel> _allCustomers;
-    private readonly ObservableCollection<CustomerViewModel> _filteredCustomers;
-    private string _searchText = "";
+    private readonly CollectionViewModel<Customer, CustomerViewModel> _activeCustomers;
+    private readonly CollectionViewModel<Customer, CustomerViewModel> _inactiveCustomers;
     
-    public FilteredCustomerViewModel(/* DI parameters */)
+    public MultiListViewModel(
+        ICustomWPFServices services,
+        IViewModelFactory<Customer, CustomerViewModel> factory)
     {
-        _allCustomers = new CollectionViewModel<Customer, CustomerViewModel>(
-            dataStore,
-            factory,
-            comparer);
+        // ? Beide Instanzen sind komplett isoliert!
+        _activeCustomers = new CollectionViewModel<Customer, CustomerViewModel>(
+            services, factory);
         
-        _filteredCustomers = new ObservableCollection<CustomerViewModel>();
-        FilteredCustomers = new ReadOnlyObservableCollection<CustomerViewModel>(_filteredCustomers);
-        
-        // Initiales Filtern
-        ApplyFilter();
-        
-        // Bei Änderungen in _allCustomers neu filtern
-        ((INotifyCollectionChanged)_allCustomers.Items).CollectionChanged += 
-            (s, e) => ApplyFilter();
+        _inactiveCustomers = new CollectionViewModel<Customer, CustomerViewModel>(
+            services, factory);
     }
     
-    public ReadOnlyObservableCollection<CustomerViewModel> FilteredCustomers { get; }
+    public ReadOnlyObservableCollection<CustomerViewModel> ActiveCustomers 
+        => _activeCustomers.Items;
     
-    public string SearchText
+    public ReadOnlyObservableCollection<CustomerViewModel> InactiveCustomers 
+        => _inactiveCustomers.Items;
+    
+    public void MoveToInactive(CustomerViewModel customer)
     {
-        get => _searchText;
-        set
-        {
-            if (_searchText != value)
-            {
-                _searchText = value;
-                OnPropertyChanged();
-                ApplyFilter();
-            }
-        }
+        // ? Entfernen aus aktiven, hinzufügen zu inaktiven
+        _activeCustomers.Remove(customer);
+        _inactiveCustomers.ModelStore.Add(customer.Model);
     }
     
-    private void ApplyFilter()
+    public void Dispose()
     {
-        _filteredCustomers.Clear();
-        
-        var filtered = string.IsNullOrWhiteSpace(SearchText)
-            ? _allCustomers.Items
-            : _allCustomers.Items.Where(vm => 
-                vm.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase));
-        
-        foreach (var item in filtered)
-        {
-            _filteredCustomers.Add(item);
-        }
+        _activeCustomers.Dispose();
+        _inactiveCustomers.Dispose();
     }
 }
-```
-
-### Beispiel 3: Mit Custom Lifecycle-Hook
-
-```csharp
-public class CustomCollectionViewModel : CollectionViewModel<Order, OrderViewModel>
-{
-    private readonly INotificationService _notificationService;
-    
-    public CustomCollectionViewModel(
-        IDataStore<Order> dataStore,
-        IViewModelFactory<Order, OrderViewModel> factory,
-        IEqualityComparer<Order> comparer,
-        INotificationService notificationService)
-        : base(dataStore, factory, comparer)
-    {
-        _notificationService = notificationService;
-    }
-    
-    protected override void OnViewModelRemoving(OrderViewModel viewModel)
-    {
-        // Benachrichtigung vor Removal
-        _notificationService.Notify(
-            $"Order {viewModel.Model.Id} wird entfernt");
-        
-        // Custom Cleanup
-        viewModel.CancelPendingOperations();
-        viewModel.UnsubscribeFromEvents();
-        
-        base.OnViewModelRemoving(viewModel);
-    }
-}
-```
-
-## Siehe auch
-
-- ?? [ViewModelBase](ViewModelBase.md) - Basisklasse für ViewModels
-- ?? [EditableCollectionViewModel](EditableCollectionViewModel.md) - Mit Commands
-- ?? [ViewModelFactory](ViewModelFactory.md) - DI-basierte ViewModel-Erstellung
-- ?? [Getting Started](Getting-Started.md) - Schnellstart-Guide
-- ?? [DataStores](https://github.com/ReneRose1971/DataStores) - DataStore-Framework
