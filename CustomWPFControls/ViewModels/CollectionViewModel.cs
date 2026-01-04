@@ -240,6 +240,10 @@ namespace CustomWPFControls.ViewModels
             // Unsubscribe from ViewModel store events
             _viewModelStore.Changed -= OnViewModelStoreChanged;
 
+            // Clear stores before disposing sync mechanisms
+            // This ensures Items collection is emptied via automatic synchronization
+            _modelStore.Clear();
+            
             // TransformTo-Sync disposed
             _unidirectionalSync?.Dispose();
 

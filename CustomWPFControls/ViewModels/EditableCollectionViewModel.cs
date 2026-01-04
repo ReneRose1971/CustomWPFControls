@@ -14,11 +14,11 @@ namespace CustomWPFControls.ViewModels
     /// <typeparam name="TViewModel">ViewModel-Typ (muss IViewModelWrapper&lt;TModel&gt; implementieren).</typeparam>
     /// <remarks>
     /// <para>
-    /// <b>Model-Verwaltung:</b> Models werden direkt über den Model-Store verwaltet:
-    /// <c>services.DataStores.GetGlobal&lt;TModel&gt;().Add(model)</c>
+    /// <b>Model-Verwaltung:</b> Models werden über den lokalen ModelStore verwaltet.
+    /// Alle Commands (Add, Delete, Clear) arbeiten mit dem lokalen ModelStore.
     /// </para>
     /// <para>
-    /// <b>Commands:</b> AddCommand arbeitet mit dem Model-Store.
+    /// <b>Commands:</b> AddCommand fügt Models zum lokalen ModelStore hinzu.
     /// DeleteCommand nutzt die Remove()-Methode des CollectionViewModel.
     /// </para>
     /// </remarks>
@@ -57,6 +57,7 @@ namespace CustomWPFControls.ViewModels
         private ICommand? _addCommand;
         /// <summary>
         /// Command zum Hinzufügen eines neuen Elements.
+        /// Fügt das Model zum lokalen ModelStore hinzu.
         /// </summary>
         public ICommand AddCommand => _addCommand ??= new RelayCommand(_ =>
         {
@@ -66,8 +67,7 @@ namespace CustomWPFControls.ViewModels
             var model = CreateModel();
             if (model != null)
             {
-                var modelStore = _services.DataStores.GetGlobal<TModel>();
-                modelStore.Add(model);
+                ModelStore.Add(model);
             }
         }, _ => CreateModel != null);
 

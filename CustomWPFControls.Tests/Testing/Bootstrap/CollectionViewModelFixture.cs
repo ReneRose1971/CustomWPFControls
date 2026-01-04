@@ -149,10 +149,13 @@ public class CollectionViewModelFixture : DataStoresFixtureBase
     /// </summary>
     /// <remarks>
     /// Sollte nach jedem Test aufgerufen werden, um saubere Test-Isolation zu gewährleisten.
+    /// Leert auch SelectedItems und setzt SelectedItem zurück.
     /// </remarks>
     public void ClearTestData()
     {
         Sut.ModelStore.Clear();
+        Sut.SelectedItems.Clear();
+        Sut.SelectedItem = null;
     }
 
     /// <summary>
