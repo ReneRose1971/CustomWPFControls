@@ -20,6 +20,9 @@ public sealed class Execute_WithValidCreateModel_AddsModelToStore : IClassFixtur
         _sut = new EditableCollectionViewModel<TestDto, TestViewModel>(
             _fixture.Services,
             _fixture.ViewModelFactory);
+        
+        // Setup: CreateModel Property setzen (erstellt neues Model)
+        _sut.CreateModel = () => new TestDto { Name = "NewItem" };
     }
 
     [Fact]

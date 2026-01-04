@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using CustomWPFControls.Tests.Testing;
 using CustomWPFControls.ViewModels;
 using FluentAssertions;
@@ -18,6 +19,11 @@ public sealed class RemoveRange_WithEmptyList_ReturnsZero : IClassFixture<Collec
     public RemoveRange_WithEmptyList_ReturnsZero(CollectionViewModelFixture fixture)
     {
         _fixture = fixture;
+        _fixture.ClearTestData();
+        
+        // Setup: Ein "Original Item" zum Store hinzufügen
+        _fixture.TestDtoStore.Add(new TestDto { Name = "OriginalItem" });
+        
         _sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
             _fixture.Services,
             _fixture.ViewModelFactory);

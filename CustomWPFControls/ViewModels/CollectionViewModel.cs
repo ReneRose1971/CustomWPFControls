@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
@@ -33,11 +34,16 @@ namespace CustomWPFControls.ViewModels
         where TModel : class
         where TViewModel : class, IViewModelWrapper<TModel>
     {
-        private readonly IDataStore<TModel> _modelStore;
+        private readonly Factories.IViewModelFactory<TModel, TViewModel> _viewModelFactory;
+        private readonly IEqualityComparer<TModel> _modelComparer;
+        private readonly Func<TModel, TViewModel> _factoryFunc;
+        private readonly Func<TModel, TViewModel, bool> _comparerFunc;
+        
+        private IDataStore<TModel> _modelStore;
         private readonly IDataStore<TViewModel> _viewModelStore;
         private readonly ReadOnlyObservableCollectionSynchronization<TViewModel> _itemsSync;
         private readonly ObservableCollection<TViewModel> _selectedItems;
-        private readonly IDisposable _unidirectionalSync;
+        private IDisposable _unidirectionalSync;
         private bool _disposed;
 
         /// <summary>
@@ -53,19 +59,21 @@ namespace CustomWPFControls.ViewModels
             if (services == null) throw new ArgumentNullException(nameof(services));
             if (viewModelFactory == null) throw new ArgumentNullException(nameof(viewModelFactory));
 
+            _viewModelFactory = viewModelFactory;
+            _modelComparer = services.ComparerService.GetComparer<TModel>();
+            
+            _factoryFunc = model => _viewModelFactory.Create(model);
+            _comparerFunc = (m, vm) => _modelComparer.Equals(m, vm.Model);
+
             _modelStore = services.DataStores.GetGlobal<TModel>();
-            var modelComparer = services.ComparerService.GetComparer<TModel>();
             _viewModelStore = services.DataStores.CreateLocal<TViewModel>();
 
             // ════════════════════════════════════════════════════════════
             // TransformTo: Model-Store → ViewModel-Store
             // Automatische Synchronisation, ViewModel-Erstellung und Dispose!
             // ════════════════════════════════════════════════════════════
-            Func<TModel, TViewModel> factoryFunc = model => viewModelFactory.Create(model);
-            Func<TModel, TViewModel, bool> comparerFunc = (m, vm) => modelComparer.Equals(m, vm.Model);
-
             _unidirectionalSync = _modelStore.TransformTo<TModel, TViewModel>(
-                _viewModelStore, factoryFunc, comparerFunc);
+                _viewModelStore, _factoryFunc, _comparerFunc);
             
             _selectedItems = new ObservableCollection<TViewModel>();
 

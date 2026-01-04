@@ -79,6 +79,7 @@ public sealed class BulkAddTests : IClassFixture<CollectionViewModelFixture>, ID
 
     public void Dispose()
     {
-        _fixture.Dispose();
+        _fixture.ClearTestData();
+        _sut?.Dispose();
     }
 }

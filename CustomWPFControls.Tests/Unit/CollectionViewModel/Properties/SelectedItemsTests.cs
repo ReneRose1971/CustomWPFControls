@@ -22,6 +22,16 @@ public sealed class SelectedItemsTests : IClassFixture<CollectionViewModelFixtur
     public SelectedItemsTests(CollectionViewModelFixture fixture)
     {
         _fixture = fixture;
+        _fixture.ClearTestData();
+        
+        // Setup: 3 Items zum Store hinzufügen
+        _fixture.TestDtoStore.AddRange(new[]
+        {
+            new TestDto { Name = "First" },
+            new TestDto { Name = "Second" },
+            new TestDto { Name = "Third" }
+        });
+        
         _sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
             _fixture.Services,
             _fixture.ViewModelFactory);

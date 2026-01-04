@@ -18,9 +18,22 @@ public sealed class Dispose_ClearsSelectedItems : IClassFixture<CollectionViewMo
     public Dispose_ClearsSelectedItems(CollectionViewModelFixture fixture)
     {
         _fixture = fixture;
+        _fixture.ClearTestData();
+        
+        // Setup: 2 Items zum Store hinzufügen
+        _fixture.TestDtoStore.AddRange(new[]
+        {
+            new TestDto { Name = "First" },
+            new TestDto { Name = "Second" }
+        });
+        
         _sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
             _fixture.Services,
             _fixture.ViewModelFactory);
+        
+        // Setup: Items zu SelectedItems hinzufügen
+        _sut.SelectedItems.Add(_sut.Items[0]);
+        _sut.SelectedItems.Add(_sut.Items[1]);
     }
 
     [Fact]

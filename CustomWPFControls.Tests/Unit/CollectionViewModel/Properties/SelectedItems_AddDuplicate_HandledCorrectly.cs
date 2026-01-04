@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using CustomWPFControls.Tests.Testing;
 using CustomWPFControls.ViewModels;
 using FluentAssertions;
@@ -23,11 +24,16 @@ public sealed class SelectedItems_AddDuplicate_HandledCorrectly : IClassFixture<
     public void Test_SelectedItems_AddDuplicate_HandledCorrectly()
     {
         // Arrange
+        _fixture.ClearTestData();
+        
+        // Setup: Ein Item zum Store hinzufügen
+        _fixture.TestDtoStore.Add(new TestDto { Name = "TestItem" });
+        
         var sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
             _fixture.Services,
             _fixture.ViewModelFactory);
 
-        // Act - Gleiches Item nochmal hinzufügen
+        // Act - Gleiches Item zweimal zu SelectedItems hinzufügen
         var item = sut.Items.Single();
         sut.SelectedItems.Add(item);
         sut.SelectedItems.Add(item);

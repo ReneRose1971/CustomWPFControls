@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using CustomWPFControls.Tests.Testing;
 using CustomWPFControls.ViewModels;
 using FluentAssertions;
@@ -23,9 +24,16 @@ public sealed class SingleAddTests : IClassFixture<CollectionViewModelFixture>, 
     public SingleAddTests(CollectionViewModelFixture fixture)
     {
         _fixture = fixture;
+        _fixture.ClearTestData();
+
+        // SUT erstellen mit leerem Store
         _sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
             _fixture.Services,
             _fixture.ViewModelFactory);
+
+        // ACT: Einzelnes TestDto hinzufügen
+        _addedDto = new TestDto { Name = "TestItem" };
+        _fixture.TestDtoStore.Add(_addedDto);
     }
 
     [Fact]
@@ -61,5 +69,6 @@ public sealed class SingleAddTests : IClassFixture<CollectionViewModelFixture>, 
     public void Dispose()
     {
         _fixture.ClearTestData();
+        _sut?.Dispose();
     }
 }

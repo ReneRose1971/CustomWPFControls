@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using CustomWPFControls.Tests.Testing;
 using CustomWPFControls.ViewModels;
 using FluentAssertions;
@@ -8,11 +8,11 @@ using Xunit;
 namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Properties;
 
 /// <summary>
-/// Tests f�r Count Property - Nach Add-Operation.
+/// Tests für Count Property - Nach Add-Operation.
 /// </summary>
 /// <remarks>
 /// Setup: 3 Items
-/// Act: 1 Item hinzuf�gen
+/// Act: 1 Item hinzufügen
 /// Assert: Count == 4
 /// </remarks>
 public sealed class CountProperty_AfterAdd : IClassFixture<CollectionViewModelFixture>, IDisposable
@@ -23,6 +23,16 @@ public sealed class CountProperty_AfterAdd : IClassFixture<CollectionViewModelFi
     public CountProperty_AfterAdd(CollectionViewModelFixture fixture)
     {
         _fixture = fixture;
+        _fixture.ClearTestData();
+        
+        // Setup: 3 Items zum Store hinzufügen
+        _fixture.TestDtoStore.AddRange(new[]
+        {
+            new TestDto { Name = "First" },
+            new TestDto { Name = "Second" },
+            new TestDto { Name = "Third" }
+        });
+        
         _sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
             _fixture.Services,
             _fixture.ViewModelFactory);
@@ -40,7 +50,7 @@ public sealed class CountProperty_AfterAdd : IClassFixture<CollectionViewModelFi
 
     public void Dispose()
     {
+        _fixture.ClearTestData();
         _sut?.Dispose();
-        _fixture?.Dispose();
     }
 }

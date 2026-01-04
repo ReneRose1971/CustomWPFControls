@@ -69,6 +69,7 @@ public sealed class RemoveSingleTests : IClassFixture<CollectionViewModelFixture
 
     public void Dispose()
     {
-        _fixture.Dispose();
+        _fixture.ClearTestData();
+        _sut?.Dispose();
     }
 }

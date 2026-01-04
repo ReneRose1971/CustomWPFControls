@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using CustomWPFControls.Tests.Testing;
 using CustomWPFControls.ViewModels;
 using FluentAssertions;
@@ -8,11 +8,11 @@ using Xunit;
 namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Properties;
 
 /// <summary>
-/// Tests f�r Count Property - Initialer Wert (kein Act, nur Setup).
+/// Tests für Count Property - Initialer Wert (kein Act, nur Setup).
 /// </summary>
 /// <remarks>
 /// Shared Setup: 3 Items im Store
-/// Alle Tests pr�fen den initialen Count-Wert nach dem Setup.
+/// Alle Tests prüfen den initialen Count-Wert nach dem Setup.
 /// </remarks>
 public sealed class CountProperty_InitialValue : IClassFixture<CollectionViewModelFixture>, IDisposable
 {
@@ -22,6 +22,16 @@ public sealed class CountProperty_InitialValue : IClassFixture<CollectionViewMod
     public CountProperty_InitialValue(CollectionViewModelFixture fixture)
     {
         _fixture = fixture;
+        _fixture.ClearTestData();
+        
+        // Shared Setup: 3 Items zum Store hinzufügen
+        _fixture.TestDtoStore.AddRange(new[]
+        {
+            new TestDto { Name = "First" },
+            new TestDto { Name = "Second" },
+            new TestDto { Name = "Third" }
+        });
+        
         _sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
             _fixture.Services,
             _fixture.ViewModelFactory);
@@ -43,7 +53,7 @@ public sealed class CountProperty_InitialValue : IClassFixture<CollectionViewMod
 
     public void Dispose()
     {
+        _fixture.ClearTestData();
         _sut?.Dispose();
-        _fixture?.Dispose();
     }
 }

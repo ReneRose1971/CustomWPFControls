@@ -7,6 +7,9 @@ using Xunit;
 
 namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Properties;
 
+/// <summary>
+/// Test: SelectedItems erlaubt Add(null) ohne Exception (Standard ObservableCollection-Verhalten).
+/// </summary>
 public sealed class SelectedItems_AddNull_HandledCorrectly : IClassFixture<CollectionViewModelFixture>
 {
     private readonly CollectionViewModelFixture _fixture;
@@ -24,9 +27,13 @@ public sealed class SelectedItems_AddNull_HandledCorrectly : IClassFixture<Colle
             _fixture.Services,
             _fixture.ViewModelFactory);
 
-        // Act & Assert
+        // Act & Assert - ObservableCollection<T> erlaubt null ohne Exception
         var act = () => sut.SelectedItems.Add(null!);
-        act.Should().Throw<ArgumentNullException>();
+        act.Should().NotThrow("ObservableCollection<T> erlaubt null-Werte");
+
+        // Verify null wurde hinzugefügt
+        sut.SelectedItems.Should().ContainSingle();
+        sut.SelectedItems[0].Should().BeNull();
 
         // Cleanup
         _fixture.ClearTestData();

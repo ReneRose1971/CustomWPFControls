@@ -22,6 +22,16 @@ public sealed class SelectedItems_ItemRemovedFromStore_IsRemovedFromSelection : 
     public SelectedItems_ItemRemovedFromStore_IsRemovedFromSelection(CollectionViewModelFixture fixture)
     {
         _fixture = fixture;
+        _fixture.ClearTestData();
+        
+        // Setup: 3 Items hinzufügen
+        _fixture.TestDtoStore.AddRange(new[]
+        {
+            new TestDto { Name = "First" },
+            new TestDto { Name = "Second" },
+            new TestDto { Name = "Third" }
+        });
+        
         _sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
             _fixture.Services,
             _fixture.ViewModelFactory);
@@ -68,7 +78,7 @@ public sealed class SelectedItems_ItemRemovedFromStore_IsRemovedFromSelection : 
 
     public void Dispose()
     {
+        _fixture.ClearTestData();
         _sut?.Dispose();
-        _fixture?.Dispose();
     }
 }

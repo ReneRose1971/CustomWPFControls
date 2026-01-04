@@ -17,6 +17,9 @@ public sealed class CanExecute_CreateModelIsSet_ReturnsTrue : IClassFixture<Coll
         _sut = new EditableCollectionViewModel<TestDto, TestViewModel>(
             _fixture.Services,
             _fixture.ViewModelFactory);
+
+        // Setup: CreateModel Property setzen
+        _sut.CreateModel = () => new TestDto { Name = "NewItem" };
     }
 
     [Fact]

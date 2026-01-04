@@ -17,9 +17,21 @@ public sealed class CanExecute_ItemsSelected_ReturnsTrue : IClassFixture<Collect
     public CanExecute_ItemsSelected_ReturnsTrue(CollectionViewModelFixture fixture)
     {
         _fixture = fixture;
+        _fixture.ClearTestData();
+        
+        // Setup: Items zum Store hinzufügen
+        _fixture.TestDtoStore.AddRange(new[]
+        {
+            new TestDto { Name = "First" },
+            new TestDto { Name = "Second" }
+        });
+        
         _sut = new EditableCollectionViewModel<TestDto, TestViewModel>(
             _fixture.Services,
             _fixture.ViewModelFactory);
+        
+        // Setup: Items zu SelectedItems hinzufügen
+        _sut.SelectedItems.Add(_sut.Items[0]);
     }
 
     [Fact]

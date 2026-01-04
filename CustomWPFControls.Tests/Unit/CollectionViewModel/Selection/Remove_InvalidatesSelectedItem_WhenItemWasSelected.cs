@@ -18,9 +18,21 @@ public sealed class Remove_InvalidatesSelectedItem_WhenItemWasSelected : IClassF
     public Remove_InvalidatesSelectedItem_WhenItemWasSelected(CollectionViewModelFixture fixture)
     {
         _fixture = fixture;
+        _fixture.ClearTestData();
+        
+        // Setup: 2 Items zum Store hinzufügen
+        _fixture.TestDtoStore.AddRange(new[]
+        {
+            new TestDto { Name = "First" },
+            new TestDto { Name = "Second" }
+        });
+        
         _sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
             _fixture.Services,
             _fixture.ViewModelFactory);
+        
+        // Setup: SelectedItem setzen
+        _sut.SelectedItem = _sut.Items[0];
     }
 
     [Fact]
