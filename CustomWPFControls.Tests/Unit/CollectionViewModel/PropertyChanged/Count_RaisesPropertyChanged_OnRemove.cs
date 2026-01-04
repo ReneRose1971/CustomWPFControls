@@ -13,20 +13,17 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.PropertyChanged;
 public sealed class Count_RaisesPropertyChanged_OnRemove : IClassFixture<CollectionViewModelFixture>, IDisposable
 {
     private readonly CollectionViewModelFixture _fixture;
-    private readonly ViewModels.CollectionViewModel<TestDto, TestViewModel> _sut;
     private bool _countPropertyChanged;
 
     public Count_RaisesPropertyChanged_OnRemove(CollectionViewModelFixture fixture)
     {
         _fixture = fixture;
-        _sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.Services,
-            _fixture.ViewModelFactory);
+        _fixture.ClearTestData();
     }
 
     private void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(_sut.Count))
+        if (e.PropertyName == nameof(_fixture.Sut.Count))
             _countPropertyChanged = true;
     }
 
@@ -35,21 +32,23 @@ public sealed class Count_RaisesPropertyChanged_OnRemove : IClassFixture<Collect
     {
         // Arrange
         var dto = new TestDto { Name = "Test" };
-        _fixture.TestDtoStore.Add(dto);
+        _fixture.Sut.ModelStore.Add(dto);
         
-        _sut.PropertyChanged += OnPropertyChanged;
+        _fixture.Sut.PropertyChanged += OnPropertyChanged;
 
         // Act
-        _fixture.TestDtoStore.Remove(dto);
+        _fixture.Sut.ModelStore.Remove(dto);
 
         // Assert
         Assert.True(_countPropertyChanged, "PropertyChanged für Count wurde nicht gefeuert");
+        
+        // Cleanup
+        _fixture.Sut.PropertyChanged -= OnPropertyChanged;
+        _fixture.ClearTestData();
     }
 
     public void Dispose()
     {
-        _sut.PropertyChanged -= OnPropertyChanged;
-        _fixture.ClearTestData();
-        _sut?.Dispose();
+        _fixture.Sut.PropertyChanged -= OnPropertyChanged;
     }
 }

@@ -1,5 +1,6 @@
 using CustomWPFControls.Factories;
 using CustomWPFControls.Tests.Testing;
+using CustomWPFControls.ViewModels;
 using DataStores.Abstractions;
 using DataStores.Bootstrap;
 using FluentAssertions;
@@ -97,16 +98,24 @@ public sealed class CollectionViewModelFixtureTests : IDisposable
     }
 
     [Fact]
-    public void TestDtoStore_IsGlobalStore()
+    public void Constructor_InitializesSut()
+    {
+        // Act
+        _fixture = new CollectionViewModelFixture();
+
+        // Assert
+        _fixture.Sut.Should().NotBeNull();
+        _fixture.Sut.Should().BeOfType<ViewModels.CollectionViewModel<TestDto, TestViewModel>>();
+    }
+
+    [Fact]
+    public void TestDtoStore_IsAdapterToSutModelStore()
     {
         // Arrange
         _fixture = new CollectionViewModelFixture();
 
-        // Act
-        var storeFromDataStores = _fixture.DataStores.GetGlobal<TestDto>();
-
-        // Assert
-        _fixture.TestDtoStore.Should().BeSameAs(storeFromDataStores);
+        // Act & Assert
+        _fixture.TestDtoStore.Should().BeSameAs(_fixture.Sut.ModelStore);
     }
 
     [Fact]
@@ -431,11 +440,14 @@ public sealed class CollectionViewModelFixtureTests : IDisposable
         using var fixture2 = new CollectionViewModelFixture();
 
         fixture1.TestDtoStore.Add(new TestDto { Name = "Fixture1" });
+        fixture1.TestDtoStore.Add(new TestDto { Name = "Fixture1_2" });
+        fixture1.TestDtoStore.Add(new TestDto { Name = "Fixture1_3" });
+        
         fixture2.TestDtoStore.Add(new TestDto { Name = "Fixture2" });
 
-        // Assert - Stores sind isoliert
-        fixture1.TestDtoStore.Items.Should().ContainSingle();
-        fixture2.TestDtoStore.Items.Should().ContainSingle();
+        // Assert - Stores sind isoliert (jede Fixture hat ihren eigenen lokalen Store)
+        fixture1.TestDtoStore.Items.Should().HaveCount(3);
+        fixture2.TestDtoStore.Items.Should().HaveCount(1);
 
         fixture1.TestDtoStore.Items.First().Name.Should().Be("Fixture1");
         fixture2.TestDtoStore.Items.First().Name.Should().Be("Fixture2");

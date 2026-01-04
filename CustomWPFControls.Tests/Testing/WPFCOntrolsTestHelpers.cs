@@ -1,8 +1,10 @@
 using System.Collections.Generic;
+using CustomWPFControls.Bootstrap;
 using CustomWPFControls.Factories;
 using DataStores.Abstractions;
 using DataStores.Runtime;
 using Microsoft.Extensions.DependencyInjection;
+using TestHelper.DataStores.Models;
 
 namespace CustomWPFControls.Tests.Testing
 {
@@ -12,17 +14,17 @@ namespace CustomWPFControls.Tests.Testing
     public static class WPFCOntrolsTestHelpers
     {
         /// <summary>
-        /// Erstellt einen InMemoryDataStore mit TestModel.
+        /// Erstellt einen InMemoryDataStore mit TestDto.
         /// </summary>
-        public static IDataStore<TestModel> CreateDataStore(IEqualityComparer<TestModel>? comparer = null)
+        public static IDataStore<TestDto> CreateDataStore(IEqualityComparer<TestDto>? comparer = null)
         {
-            return new InMemoryDataStore<TestModel>(comparer ?? EqualityComparer<TestModel>.Default);
+            return new InMemoryDataStore<TestDto>(comparer ?? EqualityComparer<TestDto>.Default);
         }
 
         /// <summary>
-        /// Erstellt einen Mock IDataStores mit TestModel-Store.
+        /// Erstellt einen Mock IDataStores mit TestDto-Store.
         /// </summary>
-        public static IDataStores CreateDataStores(IDataStore<TestModel>? modelStore = null)
+        public static IDataStores CreateDataStores(IDataStore<TestDto>? modelStore = null)
         {
             var dataStore = modelStore ?? CreateDataStore();
             var dataStores = new DataStoresTestFacade(dataStore);
@@ -45,47 +47,45 @@ namespace CustomWPFControls.Tests.Testing
             var services = new ServiceCollection();
 
             // EqualityComparer
-            services.AddSingleton<IEqualityComparer<TestModel>>(
-                EqualityComparer<TestModel>.Default);
+            services.AddSingleton<IEqualityComparer<TestDto>>(
+                EqualityComparer<TestDto>.Default);
 
             // IEqualityComparerService
             services.AddSingleton<IEqualityComparerService>(CreateComparerService());
 
             // DataStore
-            var dataStore = CreateDataStore(EqualityComparer<TestModel>.Default);
-            services.AddSingleton<IDataStore<TestModel>>(dataStore);
+            var dataStore = CreateDataStore(EqualityComparer<TestDto>.Default);
+            services.AddSingleton<IDataStore<TestDto>>(dataStore);
 
             // IDataStores
             services.AddSingleton<IDataStores>(CreateDataStores(dataStore));
 
             // ViewModelFactory
-            services.AddViewModelFactory<TestModel, TestViewModel>();
+            services.AddViewModelPackage<TestDto, TestViewModel>();
 
             return services.BuildServiceProvider();
         }
 
         /// <summary>
-        /// Erstellt ein TestModel mit Default-Werten.
+        /// Erstellt ein TestDto mit Default-Werten.
         /// </summary>
-        public static TestModel CreateTestModel(int id = 1, string name = "Test")
+        public static TestDto CreateTestDto(string name = "Test")
         {
-            return new TestModel
+            return new TestDto
             {
-                Id = id,
-                Name = name,
-                Description = $"Description for {name}"
+                Name = name
             };
         }
 
         /// <summary>
-        /// Erstellt mehrere TestModels.
+        /// Erstellt mehrere TestDtos.
         /// </summary>
-        public static List<TestModel> CreateTestModels(int count)
+        public static List<TestDto> CreateTestDtos(int count)
         {
-            var models = new List<TestModel>();
+            var models = new List<TestDto>();
             for (int i = 1; i <= count; i++)
             {
-                models.Add(CreateTestModel(i, $"Model{i}"));
+                models.Add(CreateTestDto($"Item{i}"));
             }
             return models;
         }
@@ -94,18 +94,18 @@ namespace CustomWPFControls.Tests.Testing
 
         private class DataStoresTestFacade : IDataStores
         {
-            private readonly IDataStore<TestModel> _testModelStore;
+            private readonly IDataStore<TestDto> _testDtoStore;
 
-            public DataStoresTestFacade(IDataStore<TestModel> testModelStore)
+            public DataStoresTestFacade(IDataStore<TestDto> testDtoStore)
             {
-                _testModelStore = testModelStore;
+                _testDtoStore = testDtoStore;
             }
 
             public IDataStore<T> GetGlobal<T>() where T : class
             {
-                if (typeof(T) == typeof(TestModel))
+                if (typeof(T) == typeof(TestDto))
                 {
-                    return (IDataStore<T>)_testModelStore;
+                    return (IDataStore<T>)_testDtoStore;
                 }
                 throw new System.InvalidOperationException($"No store registered for type {typeof(T).Name}");
             }

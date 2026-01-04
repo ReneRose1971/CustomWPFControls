@@ -17,7 +17,6 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.DataStoreAdd;
 public sealed class BulkAddTests : IClassFixture<CollectionViewModelFixture>, IDisposable
 {
     private readonly CollectionViewModelFixture _fixture;
-    private readonly ViewModels.CollectionViewModel<TestDto, TestViewModel> _sut;
     private readonly TestDto[] _addedDtos;
 
     public BulkAddTests(CollectionViewModelFixture fixture)
@@ -25,47 +24,42 @@ public sealed class BulkAddTests : IClassFixture<CollectionViewModelFixture>, ID
         _fixture = fixture;
         _fixture.ClearTestData();
 
-        // SUT erstellen mit leerem Store
-        _sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.Services,
-            _fixture.ViewModelFactory);
-
-        // ACT: Mehrere TestDtos hinzufügen
+        // ACT: Mehrere TestDtos zum lokalen ModelStore hinzufügen
         _addedDtos = new[]
         {
             new TestDto { Name = "First" },
             new TestDto { Name = "Second" },
             new TestDto { Name = "Third" }
         };
-        _fixture.TestDtoStore.AddRange(_addedDtos);
+        _fixture.Sut.ModelStore.AddRange(_addedDtos);
     }
 
     [Fact]
     public void CreatesMultipleViewModels()
     {
-        _sut.Items.Should().HaveCount(3);
+        _fixture.Sut.Items.Should().HaveCount(3);
     }
 
     [Fact]
     public void CountIsThree()
     {
-        _sut.Count.Should().Be(3);
+        _fixture.Sut.Count.Should().Be(3);
     }
 
     [Fact]
     public void ViewModelsHaveCorrectNames()
     {
-        _sut.Items.Should().Contain(vm => vm.Name == "First");
-        _sut.Items.Should().Contain(vm => vm.Name == "Second");
-        _sut.Items.Should().Contain(vm => vm.Name == "Third");
+        _fixture.Sut.Items.Should().Contain(vm => vm.Name == "First");
+        _fixture.Sut.Items.Should().Contain(vm => vm.Name == "Second");
+        _fixture.Sut.Items.Should().Contain(vm => vm.Name == "Third");
     }
 
     [Fact]
     public void ViewModelsAreInCorrectOrder()
     {
-        _sut.Items[0].Name.Should().Be("First");
-        _sut.Items[1].Name.Should().Be("Second");
-        _sut.Items[2].Name.Should().Be("Third");
+        _fixture.Sut.Items[0].Name.Should().Be("First");
+        _fixture.Sut.Items[1].Name.Should().Be("Second");
+        _fixture.Sut.Items[2].Name.Should().Be("Third");
     }
 
     [Fact]
@@ -73,13 +67,12 @@ public sealed class BulkAddTests : IClassFixture<CollectionViewModelFixture>, ID
     {
         for (int i = 0; i < _addedDtos.Length; i++)
         {
-            _sut.Items[i].Model.Should().BeSameAs(_addedDtos[i]);
+            _fixture.Sut.Items[i].Model.Should().BeSameAs(_addedDtos[i]);
         }
     }
 
     public void Dispose()
     {
         _fixture.ClearTestData();
-        _sut?.Dispose();
     }
 }

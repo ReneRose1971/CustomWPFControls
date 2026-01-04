@@ -1,6 +1,5 @@
 using System;
 using CustomWPFControls.Tests.Testing;
-using CustomWPFControls.ViewModels;
 using FluentAssertions;
 using TestHelper.DataStores.Models;
 using Xunit;
@@ -17,7 +16,6 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.DataStoreRemove;
 public sealed class RemoveSingleTests : IClassFixture<CollectionViewModelFixture>, IDisposable
 {
     private readonly CollectionViewModelFixture _fixture;
-    private readonly ViewModels.CollectionViewModel<TestDto, TestViewModel> _sut;
     private readonly TestDto _removedDto;
     private readonly TestDto[] _remainingDtos;
 
@@ -26,49 +24,45 @@ public sealed class RemoveSingleTests : IClassFixture<CollectionViewModelFixture
         _fixture = fixture;
         _fixture.ClearTestData();
 
-        // Setup: 3 Items hinzufügen
+        // Setup: 3 Items zum lokalen ModelStore hinzufügen
         var dto1 = new TestDto { Name = "First" };
         var dto2 = new TestDto { Name = "Second" };
         var dto3 = new TestDto { Name = "Third" };
-        _fixture.TestDtoStore.AddRange(new[] { dto1, dto2, dto3 });
-
-        _sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.Services,
-            _fixture.ViewModelFactory);
+        _fixture.Sut.ModelStore.AddRange(new[] { dto1, dto2, dto3 });
 
         // ACT: Mittleres Item entfernen
         _removedDto = dto2;
         _remainingDtos = new[] { dto1, dto3 };
-        _fixture.TestDtoStore.Remove(dto2);
+        _fixture.Sut.ModelStore.Remove(dto2);
     }
 
     [Fact]
     public void RemovesViewModel()
     {
-        _sut.Items.Should().NotContain(vm => vm.Model == _removedDto);
+        _fixture.Sut.Items.Should().NotContain(vm => vm.Model == _removedDto);
     }
 
     [Fact]
     public void CountIsTwo()
     {
-        _sut.Count.Should().Be(2);
+        _fixture.Sut.Count.Should().Be(2);
     }
 
     [Fact]
     public void RemainingViewModelsCorrect()
     {
-        _sut.Items.Should().Contain(vm => vm.Name == "First");
-        _sut.Items.Should().Contain(vm => vm.Name == "Third");
+        _fixture.Sut.Items.Should().Contain(vm => vm.Name == "First");
+        _fixture.Sut.Items.Should().Contain(vm => vm.Name == "Third");
     }
 
     [Fact]
     public void RemovedModelNotInItems()
     {
-        _sut.Items.Should().NotContain(vm => vm.Name == "Second");
+        _fixture.Sut.Items.Should().NotContain(vm => vm.Name == "Second");
     }
 
     public void Dispose()
     {
-        // Clean up any resources, if needed.
+        _fixture.ClearTestData();
     }
 }

@@ -1,6 +1,5 @@
 using System;
 using CustomWPFControls.Tests.Testing;
-using CustomWPFControls.ViewModels;
 using FluentAssertions;
 using TestHelper.DataStores.Models;
 using Xunit;
@@ -17,7 +16,6 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.RemoveAPI;
 public sealed class RemoveSingleTests : IClassFixture<CollectionViewModelFixture>, IDisposable
 {
     private readonly CollectionViewModelFixture _fixture;
-    private readonly ViewModels.CollectionViewModel<TestDto, TestViewModel> _sut;
     private readonly TestViewModel _removedViewModel;
     private readonly bool _removeResult;
 
@@ -27,38 +25,34 @@ public sealed class RemoveSingleTests : IClassFixture<CollectionViewModelFixture
         _fixture.ClearTestData();
 
         // Setup: 3 Items hinzufügen
-        _fixture.TestDtoStore.AddRange(new[]
+        _fixture.Sut.ModelStore.AddRange(new[]
         {
             new TestDto { Name = "First" },
             new TestDto { Name = "Second" },
             new TestDto { Name = "Third" }
         });
 
-        _sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.Services,
-            _fixture.ViewModelFactory);
-
         // ACT: Mittleres ViewModel entfernen
-        _removedViewModel = _sut.Items[1];
-        _removeResult = _sut.Remove(_removedViewModel);
+        _removedViewModel = _fixture.Sut.Items[1];
+        _removeResult = _fixture.Sut.Remove(_removedViewModel);
     }
 
     [Fact]
     public void RemovesViewModel()
     {
-        _sut.Items.Should().NotContain(_removedViewModel);
+        _fixture.Sut.Items.Should().NotContain(_removedViewModel);
     }
 
     [Fact]
     public void RemovesModelFromStore()
     {
-        _fixture.TestDtoStore.Items.Should().NotContain(_removedViewModel.Model);
+        _fixture.Sut.ModelStore.Items.Should().NotContain(_removedViewModel.Model);
     }
 
     [Fact]
     public void CountDecrements()
     {
-        _sut.Count.Should().Be(2);
+        _fixture.Sut.Count.Should().Be(2);
     }
 
     [Fact]
@@ -70,6 +64,5 @@ public sealed class RemoveSingleTests : IClassFixture<CollectionViewModelFixture
     public void Dispose()
     {
         _fixture.ClearTestData();
-        _sut?.Dispose();
     }
 }

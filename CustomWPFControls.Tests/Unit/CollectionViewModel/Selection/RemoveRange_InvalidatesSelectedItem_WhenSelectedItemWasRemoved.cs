@@ -14,17 +14,14 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Selection;
 public sealed class RemoveRange_InvalidatesSelectedItem_WhenSelectedItemWasRemoved : IClassFixture<CollectionViewModelFixture>, IDisposable
 {
     private readonly CollectionViewModelFixture _fixture;
-    private readonly ViewModels.CollectionViewModel<TestDto, TestViewModel> _sut;
 
     public RemoveRange_InvalidatesSelectedItem_WhenSelectedItemWasRemoved(CollectionViewModelFixture fixture)
     {
         _fixture = fixture;
-        _sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.Services,
-            _fixture.ViewModelFactory);
+        _fixture.ClearTestData();
         
         // Setup: Add test data
-        _fixture.TestDtoStore.AddRange(new[]
+        _fixture.Sut.ModelStore.AddRange(new[]
         {
             new TestDto { Name = "First" },
             new TestDto { Name = "Second" },
@@ -36,19 +33,18 @@ public sealed class RemoveRange_InvalidatesSelectedItem_WhenSelectedItemWasRemov
     public void Test_RemoveRange_InvalidatesSelectedItem()
     {
         // Arrange
-        _sut.SelectedItem = _sut.Items.First();
-        var itemsToRemove = _sut.Items.Take(2).ToList();
+        _fixture.Sut.SelectedItem = _fixture.Sut.Items.First();
+        var itemsToRemove = _fixture.Sut.Items.Take(2).ToList();
 
         // Act
-        _sut.RemoveRange(itemsToRemove);
+        _fixture.Sut.RemoveRange(itemsToRemove);
 
         // Assert
-        _sut.SelectedItem.Should().BeNull();
+        _fixture.Sut.SelectedItem.Should().BeNull();
     }
 
     public void Dispose()
     {
         _fixture.ClearTestData();
-        _sut?.Dispose();
     }
 }

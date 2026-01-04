@@ -17,7 +17,6 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Properties;
 public sealed class CountProperty_InitialValue : IClassFixture<CollectionViewModelFixture>, IDisposable
 {
     private readonly CollectionViewModelFixture _fixture;
-    private readonly ViewModels.CollectionViewModel<TestDto, TestViewModel> _sut;
 
     public CountProperty_InitialValue(CollectionViewModelFixture fixture)
     {
@@ -25,35 +24,30 @@ public sealed class CountProperty_InitialValue : IClassFixture<CollectionViewMod
         _fixture.ClearTestData();
         
         // Shared Setup: 3 Items zum Store hinzufügen
-        _fixture.TestDtoStore.AddRange(new[]
+        _fixture.Sut.ModelStore.AddRange(new[]
         {
             new TestDto { Name = "First" },
             new TestDto { Name = "Second" },
             new TestDto { Name = "Third" }
         });
-        
-        _sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.Services,
-            _fixture.ViewModelFactory);
     }
 
     [Fact]
     public void ReturnsCorrectValue()
     {
         // Assert
-        _sut.Count.Should().Be(3);
+        _fixture.Sut.Count.Should().Be(3);
     }
 
     [Fact]
     public void MatchesItemsCount()
     {
         // Assert
-        _sut.Count.Should().Be(_sut.Items.Count);
+        _fixture.Sut.Count.Should().Be(_fixture.Sut.Items.Count);
     }
 
     public void Dispose()
     {
         _fixture.ClearTestData();
-        _sut?.Dispose();
     }
 }

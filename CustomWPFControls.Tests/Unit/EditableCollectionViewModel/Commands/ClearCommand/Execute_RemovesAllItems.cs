@@ -17,12 +17,12 @@ public sealed class Execute_RemovesAllItems : IClassFixture<CollectionViewModelF
     public Execute_RemovesAllItems(CollectionViewModelFixture fixture)
     {
         _fixture = fixture;
-        _sut = new EditableCollectionViewModel<TestDto, TestViewModel>(
-            _fixture.Services,
-            _fixture.ViewModelFactory);
+        _fixture.ClearTestData();
+        
+        _sut = _fixture.CreateEditableCollectionViewModel();
 
         // Setup: Mehrere Items hinzufügen
-        _fixture.TestDtoStore.AddRange(new[]
+        _sut.ModelStore.AddRange(new[]
         {
             new TestDto { Name = "Item1" },
             new TestDto { Name = "Item2" },
@@ -39,12 +39,11 @@ public sealed class Execute_RemovesAllItems : IClassFixture<CollectionViewModelF
         // Assert
         Assert.Equal(0, _sut.Count);
         Assert.Empty(_sut.Items);
-        Assert.Empty(_fixture.TestDtoStore.Items);
+        Assert.Empty(_sut.ModelStore.Items);
     }
 
     public void Dispose()
     {
-        _fixture.ClearTestData();
         _sut?.Dispose();
     }
 }

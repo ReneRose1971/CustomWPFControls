@@ -23,19 +23,17 @@ public sealed class BulkAdd_RaisesCountPropertyChanged : IClassFixture<Collectio
     public void Test_BulkAdd_RaisesCountPropertyChanged()
     {
         // Arrange
-        var sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.Services,
-            _fixture.ViewModelFactory);
+        _fixture.ClearTestData();
 
         bool propertyChangedRaised = false;
-        sut.PropertyChanged += (_, e) =>
+        _fixture.Sut.PropertyChanged += (_, e) =>
         {
-            if (e.PropertyName == nameof(sut.Count))
+            if (e.PropertyName == nameof(_fixture.Sut.Count))
                 propertyChangedRaised = true;
         };
 
         // Act
-        _fixture.TestDtoStore.AddRange(new[]
+        _fixture.Sut.ModelStore.AddRange(new[]
         {
             new TestDto { Name = "First" },
             new TestDto { Name = "Second" }
@@ -46,6 +44,5 @@ public sealed class BulkAdd_RaisesCountPropertyChanged : IClassFixture<Collectio
 
         // Cleanup
         _fixture.ClearTestData();
-        sut.Dispose();
     }
 }

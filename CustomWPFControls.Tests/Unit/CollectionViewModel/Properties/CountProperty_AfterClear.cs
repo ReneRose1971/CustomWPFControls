@@ -18,29 +18,33 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Properties;
 public sealed class CountProperty_AfterClear : IClassFixture<CollectionViewModelFixture>, IDisposable
 {
     private readonly CollectionViewModelFixture _fixture;
-    private readonly ViewModels.CollectionViewModel<TestDto, TestViewModel> _sut;
 
     public CountProperty_AfterClear(CollectionViewModelFixture fixture)
     {
         _fixture = fixture;
-        _sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.Services,
-            _fixture.ViewModelFactory);
+        _fixture.ClearTestData();
+        
+        // Setup: 3 Items hinzufügen
+        _fixture.Sut.ModelStore.AddRange(new[]
+        {
+            new TestDto { Name = "First" },
+            new TestDto { Name = "Second" },
+            new TestDto { Name = "Third" }
+        });
     }
 
     [Fact]
     public void BecomesZero()
     {
         // Act
-        _fixture.TestDtoStore.Clear();
+        _fixture.Sut.ModelStore.Clear();
 
         // Assert
-        _sut.Count.Should().Be(0);
+        _fixture.Sut.Count.Should().Be(0);
     }
 
     public void Dispose()
     {
-        _sut?.Dispose();
-        _fixture?.Dispose();
+        _fixture.ClearTestData();
     }
 }

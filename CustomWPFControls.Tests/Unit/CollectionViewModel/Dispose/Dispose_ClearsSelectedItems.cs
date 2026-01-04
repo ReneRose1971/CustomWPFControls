@@ -18,18 +18,16 @@ public sealed class Dispose_ClearsSelectedItems : IClassFixture<CollectionViewMo
     public Dispose_ClearsSelectedItems(CollectionViewModelFixture fixture)
     {
         _fixture = fixture;
-        _fixture.ClearTestData();
+        
+        // Setup: Neue unabhängige Instanz für Dispose-Test erstellen
+        _sut = _fixture.CreateCollectionViewModel();
         
         // Setup: 2 Items zum Store hinzufügen
-        _fixture.TestDtoStore.AddRange(new[]
+        _sut.ModelStore.AddRange(new[]
         {
             new TestDto { Name = "First" },
             new TestDto { Name = "Second" }
         });
-        
-        _sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.Services,
-            _fixture.ViewModelFactory);
         
         // Setup: Items zu SelectedItems hinzufügen
         _sut.SelectedItems.Add(_sut.Items[0]);
@@ -51,6 +49,6 @@ public sealed class Dispose_ClearsSelectedItems : IClassFixture<CollectionViewMo
 
     public void Dispose()
     {
-        _fixture.ClearTestData();
+        // Nichts zu tun - _sut wurde bereits disposed
     }
 }

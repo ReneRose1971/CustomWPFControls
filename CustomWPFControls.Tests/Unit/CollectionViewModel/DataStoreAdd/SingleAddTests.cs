@@ -18,7 +18,6 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.DataStoreAdd;
 public sealed class SingleAddTests : IClassFixture<CollectionViewModelFixture>, IDisposable
 {
     private readonly CollectionViewModelFixture _fixture;
-    private readonly ViewModels.CollectionViewModel<TestDto, TestViewModel> _sut;
     private readonly TestDto _addedDto;
 
     public SingleAddTests(CollectionViewModelFixture fixture)
@@ -26,49 +25,43 @@ public sealed class SingleAddTests : IClassFixture<CollectionViewModelFixture>, 
         _fixture = fixture;
         _fixture.ClearTestData();
 
-        // SUT erstellen mit leerem Store
-        _sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.Services,
-            _fixture.ViewModelFactory);
-
-        // ACT: Einzelnes TestDto hinzufügen
+        // ACT: Einzelnes TestDto zum lokalen ModelStore hinzufügen
         _addedDto = new TestDto { Name = "TestItem" };
-        _fixture.TestDtoStore.Add(_addedDto);
+        _fixture.Sut.ModelStore.Add(_addedDto);
     }
 
     [Fact]
     public void CreatesViewModel()
     {
-        _sut.Items.Should().ContainSingle();
+        _fixture.Sut.Items.Should().ContainSingle();
     }
 
     [Fact]
     public void ViewModelHasCorrectName()
     {
-        _sut.Items.Single().Name.Should().Be("TestItem");
+        _fixture.Sut.Items.Single().Name.Should().Be("TestItem");
     }
 
     [Fact]
     public void ViewModelReferencesCorrectModel()
     {
-        _sut.Items.Single().Model.Should().BeSameAs(_addedDto);
+        _fixture.Sut.Items.Single().Model.Should().BeSameAs(_addedDto);
     }
 
     [Fact]
     public void ItemsCountIsOne()
     {
-        _sut.Items.Count.Should().Be(1);
+        _fixture.Sut.Items.Count.Should().Be(1);
     }
 
     [Fact]
     public void CountPropertyIsOne()
     {
-        _sut.Count.Should().Be(1);
+        _fixture.Sut.Count.Should().Be(1);
     }
 
     public void Dispose()
     {
         _fixture.ClearTestData();
-        _sut?.Dispose();
     }
 }

@@ -20,27 +20,23 @@ public sealed class SelectedItem_RaisesPropertyChanged : IClassFixture<Collectio
     public void Test_SelectedItem_RaisesPropertyChanged()
     {
         // Arrange
-        _fixture.TestDtoStore.Add(new TestDto { Name = "Test" });
-
-        var sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.Services,
-            _fixture.ViewModelFactory);
+        _fixture.ClearTestData();
+        _fixture.Sut.ModelStore.Add(new TestDto { Name = "Test" });
 
         bool propertyChangedRaised = false;
-        sut.PropertyChanged += (_, e) =>
+        _fixture.Sut.PropertyChanged += (_, e) =>
         {
-            if (e.PropertyName == nameof(sut.SelectedItem))
+            if (e.PropertyName == nameof(_fixture.Sut.SelectedItem))
                 propertyChangedRaised = true;
         };
 
         // Act
-        sut.SelectedItem = sut.Items.First();
+        _fixture.Sut.SelectedItem = _fixture.Sut.Items.First();
 
         // Assert
         propertyChangedRaised.Should().BeTrue();
 
         // Cleanup
         _fixture.ClearTestData();
-        sut.Dispose();
     }
 }

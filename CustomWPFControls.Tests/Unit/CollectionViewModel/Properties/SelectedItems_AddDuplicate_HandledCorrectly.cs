@@ -27,24 +27,19 @@ public sealed class SelectedItems_AddDuplicate_HandledCorrectly : IClassFixture<
         _fixture.ClearTestData();
         
         // Setup: Ein Item zum Store hinzufügen
-        _fixture.TestDtoStore.Add(new TestDto { Name = "TestItem" });
-        
-        var sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.Services,
-            _fixture.ViewModelFactory);
+        _fixture.Sut.ModelStore.Add(new TestDto { Name = "TestItem" });
 
         // Act - Gleiches Item zweimal zu SelectedItems hinzufügen
-        var item = sut.Items.Single();
-        sut.SelectedItems.Add(item);
-        sut.SelectedItems.Add(item);
+        var item = _fixture.Sut.Items.Single();
+        _fixture.Sut.SelectedItems.Add(item);
+        _fixture.Sut.SelectedItems.Add(item);
 
         // Assert - ObservableCollection erlaubt normalerweise Duplikate
         // Aber das Verhalten kann implementierungsabhängig sein
         // Test stellt sicher, dass keine Exception geworfen wird
-        sut.SelectedItems.Should().NotBeEmpty();
+        _fixture.Sut.SelectedItems.Should().NotBeEmpty();
 
         // Cleanup
         _fixture.ClearTestData();
-        sut.Dispose();
     }
 }

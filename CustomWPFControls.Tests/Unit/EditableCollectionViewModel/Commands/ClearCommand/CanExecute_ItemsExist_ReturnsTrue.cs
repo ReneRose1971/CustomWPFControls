@@ -19,16 +19,14 @@ public sealed class CanExecute_ItemsExist_ReturnsTrue : IClassFixture<Collection
         _fixture = fixture;
         _fixture.ClearTestData();
         
+        _sut = _fixture.CreateEditableCollectionViewModel();
+        
         // Setup: Items zum Store hinzufügen
-        _fixture.TestDtoStore.AddRange(new[]
+        _sut.ModelStore.AddRange(new[]
         {
             new TestDto { Name = "First" },
             new TestDto { Name = "Second" }
         });
-        
-        _sut = new EditableCollectionViewModel<TestDto, TestViewModel>(
-            _fixture.Services,
-            _fixture.ViewModelFactory);
     }
 
     [Fact]
@@ -40,7 +38,6 @@ public sealed class CanExecute_ItemsExist_ReturnsTrue : IClassFixture<Collection
 
     public void Dispose()
     {
-        _fixture.ClearTestData();
         _sut?.Dispose();
     }
 }

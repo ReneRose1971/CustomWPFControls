@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using CustomWPFControls.Factories;
 using CustomWPFControls.Services;
 using DataStores.Abstractions;
 using DataStores.Extensions;
@@ -34,12 +35,12 @@ namespace CustomWPFControls.ViewModels
         where TModel : class
         where TViewModel : class, IViewModelWrapper<TModel>
     {
-        private readonly Factories.IViewModelFactory<TModel, TViewModel> _viewModelFactory;
+        private readonly IViewModelFactory<TModel, TViewModel> _viewModelFactory;
         private readonly IEqualityComparer<TModel> _modelComparer;
         private readonly Func<TModel, TViewModel> _factoryFunc;
         private readonly Func<TModel, TViewModel, bool> _comparerFunc;
         
-        private IDataStore<TModel> _modelStore;
+        private readonly IDataStore<TModel> _modelStore;
         private readonly IDataStore<TViewModel> _viewModelStore;
         private readonly ReadOnlyObservableCollectionSynchronization<TViewModel> _itemsSync;
         private readonly ObservableCollection<TViewModel> _selectedItems;
@@ -54,7 +55,7 @@ namespace CustomWPFControls.ViewModels
         /// <exception cref="ArgumentNullException">Wenn einer der Parameter null ist.</exception>
         public CollectionViewModel(
             ICustomWPFServices services,
-            Factories.IViewModelFactory<TModel, TViewModel> viewModelFactory)
+            IViewModelFactory<TModel, TViewModel> viewModelFactory)
         {
             if (services == null) throw new ArgumentNullException(nameof(services));
             if (viewModelFactory == null) throw new ArgumentNullException(nameof(viewModelFactory));
@@ -65,7 +66,7 @@ namespace CustomWPFControls.ViewModels
             _factoryFunc = model => _viewModelFactory.Create(model);
             _comparerFunc = (m, vm) => _modelComparer.Equals(m, vm.Model);
 
-            _modelStore = services.DataStores.GetGlobal<TModel>();
+            _modelStore = services.DataStores.CreateLocal<TModel>();
             _viewModelStore = services.DataStores.CreateLocal<TViewModel>();
 
             // ════════════════════════════════════════════════════════════
@@ -81,9 +82,8 @@ namespace CustomWPFControls.ViewModels
             // ToReadOnlyObservableCollection: ViewModel-Store → WPF ObservableCollection
             // Automatische Synchronisation ohne manuelle Event-Handler!
             // ════════════════════════════════════════════════════════════
-            var viewModelComparer = services.ComparerService.GetComparer<TViewModel>();
             _itemsSync = _viewModelStore.ToReadOnlyObservableCollection(
-                comparer: viewModelComparer);
+                comparer: services.ComparerService.GetComparer<TViewModel>());
             
             Items = _itemsSync.Collection;
             
@@ -104,6 +104,16 @@ namespace CustomWPFControls.ViewModels
         /// Alle Änderungen am _viewModelStore werden automatisch in Items reflektiert.
         /// </remarks>
         public ReadOnlyObservableCollection<TViewModel> Items { get; }
+
+        /// <summary>
+        /// Model-DataStore für diese Collection (readonly).
+        /// Verwenden Sie die Add/Remove/Clear-Methoden des Stores, um Daten zu manipulieren.
+        /// </summary>
+        /// <remarks>
+        /// Der ModelStore ist readonly und wird im Konstruktor als lokaler Store erstellt.
+        /// Alle Änderungen am ModelStore werden automatisch via TransformTo in die ViewModel-Collection übertragen.
+        /// </remarks>
+        public IDataStore<TModel> ModelStore => _modelStore;
 
         /// <summary>
         /// Ausgewähltes ViewModel (Single-Selection).

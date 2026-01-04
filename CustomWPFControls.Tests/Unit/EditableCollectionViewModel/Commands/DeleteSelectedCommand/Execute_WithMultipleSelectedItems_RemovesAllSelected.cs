@@ -17,12 +17,12 @@ public sealed class Execute_WithMultipleSelectedItems_RemovesAllSelected : IClas
     public Execute_WithMultipleSelectedItems_RemovesAllSelected(CollectionViewModelFixture fixture)
     {
         _fixture = fixture;
-        _sut = new EditableCollectionViewModel<TestDto, TestViewModel>(
-            _fixture.Services,
-            _fixture.ViewModelFactory);
+        _fixture.ClearTestData();
+        
+        _sut = _fixture.CreateEditableCollectionViewModel();
 
         // Setup: Mehrere Items hinzufügen
-        _fixture.TestDtoStore.AddRange(new[]
+        _sut.ModelStore.AddRange(new[]
         {
             new TestDto { Name = "Item1" },
             new TestDto { Name = "Item2" },
@@ -48,7 +48,6 @@ public sealed class Execute_WithMultipleSelectedItems_RemovesAllSelected : IClas
 
     public void Dispose()
     {
-        _fixture.ClearTestData();
         _sut?.Dispose();
     }
 }

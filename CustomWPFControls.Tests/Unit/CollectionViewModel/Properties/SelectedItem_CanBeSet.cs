@@ -20,20 +20,16 @@ public sealed class SelectedItem_CanBeSet : IClassFixture<CollectionViewModelFix
     public void Test_SelectedItem_CanBeSet()
     {
         // Arrange
-        _fixture.TestDtoStore.Add(new TestDto { Name = "Test" });
-
-        var sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.Services,
-            _fixture.ViewModelFactory);
+        _fixture.ClearTestData();
+        _fixture.Sut.ModelStore.Add(new TestDto { Name = "Test" });
 
         // Act
-        sut.SelectedItem = sut.Items.First();
+        _fixture.Sut.SelectedItem = _fixture.Sut.Items.First();
 
         // Assert
-        sut.SelectedItem.Should().NotBeNull();
+        _fixture.Sut.SelectedItem.Should().NotBeNull();
 
         // Cleanup
         _fixture.ClearTestData();
-        sut.Dispose();
     }
 }

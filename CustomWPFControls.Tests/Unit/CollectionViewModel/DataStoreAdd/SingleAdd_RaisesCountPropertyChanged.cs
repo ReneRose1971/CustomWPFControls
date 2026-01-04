@@ -20,25 +20,22 @@ public sealed class SingleAdd_RaisesCountPropertyChanged : IClassFixture<Collect
     public void Test_SingleAdd_RaisesCountPropertyChanged()
     {
         // Arrange
-        var sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.Services,
-            _fixture.ViewModelFactory);
+        _fixture.ClearTestData();
 
         bool propertyChangedRaised = false;
-        sut.PropertyChanged += (_, e) =>
+        _fixture.Sut.PropertyChanged += (_, e) =>
         {
-            if (e.PropertyName == nameof(sut.Count))
+            if (e.PropertyName == nameof(_fixture.Sut.Count))
                 propertyChangedRaised = true;
         };
 
         // Act
-        _fixture.TestDtoStore.Add(new TestDto { Name = "Test" });
+        _fixture.Sut.ModelStore.Add(new TestDto { Name = "Test" });
 
         // Assert
         propertyChangedRaised.Should().BeTrue();
 
         // Cleanup
         _fixture.ClearTestData();
-        sut.Dispose();
     }
 }

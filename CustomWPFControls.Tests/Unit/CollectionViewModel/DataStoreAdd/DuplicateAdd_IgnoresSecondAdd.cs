@@ -20,21 +20,18 @@ public sealed class DuplicateAdd_IgnoresSecondAdd : IClassFixture<CollectionView
     public void Test_DuplicateAdd_IgnoresSecondAdd()
     {
         // Arrange
-        var sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.Services,
-            _fixture.ViewModelFactory);
+        _fixture.ClearTestData();
         
         var dto = new TestDto { Name = "Test" };
 
         // Act
-        _fixture.TestDtoStore.Add(dto);
-        _fixture.TestDtoStore.Add(dto); // Duplicate
+        _fixture.Sut.ModelStore.Add(dto);
+        _fixture.Sut.ModelStore.Add(dto); // Duplicate
 
         // Assert
-        sut.Count.Should().Be(1);
+        _fixture.Sut.Count.Should().Be(1);
 
         // Cleanup
         _fixture.ClearTestData();
-        sut.Dispose();
     }
 }

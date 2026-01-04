@@ -11,17 +11,14 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Selection;
 public sealed class Clear_InvalidatesSelectedItem : IClassFixture<CollectionViewModelFixture>, IDisposable
 {
     private readonly CollectionViewModelFixture _fixture;
-    private readonly ViewModels.CollectionViewModel<TestDto, TestViewModel> _sut;
 
     public Clear_InvalidatesSelectedItem(CollectionViewModelFixture fixture)
     {
         _fixture = fixture;
-        _sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.Services,
-            _fixture.ViewModelFactory);
+        _fixture.ClearTestData();
         
         // Setup: Items hinzufügen
-        _fixture.TestDtoStore.AddRange(new[]
+        _fixture.Sut.ModelStore.AddRange(new[]
         {
             new TestDto { Name = "First" },
             new TestDto { Name = "Second" }
@@ -32,18 +29,17 @@ public sealed class Clear_InvalidatesSelectedItem : IClassFixture<CollectionView
     public void Test_Clear_InvalidatesSelectedItem()
     {
         // Arrange
-        _sut.SelectedItem = _sut.Items.First();
+        _fixture.Sut.SelectedItem = _fixture.Sut.Items.First();
 
         // Act
-        _sut.Clear();
+        _fixture.Sut.Clear();
 
         // Assert
-        _sut.SelectedItem.Should().BeNull();
+        _fixture.Sut.SelectedItem.Should().BeNull();
     }
 
     public void Dispose()
     {
         _fixture.ClearTestData();
-        _sut?.Dispose();
     }
 }

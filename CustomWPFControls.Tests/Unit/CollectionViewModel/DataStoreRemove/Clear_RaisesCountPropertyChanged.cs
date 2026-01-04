@@ -23,31 +23,28 @@ public sealed class Clear_RaisesCountPropertyChanged : IClassFixture<CollectionV
     public void Test_Clear_RaisesCountPropertyChanged()
     {
         // Arrange
-        var sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.Services,
-            _fixture.ViewModelFactory);
+        _fixture.ClearTestData();
         
-        _fixture.TestDtoStore.AddRange(new[]
+        _fixture.Sut.ModelStore.AddRange(new[]
         {
             new TestDto { Name = "First" },
             new TestDto { Name = "Second" }
         });
 
         bool propertyChangedRaised = false;
-        sut.PropertyChanged += (_, e) =>
+        _fixture.Sut.PropertyChanged += (_, e) =>
         {
-            if (e.PropertyName == nameof(sut.Count))
+            if (e.PropertyName == nameof(_fixture.Sut.Count))
                 propertyChangedRaised = true;
         };
 
         // Act
-        _fixture.TestDtoStore.Clear();
+        _fixture.Sut.ModelStore.Clear();
 
         // Assert
         propertyChangedRaised.Should().BeTrue();
 
         // Cleanup
         _fixture.ClearTestData();
-        sut.Dispose();
     }
 }

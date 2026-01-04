@@ -14,13 +14,13 @@ public sealed class Execute_WithSelectedItem_RemovesItem : IClassFixture<Collect
     public Execute_WithSelectedItem_RemovesItem(CollectionViewModelFixture fixture)
     {
         _fixture = fixture;
-        _sut = new EditableCollectionViewModel<TestDto, TestViewModel>(
-            _fixture.Services,
-            _fixture.ViewModelFactory);
+        _fixture.ClearTestData();
+        
+        _sut = _fixture.CreateEditableCollectionViewModel();
 
         // Setup: Item hinzufügen und selektieren
         var model = new TestDto { Name = "ToDelete" };
-        _fixture.TestDtoStore.Add(model);
+        _sut.ModelStore.Add(model);
         _sut.SelectedItem = _sut.Items[0];
     }
 
@@ -38,7 +38,6 @@ public sealed class Execute_WithSelectedItem_RemovesItem : IClassFixture<Collect
 
     public void Dispose()
     {
-        _fixture.ClearTestData();
         _sut?.Dispose();
     }
 }

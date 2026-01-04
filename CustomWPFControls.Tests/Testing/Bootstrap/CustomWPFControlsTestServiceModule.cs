@@ -2,6 +2,7 @@ using Common.Bootstrap;
 using CustomWPFControls.Factories;
 using Microsoft.Extensions.DependencyInjection;
 using TestHelper.DataStores.Models;
+using CustomWPFControls.Bootstrap;
 
 namespace CustomWPFControls.Tests.Testing.Bootstrap;
 
@@ -33,6 +34,6 @@ public sealed class CustomWPFControlsTestServiceModule : IServiceModule
     public void Register(IServiceCollection services)
     {
         // ViewModelFactory für TestDto/TestViewModel registrieren
-        services.AddViewModelFactory<TestDto, TestViewModel>();
+        services.AddViewModelPackage<TestDto, TestViewModel>();
     }
 }

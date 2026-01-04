@@ -1,4 +1,5 @@
 using System;
+using CustomWPFControls.Bootstrap;
 using CustomWPFControls.Factories;
 using CustomWPFControls.Tests.Testing;
 using Microsoft.Extensions.DependencyInjection;
@@ -113,9 +114,8 @@ namespace CustomWPFControls.Tests.Unit
             // Arrange
             var services = new ServiceCollection();
             
-            // Registriere ViewModel mit zusätzlicher Dependency (als Beispiel)
-            // TestViewModel hat keine zusätzlichen Dependencies, aber das Prinzip wird getestet
-            services.AddViewModelFactory<TestDto, TestViewModel>();
+            // Registriere ViewModel-Package
+            services.AddViewModelPackage<TestDto, TestViewModel>();
             var serviceProvider = services.BuildServiceProvider();
 
             var factory = serviceProvider.GetRequiredService<IViewModelFactory<TestDto, TestViewModel>>();

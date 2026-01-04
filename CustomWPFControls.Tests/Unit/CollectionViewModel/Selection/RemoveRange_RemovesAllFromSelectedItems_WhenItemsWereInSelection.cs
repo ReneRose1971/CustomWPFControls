@@ -1,6 +1,5 @@
 using System;
 using CustomWPFControls.Tests.Testing;
-using CustomWPFControls.ViewModels;
 using FluentAssertions;
 using TestHelper.DataStores.Models;
 using Xunit;
@@ -13,17 +12,14 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Selection;
 public sealed class RemoveRange_RemovesAllFromSelectedItems_WhenItemsWereInSelection : IClassFixture<CollectionViewModelFixture>, IDisposable
 {
     private readonly CollectionViewModelFixture _fixture;
-    private readonly ViewModels.CollectionViewModel<TestDto, TestViewModel> _sut;
 
     public RemoveRange_RemovesAllFromSelectedItems_WhenItemsWereInSelection(CollectionViewModelFixture fixture)
     {
         _fixture = fixture;
-        _sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.Services,
-            _fixture.ViewModelFactory);
+        _fixture.ClearTestData();
 
         // Setup: Items hinzufügen
-        _fixture.TestDtoStore.AddRange(new[]
+        _fixture.Sut.ModelStore.AddRange(new[]
         {
             new TestDto { Name = "Item1" },
             new TestDto { Name = "Item2" },
@@ -31,27 +27,26 @@ public sealed class RemoveRange_RemovesAllFromSelectedItems_WhenItemsWereInSelec
         });
 
         // Setup: Item1 und Item2 zu SelectedItems hinzufügen
-        _sut.SelectedItems.Add(_sut.Items[0]);
-        _sut.SelectedItems.Add(_sut.Items[1]);
+        _fixture.Sut.SelectedItems.Add(_fixture.Sut.Items[0]);
+        _fixture.Sut.SelectedItems.Add(_fixture.Sut.Items[1]);
     }
 
     [Fact]
     public void RemoveRange_RemovesAllFromSelectedItems()
     {
         // Arrange
-        var itemsToRemove = _sut.Items.Take(2).ToList(); // Item1 und Item2
-        Assert.Equal(2, _sut.SelectedItems.Count); // Verify Precondition
+        var itemsToRemove = _fixture.Sut.Items.Take(2).ToList(); // Item1 und Item2
+        Assert.Equal(2, _fixture.Sut.SelectedItems.Count); // Verify Precondition
 
         // Act
-        _sut.RemoveRange(itemsToRemove);
+        _fixture.Sut.RemoveRange(itemsToRemove);
 
         // Assert
-        Assert.Empty(_sut.SelectedItems);
+        Assert.Empty(_fixture.Sut.SelectedItems);
     }
 
     public void Dispose()
     {
         _fixture.ClearTestData();
-        _sut?.Dispose();
     }
 }

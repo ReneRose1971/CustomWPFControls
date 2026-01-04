@@ -15,16 +15,16 @@ public sealed class Execute_WithSelectedItem_CallsEditModelDelegate : IClassFixt
     public Execute_WithSelectedItem_CallsEditModelDelegate(CollectionViewModelFixture fixture)
     {
         _fixture = fixture;
-        _sut = new EditableCollectionViewModel<TestDto, TestViewModel>(
-            _fixture.Services,
-            _fixture.ViewModelFactory);
+        _fixture.ClearTestData();
+        
+        _sut = _fixture.CreateEditableCollectionViewModel();
 
         // Setup: EditModel-Delegate setzen
         _sut.EditModel = model => _editedModel = model;
 
         // Setup: Item hinzufügen und selektieren
         var model = new TestDto { Name = "ToEdit" };
-        _fixture.TestDtoStore.Add(model);
+        _sut.ModelStore.Add(model);
         _sut.SelectedItem = _sut.Items[0];
     }
 
@@ -44,7 +44,6 @@ public sealed class Execute_WithSelectedItem_CallsEditModelDelegate : IClassFixt
 
     public void Dispose()
     {
-        _fixture.ClearTestData();
         _sut?.Dispose();
     }
 }

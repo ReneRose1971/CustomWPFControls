@@ -14,7 +14,6 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.EdgeCases;
 public sealed class RemoveRange_WithEmptyList_ReturnsZero : IClassFixture<CollectionViewModelFixture>, IDisposable
 {
     private readonly CollectionViewModelFixture _fixture;
-    private readonly ViewModels.CollectionViewModel<TestDto, TestViewModel> _sut;
 
     public RemoveRange_WithEmptyList_ReturnsZero(CollectionViewModelFixture fixture)
     {
@@ -22,11 +21,7 @@ public sealed class RemoveRange_WithEmptyList_ReturnsZero : IClassFixture<Collec
         _fixture.ClearTestData();
         
         // Setup: Ein "Original Item" zum Store hinzufügen
-        _fixture.TestDtoStore.Add(new TestDto { Name = "OriginalItem" });
-        
-        _sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.Services,
-            _fixture.ViewModelFactory);
+        _fixture.Sut.ModelStore.Add(new TestDto { Name = "OriginalItem" });
     }
 
     [Fact]
@@ -36,16 +31,15 @@ public sealed class RemoveRange_WithEmptyList_ReturnsZero : IClassFixture<Collec
         var emptyList = Enumerable.Empty<TestViewModel>();
 
         // Act
-        var result = _sut.RemoveRange(emptyList);
+        var result = _fixture.Sut.RemoveRange(emptyList);
 
         // Assert
         Assert.Equal(0, result);
-        Assert.Equal(1, _sut.Count); // Original Item bleibt
+        Assert.Equal(1, _fixture.Sut.Count); // Original Item bleibt
     }
 
     public void Dispose()
     {
         _fixture.ClearTestData();
-        _sut?.Dispose();
     }
 }

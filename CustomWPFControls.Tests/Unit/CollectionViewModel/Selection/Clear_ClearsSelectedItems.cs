@@ -1,6 +1,5 @@
 using System;
 using CustomWPFControls.Tests.Testing;
-using CustomWPFControls.ViewModels;
 using FluentAssertions;
 using TestHelper.DataStores.Models;
 using Xunit;
@@ -13,43 +12,39 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Selection;
 public sealed class Clear_ClearsSelectedItems : IClassFixture<CollectionViewModelFixture>, IDisposable
 {
     private readonly CollectionViewModelFixture _fixture;
-    private readonly ViewModels.CollectionViewModel<TestDto, TestViewModel> _sut;
 
     public Clear_ClearsSelectedItems(CollectionViewModelFixture fixture)
     {
         _fixture = fixture;
-        _sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.Services,
-            _fixture.ViewModelFactory);
+        _fixture.ClearTestData();
 
         // Setup: Items hinzufügen
-        _fixture.TestDtoStore.AddRange(new[]
+        _fixture.Sut.ModelStore.AddRange(new[]
         {
             new TestDto { Name = "Item1" },
             new TestDto { Name = "Item2" }
         });
 
         // Setup: Items zu SelectedItems hinzufügen
-        _sut.SelectedItems.Add(_sut.Items[0]);
-        _sut.SelectedItems.Add(_sut.Items[1]);
+        _fixture.Sut.SelectedItems.Add(_fixture.Sut.Items[0]);
+        _fixture.Sut.SelectedItems.Add(_fixture.Sut.Items[1]);
     }
 
     [Fact]
     public void Test_Clear_ClearsSelectedItems()
     {
         // Arrange: Verify SelectedItems ist nicht leer
-        Assert.Equal(2, _sut.SelectedItems.Count);
+        Assert.Equal(2, _fixture.Sut.SelectedItems.Count);
 
         // Act
-        _sut.Clear();
+        _fixture.Sut.Clear();
 
         // Assert
-        Assert.Empty(_sut.SelectedItems);
+        Assert.Empty(_fixture.Sut.SelectedItems);
     }
 
     public void Dispose()
     {
         _fixture.ClearTestData();
-        _sut?.Dispose();
     }
 }

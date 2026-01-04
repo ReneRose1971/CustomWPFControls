@@ -17,16 +17,16 @@ public sealed class CanExecute_ItemSelectedAndEditModelSet_ReturnsTrue : IClassF
     public CanExecute_ItemSelectedAndEditModelSet_ReturnsTrue(CollectionViewModelFixture fixture)
     {
         _fixture = fixture;
-        _sut = new EditableCollectionViewModel<TestDto, TestViewModel>(
-            _fixture.Services,
-            _fixture.ViewModelFactory);
+        _fixture.ClearTestData();
+        
+        _sut = _fixture.CreateEditableCollectionViewModel();
 
         // Setup: EditModel setzen
         _sut.EditModel = model => { };
 
         // Setup: Item hinzufügen und selektieren
         var model = new TestDto { Name = "Test" };
-        _fixture.TestDtoStore.Add(model);
+        _sut.ModelStore.Add(model);
         _sut.SelectedItem = _sut.Items[0];
     }
 
@@ -39,7 +39,6 @@ public sealed class CanExecute_ItemSelectedAndEditModelSet_ReturnsTrue : IClassF
 
     public void Dispose()
     {
-        _fixture.ClearTestData();
         _sut?.Dispose();
     }
 }

@@ -51,4 +51,8 @@
       <HintPath>..\..\DataStores\TestHelper.DataStores\bin\Debug\net8.0\TestHelper.DataStores.dll</HintPath>
     </Reference>
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Unit\CollectionViewModel\Lifecycle\" />
+  </ItemGroup>
 </Project>

@@ -1,6 +1,5 @@
 using System;
 using CustomWPFControls.Tests.Testing;
-using CustomWPFControls.ViewModels;
 using FluentAssertions;
 using TestHelper.DataStores.Models;
 using Xunit;
@@ -13,7 +12,6 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Selection;
 public sealed class Remove_RemovesFromSelectedItems_WhenItemWasInSelection : IClassFixture<CollectionViewModelFixture>, IDisposable
 {
     private readonly CollectionViewModelFixture _fixture;
-    private readonly ViewModels.CollectionViewModel<TestDto, TestViewModel> _sut;
 
     public Remove_RemovesFromSelectedItems_WhenItemWasInSelection(CollectionViewModelFixture fixture)
     {
@@ -21,37 +19,32 @@ public sealed class Remove_RemovesFromSelectedItems_WhenItemWasInSelection : ICl
         _fixture.ClearTestData();
         
         // Setup: 2 Items zum Store hinzufügen
-        _fixture.TestDtoStore.AddRange(new[]
+        _fixture.Sut.ModelStore.AddRange(new[]
         {
             new TestDto { Name = "First" },
             new TestDto { Name = "Second" }
         });
         
-        _sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.Services,
-            _fixture.ViewModelFactory);
-        
         // Setup: Item zu SelectedItems hinzufügen
-        _sut.SelectedItems.Add(_sut.Items[0]);
+        _fixture.Sut.SelectedItems.Add(_fixture.Sut.Items[0]);
     }
 
     [Fact]
     public void Remove_RemovesFromSelectedItems()
     {
         // Arrange
-        var itemToRemove = _sut.Items[0];
-        Assert.Single(_sut.SelectedItems); // Verify Precondition
+        var itemToRemove = _fixture.Sut.Items[0];
+        Assert.Single(_fixture.Sut.SelectedItems); // Verify Precondition
 
         // Act
-        _sut.Remove(itemToRemove);
+        _fixture.Sut.Remove(itemToRemove);
 
         // Assert
-        Assert.Empty(_sut.SelectedItems);
+        Assert.Empty(_fixture.Sut.SelectedItems);
     }
 
     public void Dispose()
     {
         _fixture.ClearTestData();
-        _sut?.Dispose();
     }
 }
