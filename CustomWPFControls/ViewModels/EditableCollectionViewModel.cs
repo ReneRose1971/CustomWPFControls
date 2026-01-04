@@ -1,7 +1,8 @@
 ﻿using System;
+using System.Linq;
 using System.Windows.Input;
 using CustomWPFControls.Commands;
-using DataStores.Abstractions;
+using CustomWPFControls.Services;
 
 namespace CustomWPFControls.ViewModels
 {
@@ -14,7 +15,7 @@ namespace CustomWPFControls.ViewModels
     /// <remarks>
     /// <para>
     /// <b>Model-Verwaltung:</b> Models werden direkt über den Model-Store verwaltet:
-    /// <c>dataStores.GetGlobal&lt;TModel&gt;().Add(model)</c>
+    /// <c>services.DataStores.GetGlobal&lt;TModel&gt;().Add(model)</c>
     /// </para>
     /// <para>
     /// <b>Commands:</b> AddCommand arbeitet mit dem Model-Store.
@@ -25,7 +26,7 @@ namespace CustomWPFControls.ViewModels
         where TModel : class
         where TViewModel : class, IViewModelWrapper<TModel>
     {
-        private readonly IDataStores _dataStores;
+        private readonly ICustomWPFServices _services;
 
         /// <summary>
         /// Factory-Funktion zum Erstellen neuer Models.
@@ -38,15 +39,17 @@ namespace CustomWPFControls.ViewModels
         public Action<TModel>? EditModel { get; set; }
 
         /// <summary>
-        /// Erstellt ein EditableCollectionViewModel mit DataStore-Integration.
+        /// Erstellt ein EditableCollectionViewModel mit CustomWPFServices Facade.
         /// </summary>
+        /// <param name="services">CustomWPFControls Service-Facade.</param>
+        /// <param name="viewModelFactory">Factory zur Erstellung von ViewModels.</param>
+        /// <exception cref="ArgumentNullException">Wenn einer der Parameter null ist.</exception>
         public EditableCollectionViewModel(
-            IDataStores dataStores,
-            Factories.IViewModelFactory<TModel, TViewModel> viewModelFactory,
-            IEqualityComparerService comparerService)
-            : base(dataStores, viewModelFactory, comparerService)
+            ICustomWPFServices services,
+            Factories.IViewModelFactory<TModel, TViewModel> viewModelFactory)
+            : base(services, viewModelFactory)
         {
-            _dataStores = dataStores ?? throw new ArgumentNullException(nameof(dataStores));
+            _services = services ?? throw new ArgumentNullException(nameof(services));
         }
 
         #region Commands
@@ -63,7 +66,7 @@ namespace CustomWPFControls.ViewModels
             var model = CreateModel();
             if (model != null)
             {
-                var modelStore = _dataStores.GetGlobal<TModel>();
+                var modelStore = _services.DataStores.GetGlobal<TModel>();
                 modelStore.Add(model);
             }
         }, _ => CreateModel != null);

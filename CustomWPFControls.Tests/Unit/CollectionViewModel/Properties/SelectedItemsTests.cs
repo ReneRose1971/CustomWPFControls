@@ -1,7 +1,8 @@
+using System;
+using System.Collections.ObjectModel;
 using CustomWPFControls.Tests.Testing;
 using CustomWPFControls.ViewModels;
 using FluentAssertions;
-using System.Collections.ObjectModel;
 using TestHelper.DataStores.Models;
 using Xunit;
 
@@ -13,28 +14,17 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Properties;
 /// <remarks>
 /// Setup: 3 Items hinzufügen
 /// </remarks>
-public sealed class SelectedItemsTests : IClassFixture<CollectionViewModelFixture>
+public sealed class SelectedItemsTests : IClassFixture<CollectionViewModelFixture>, IDisposable
 {
     private readonly CollectionViewModelFixture _fixture;
-    private readonly CollectionViewModel<TestDto, TestViewModel> _sut;
+    private readonly ViewModels.CollectionViewModel<TestDto, TestViewModel> _sut;
 
     public SelectedItemsTests(CollectionViewModelFixture fixture)
     {
         _fixture = fixture;
-        _fixture.ClearTestData();
-
-        // Setup: 3 Items hinzufügen
-        _fixture.TestDtoStore.AddRange(new[]
-        {
-            new TestDto { Name = "First" },
-            new TestDto { Name = "Second" },
-            new TestDto { Name = "Third" }
-        });
-
-        _sut = new CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.DataStores,
-            _fixture.ViewModelFactory,
-            _fixture.ComparerService);
+        _sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
+            _fixture.Services,
+            _fixture.ViewModelFactory);
     }
 
     [Fact]
@@ -80,8 +70,26 @@ public sealed class SelectedItemsTests : IClassFixture<CollectionViewModelFixtur
     }
 
     [Fact]
-    public void IsObservableCollection()
+    public void SelectedItems_IsNotNull()
+    {
+        _sut.SelectedItems.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void SelectedItems_IsEmptyInitially()
+    {
+        _sut.SelectedItems.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void SelectedItems_IsObservableCollection()
     {
         _sut.SelectedItems.Should().BeOfType<ObservableCollection<TestViewModel>>();
+    }
+
+    public void Dispose()
+    {
+        _fixture.ClearTestData();
+        _sut?.Dispose();
     }
 }

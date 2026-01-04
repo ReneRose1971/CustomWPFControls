@@ -32,9 +32,8 @@ public sealed class ItemsPropertyTests : IClassFixture<CollectionViewModelFixtur
     {
         // Arrange
         var sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.DataStores,
-            _fixture.ViewModelFactory,
-            _fixture.ComparerService);
+            _fixture.Services,
+            _fixture.ViewModelFactory);
 
         // Assert
         sut.Items.Should().BeOfType<ReadOnlyObservableCollection<TestViewModel>>();
@@ -48,9 +47,8 @@ public sealed class ItemsPropertyTests : IClassFixture<CollectionViewModelFixtur
     {
         // Arrange
         var sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.DataStores,
-            _fixture.ViewModelFactory,
-            _fixture.ComparerService);
+            _fixture.Services,
+            _fixture.ViewModelFactory);
 
         // Assert
         sut.Items.Should().NotBeNull();
@@ -64,9 +62,8 @@ public sealed class ItemsPropertyTests : IClassFixture<CollectionViewModelFixtur
     {
         // Arrange
         var sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.DataStores,
-            _fixture.ViewModelFactory,
-            _fixture.ComparerService);
+            _fixture.Services,
+            _fixture.ViewModelFactory);
 
         // Assert
         sut.Items.Should().BeEmpty();

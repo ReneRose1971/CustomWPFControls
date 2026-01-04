@@ -18,11 +18,8 @@ public sealed class CanExecute_CollectionIsEmpty_ReturnsFalse : IClassFixture<Co
     {
         _fixture = fixture;
         _sut = new EditableCollectionViewModel<TestDto, TestViewModel>(
-            _fixture.DataStores,
-            _fixture.ViewModelFactory,
-            _fixture.ComparerService);
-
-        // Setup: Keine Items hinzufügen (Collection ist leer)
+            _fixture.Services,
+            _fixture.ViewModelFactory);
     }
 
     [Fact]

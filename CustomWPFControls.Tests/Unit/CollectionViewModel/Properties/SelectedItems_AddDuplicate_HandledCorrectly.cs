@@ -1,3 +1,4 @@
+using System;
 using CustomWPFControls.Tests.Testing;
 using CustomWPFControls.ViewModels;
 using FluentAssertions;
@@ -16,24 +17,19 @@ public sealed class SelectedItems_AddDuplicate_HandledCorrectly : IClassFixture<
     public SelectedItems_AddDuplicate_HandledCorrectly(CollectionViewModelFixture fixture)
     {
         _fixture = fixture;
-        _fixture.ClearTestData();
     }
 
     [Fact]
-    public void ShouldIgnoreOrAllowDuplicate()
+    public void Test_SelectedItems_AddDuplicate_HandledCorrectly()
     {
         // Arrange
-        _fixture.TestDtoStore.Add(new TestDto { Name = "Test" });
-
-        var sut = new CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.DataStores,
-            _fixture.ViewModelFactory,
-            _fixture.ComparerService);
-
-        var item = sut.Items.Single();
-        sut.SelectedItems.Add(item);
+        var sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
+            _fixture.Services,
+            _fixture.ViewModelFactory);
 
         // Act - Gleiches Item nochmal hinzufügen
+        var item = sut.Items.Single();
+        sut.SelectedItems.Add(item);
         sut.SelectedItems.Add(item);
 
         // Assert - ObservableCollection erlaubt normalerweise Duplikate

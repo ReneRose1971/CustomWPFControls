@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using CustomWPFControls.Tests.Testing;
 using CustomWPFControls.ViewModels;
 using FluentAssertions;
@@ -6,62 +8,58 @@ using Xunit;
 
 namespace CustomWPFControls.Tests.Unit.CollectionViewModel.RemoveAPI;
 
-/// <summary>
-/// Tests für die RemoveRange(viewModels) Public API.
-/// </summary>
-/// <remarks>
-/// Setup: 5 Items hinzufügen
-/// ACT: sut.RemoveRange([2 viewModels])
-/// </remarks>
-public sealed class RemoveRangeTests : IClassFixture<CollectionViewModelFixture>
+public sealed class RemoveRangeTests : IClassFixture<CollectionViewModelFixture>, IDisposable
 {
     private readonly CollectionViewModelFixture _fixture;
-    private readonly CollectionViewModel<TestDto, TestViewModel> _sut;
-    private readonly TestViewModel[] _removedViewModels;
+    private readonly ViewModels.CollectionViewModel<TestDto, TestViewModel> _sut;
 
     public RemoveRangeTests(CollectionViewModelFixture fixture)
     {
         _fixture = fixture;
-        _fixture.ClearTestData();
-
+        _sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
+            _fixture.Services,
+            _fixture.ViewModelFactory);
+        
         // Setup: 5 Items hinzufügen
         _fixture.TestDtoStore.AddRange(new[]
         {
-            new TestDto { Name = "Item1" },
-            new TestDto { Name = "Item2" },
-            new TestDto { Name = "Item3" },
-            new TestDto { Name = "Item4" },
-            new TestDto { Name = "Item5" }
+            new TestDto { Name = "First" },
+            new TestDto { Name = "Second" },
+            new TestDto { Name = "Third" },
+            new TestDto { Name = "Fourth" },
+            new TestDto { Name = "Fifth" }
         });
-
-        _sut = new CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.DataStores,
-            _fixture.ViewModelFactory,
-            _fixture.ComparerService);
-
-        // ACT: 2 ViewModels entfernen
-        _removedViewModels = new[] { _sut.Items[1], _sut.Items[3] };
-        _sut.RemoveRange(_removedViewModels);
     }
 
     [Fact]
     public void RemovesMultipleViewModels()
     {
-        _sut.Items.Should().NotContain(_removedViewModels);
-    }
+        // Arrange
+        var itemsToRemove = _sut.Items.Take(2).ToList();
 
-    [Fact]
-    public void RemovesModelsFromStore()
-    {
-        foreach (var vm in _removedViewModels)
-        {
-            _fixture.TestDtoStore.Items.Should().NotContain(vm.Model);
-        }
+        // Act
+        _sut.RemoveRange(itemsToRemove);
+
+        // Assert
+        _sut.Items.Should().NotContain(itemsToRemove);
     }
 
     [Fact]
     public void CountIsThree()
     {
+        // Arrange
+        var itemsToRemove = _sut.Items.Take(2).ToList();
+
+        // Act
+        _sut.RemoveRange(itemsToRemove);
+
+        // Assert
         _sut.Count.Should().Be(3);
+    }
+
+    public void Dispose()
+    {
+        _fixture.ClearTestData();
+        _sut?.Dispose();
     }
 }

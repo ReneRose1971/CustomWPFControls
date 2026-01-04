@@ -6,9 +6,6 @@ using Xunit;
 
 namespace CustomWPFControls.Tests.Unit.EditableCollectionViewModel.Commands.DeleteCommand;
 
-/// <summary>
-/// Test: DeleteCommand.CanExecute() gibt true zurück wenn Item selektiert ist.
-/// </summary>
 public sealed class CanExecute_ItemIsSelected_ReturnsTrue : IClassFixture<CollectionViewModelFixture>, IDisposable
 {
     private readonly CollectionViewModelFixture _fixture;
@@ -18,9 +15,8 @@ public sealed class CanExecute_ItemIsSelected_ReturnsTrue : IClassFixture<Collec
     {
         _fixture = fixture;
         _sut = new EditableCollectionViewModel<TestDto, TestViewModel>(
-            _fixture.DataStores,
-            _fixture.ViewModelFactory,
-            _fixture.ComparerService);
+            _fixture.Services,
+            _fixture.ViewModelFactory);
 
         // Setup: Item hinzufügen und selektieren
         var model = new TestDto { Name = "Test" };

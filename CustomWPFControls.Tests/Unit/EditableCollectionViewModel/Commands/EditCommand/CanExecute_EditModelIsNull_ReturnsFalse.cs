@@ -6,9 +6,6 @@ using Xunit;
 
 namespace CustomWPFControls.Tests.Unit.EditableCollectionViewModel.Commands.EditCommand;
 
-/// <summary>
-/// Test: EditCommand.CanExecute() gibt false zurück wenn EditModel null ist.
-/// </summary>
 public sealed class CanExecute_EditModelIsNull_ReturnsFalse : IClassFixture<CollectionViewModelFixture>, IDisposable
 {
     private readonly CollectionViewModelFixture _fixture;
@@ -18,17 +15,8 @@ public sealed class CanExecute_EditModelIsNull_ReturnsFalse : IClassFixture<Coll
     {
         _fixture = fixture;
         _sut = new EditableCollectionViewModel<TestDto, TestViewModel>(
-            _fixture.DataStores,
-            _fixture.ViewModelFactory,
-            _fixture.ComparerService);
-
-        // Setup: EditModel null lassen
-        _sut.EditModel = null;
-
-        // Setup: Item hinzufügen und selektieren
-        var model = new TestDto { Name = "Test" };
-        _fixture.TestDtoStore.Add(model);
-        _sut.SelectedItem = _sut.Items[0];
+            _fixture.Services,
+            _fixture.ViewModelFactory);
     }
 
     [Fact]

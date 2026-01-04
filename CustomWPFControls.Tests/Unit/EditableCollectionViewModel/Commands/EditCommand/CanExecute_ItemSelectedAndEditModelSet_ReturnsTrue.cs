@@ -18,9 +18,8 @@ public sealed class CanExecute_ItemSelectedAndEditModelSet_ReturnsTrue : IClassF
     {
         _fixture = fixture;
         _sut = new EditableCollectionViewModel<TestDto, TestViewModel>(
-            _fixture.DataStores,
-            _fixture.ViewModelFactory,
-            _fixture.ComparerService);
+            _fixture.Services,
+            _fixture.ViewModelFactory);
 
         // Setup: EditModel setzen
         _sut.EditModel = model => { };

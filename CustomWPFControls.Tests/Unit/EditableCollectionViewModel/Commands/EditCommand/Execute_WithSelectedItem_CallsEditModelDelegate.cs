@@ -6,9 +6,6 @@ using Xunit;
 
 namespace CustomWPFControls.Tests.Unit.EditableCollectionViewModel.Commands.EditCommand;
 
-/// <summary>
-/// Test: EditCommand.Execute() ruft EditModel-Delegate auf wenn SelectedItem existiert.
-/// </summary>
 public sealed class Execute_WithSelectedItem_CallsEditModelDelegate : IClassFixture<CollectionViewModelFixture>, IDisposable
 {
     private readonly CollectionViewModelFixture _fixture;
@@ -19,9 +16,8 @@ public sealed class Execute_WithSelectedItem_CallsEditModelDelegate : IClassFixt
     {
         _fixture = fixture;
         _sut = new EditableCollectionViewModel<TestDto, TestViewModel>(
-            _fixture.DataStores,
-            _fixture.ViewModelFactory,
-            _fixture.ComparerService);
+            _fixture.Services,
+            _fixture.ViewModelFactory);
 
         // Setup: EditModel-Delegate setzen
         _sut.EditModel = model => _editedModel = model;

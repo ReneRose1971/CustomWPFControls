@@ -1,3 +1,4 @@
+using System;
 using CustomWPFControls.Tests.Testing;
 using CustomWPFControls.ViewModels;
 using FluentAssertions;
@@ -6,12 +7,6 @@ using Xunit;
 
 namespace CustomWPFControls.Tests.Unit.CollectionViewModel.DataStoreAdd;
 
-/// <summary>
-/// Tests für PropertyChanged Event beim Hinzufügen eines Items.
-/// </summary>
-/// <remarks>
-/// Separate Klasse wegen speziellem Setup (PropertyChanged-Handler).
-/// </remarks>
 public sealed class SingleAdd_RaisesCountPropertyChanged : IClassFixture<CollectionViewModelFixture>
 {
     private readonly CollectionViewModelFixture _fixture;
@@ -19,17 +14,15 @@ public sealed class SingleAdd_RaisesCountPropertyChanged : IClassFixture<Collect
     public SingleAdd_RaisesCountPropertyChanged(CollectionViewModelFixture fixture)
     {
         _fixture = fixture;
-        _fixture.ClearTestData();
     }
 
     [Fact]
-    public void ShouldRaiseCountPropertyChanged()
+    public void Test_SingleAdd_RaisesCountPropertyChanged()
     {
         // Arrange
-        var sut = new CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.DataStores,
-            _fixture.ViewModelFactory,
-            _fixture.ComparerService);
+        var sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
+            _fixture.Services,
+            _fixture.ViewModelFactory);
 
         bool propertyChangedRaised = false;
         sut.PropertyChanged += (_, e) =>

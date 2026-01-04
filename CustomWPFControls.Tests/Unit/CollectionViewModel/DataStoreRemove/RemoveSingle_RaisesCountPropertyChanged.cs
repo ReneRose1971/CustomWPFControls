@@ -1,3 +1,4 @@
+using System;
 using CustomWPFControls.Tests.Testing;
 using CustomWPFControls.ViewModels;
 using FluentAssertions;
@@ -6,9 +7,6 @@ using Xunit;
 
 namespace CustomWPFControls.Tests.Unit.CollectionViewModel.DataStoreRemove;
 
-/// <summary>
-/// Tests für PropertyChanged Event beim Entfernen eines Items.
-/// </summary>
 public sealed class RemoveSingle_RaisesCountPropertyChanged : IClassFixture<CollectionViewModelFixture>
 {
     private readonly CollectionViewModelFixture _fixture;
@@ -16,20 +14,18 @@ public sealed class RemoveSingle_RaisesCountPropertyChanged : IClassFixture<Coll
     public RemoveSingle_RaisesCountPropertyChanged(CollectionViewModelFixture fixture)
     {
         _fixture = fixture;
-        _fixture.ClearTestData();
     }
 
     [Fact]
-    public void ShouldRaiseCountPropertyChanged()
+    public void Test_RemoveSingle_RaisesCountPropertyChanged()
     {
         // Arrange
         var dto = new TestDto { Name = "Test" };
         _fixture.TestDtoStore.Add(dto);
-
-        var sut = new CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.DataStores,
-            _fixture.ViewModelFactory,
-            _fixture.ComparerService);
+        
+        var sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
+            _fixture.Services,
+            _fixture.ViewModelFactory);
 
         bool propertyChangedRaised = false;
         sut.PropertyChanged += (_, e) =>

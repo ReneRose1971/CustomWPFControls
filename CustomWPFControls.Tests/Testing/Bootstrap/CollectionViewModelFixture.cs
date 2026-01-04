@@ -1,4 +1,5 @@
 ﻿using CustomWPFControls.Factories;
+using CustomWPFControls.Services;
 using DataStores.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using TestHelper.DataStores.Models;
@@ -13,6 +14,7 @@ namespace CustomWPFControls.Tests.Testing;
 /// Services für CollectionViewModel-Tests bereit:
 /// - TestDto DataStore (via CustomWPFControlsTestDataStoreRegistrar)
 /// - ViewModelFactory für TestDto/TestViewModel (via CustomWPFControlsTestServiceModule)
+/// - ICustomWPFServices Facade (mit DataStores, ComparerService, DialogService, MessageBoxService)
 /// - IDataStores Facade
 /// - IEqualityComparerService
 /// </remarks>
@@ -29,6 +31,14 @@ public class CollectionViewModelFixture : DataStoresFixtureBase
     public IViewModelFactory<TestDto, TestViewModel> ViewModelFactory { get; protected set; } = null!;
 
     /// <summary>
+    /// CustomWPFServices Facade mit allen Core-Services.
+    /// </summary>
+    /// <remarks>
+    /// Kapselt: DataStores, ComparerService, DialogService, MessageBoxService
+    /// </remarks>
+    public ICustomWPFServices Services { get; protected set; } = null!;
+
+    /// <summary>
     /// Erstellt die Fixture und führt den kompletten Bootstrap-Prozess aus.
     /// </summary>
     public CollectionViewModelFixture()
@@ -41,8 +51,8 @@ public class CollectionViewModelFixture : DataStoresFixtureBase
     /// Initialisiert die Services nach dem Bootstrap.
     /// </summary>
     /// <remarks>
-    /// Löst TestDtoStore und ViewModelFactory aus dem ServiceProvider auf.
-    /// ViewModelFactory wurde automatisch via CustomWPFControlsTestServiceModule registriert.
+    /// Löst TestDtoStore, ViewModelFactory und Services aus dem ServiceProvider auf.
+    /// ViewModelFactory und Services wurden automatisch via CustomWPFControlsTestServiceModule registriert.
     /// </remarks>
     protected override void InitializeServices()
     {
@@ -51,6 +61,9 @@ public class CollectionViewModelFixture : DataStoresFixtureBase
 
         // ViewModelFactory auflösen (wurde via CustomWPFControlsTestServiceModule registriert)
         ViewModelFactory = ServiceProvider.GetRequiredService<IViewModelFactory<TestDto, TestViewModel>>();
+
+        // CustomWPFServices Facade auflösen (wurde via CustomWPFControlsServiceModule registriert)
+        Services = ServiceProvider.GetRequiredService<ICustomWPFServices>();
     }
 
     /// <summary>

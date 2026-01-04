@@ -18,9 +18,8 @@ public sealed class CanExecute_CreateModelIsNull_ReturnsFalse : IClassFixture<Co
     {
         _fixture = fixture;
         _sut = new EditableCollectionViewModel<TestDto, TestViewModel>(
-            _fixture.DataStores,
-            _fixture.ViewModelFactory,
-            _fixture.ComparerService)
+            _fixture.Services,
+            _fixture.ViewModelFactory)
         {
             CreateModel = null
         };

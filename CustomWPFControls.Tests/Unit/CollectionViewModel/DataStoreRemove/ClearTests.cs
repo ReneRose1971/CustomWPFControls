@@ -1,3 +1,4 @@
+using System;
 using CustomWPFControls.Tests.Testing;
 using CustomWPFControls.ViewModels;
 using FluentAssertions;
@@ -9,20 +10,18 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.DataStoreRemove;
 /// <summary>
 /// Tests für das Leeren des DataStores via Clear().
 /// </summary>
-/// <remarks>
-/// Setup: 3 Items hinzufügen
-/// ACT: Store.Clear()
-/// </remarks>
-public sealed class ClearTests : IClassFixture<CollectionViewModelFixture>
+public sealed class ClearTests : IClassFixture<CollectionViewModelFixture>, IDisposable
 {
     private readonly CollectionViewModelFixture _fixture;
-    private readonly CollectionViewModel<TestDto, TestViewModel> _sut;
+    private readonly ViewModels.CollectionViewModel<TestDto, TestViewModel> _sut;
 
     public ClearTests(CollectionViewModelFixture fixture)
     {
         _fixture = fixture;
-        _fixture.ClearTestData();
-
+        _sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
+            _fixture.Services,
+            _fixture.ViewModelFactory);
+        
         // Setup: 3 Items hinzufügen
         _fixture.TestDtoStore.AddRange(new[]
         {
@@ -30,11 +29,6 @@ public sealed class ClearTests : IClassFixture<CollectionViewModelFixture>
             new TestDto { Name = "Second" },
             new TestDto { Name = "Third" }
         });
-
-        _sut = new CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.DataStores,
-            _fixture.ViewModelFactory,
-            _fixture.ComparerService);
 
         // ACT: Store leeren
         _fixture.TestDtoStore.Clear();
@@ -56,5 +50,11 @@ public sealed class ClearTests : IClassFixture<CollectionViewModelFixture>
     public void ItemsIsEmpty()
     {
         _sut.Items.Count.Should().Be(0);
+    }
+
+    public void Dispose()
+    {
+        _fixture.ClearTestData();
+        _sut?.Dispose();
     }
 }

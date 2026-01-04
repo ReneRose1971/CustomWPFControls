@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel;
 using CustomWPFControls.Tests.Testing;
 using CustomWPFControls.ViewModels;
+using FluentAssertions;
 using TestHelper.DataStores.Models;
 using Xunit;
 
@@ -13,42 +14,43 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Dispose;
 public sealed class Dispose_UnsubscribesFromStoreEvents : IClassFixture<CollectionViewModelFixture>, IDisposable
 {
     private readonly CollectionViewModelFixture _fixture;
-    private readonly CollectionViewModel<TestDto, TestViewModel> _sut;
-    private bool _propertyChangedAfterDispose;
+    private readonly ViewModels.CollectionViewModel<TestDto, TestViewModel> _sut;
+    private int _propertyChangedCount = 0;
 
     public Dispose_UnsubscribesFromStoreEvents(CollectionViewModelFixture fixture)
     {
         _fixture = fixture;
-        _sut = new CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.DataStores,
-            _fixture.ViewModelFactory,
-            _fixture.ComparerService);
-
-        _sut.PropertyChanged += OnPropertyChanged;
+        _sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
+            _fixture.Services,
+            _fixture.ViewModelFactory);
     }
 
     private void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        _propertyChangedAfterDispose = true;
+        _propertyChangedCount++;
     }
 
     [Fact]
-    public void Dispose_UnsubscribesFromStoreEvents_NoMorePropertyChangedEvents()
+    public void Test_Dispose_UnsubscribesFromStoreEvents()
     {
         // Arrange
+        _sut.PropertyChanged += OnPropertyChanged;
+
+        // Act - Dispose und dann Store ändern
         _sut.Dispose();
-        _propertyChangedAfterDispose = false;
+        _fixture.TestDtoStore.Add(new TestDto { Name = "AfterDispose" });
 
-        // Act: Versuche Store-Änderung
-        _fixture.TestDtoStore.Add(new TestDto { Name = "Test" });
+        // Assert - Event sollte nicht gefeuert werden
+        _propertyChangedCount.Should().Be(0);
 
-        // Assert: Kein PropertyChanged sollte gefeuert werden
-        Assert.False(_propertyChangedAfterDispose, "PropertyChanged wurde nach Dispose gefeuert");
+        // Cleanup
+        _fixture.ClearTestData();
     }
 
     public void Dispose()
     {
         _sut.PropertyChanged -= OnPropertyChanged;
         _fixture.ClearTestData();
+        _sut?.Dispose();
     }
 }

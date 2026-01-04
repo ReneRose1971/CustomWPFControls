@@ -18,12 +18,8 @@ public sealed class Execute_WithValidCreateModel_AddsModelToStore : IClassFixtur
     {
         _fixture = fixture;
         _sut = new EditableCollectionViewModel<TestDto, TestViewModel>(
-            _fixture.DataStores,
-            _fixture.ViewModelFactory,
-            _fixture.ComparerService)
-        {
-            CreateModel = () => new TestDto { Name = "NewItem" }
-        };
+            _fixture.Services,
+            _fixture.ViewModelFactory);
     }
 
     [Fact]

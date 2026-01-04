@@ -1,3 +1,4 @@
+using System;
 using CustomWPFControls.Tests.Testing;
 using CustomWPFControls.ViewModels;
 using FluentAssertions;
@@ -6,9 +7,6 @@ using Xunit;
 
 namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Properties;
 
-/// <summary>
-/// Tests für Null-Handling in SelectedItems.
-/// </summary>
 public sealed class SelectedItems_AddNull_HandledCorrectly : IClassFixture<CollectionViewModelFixture>
 {
     private readonly CollectionViewModelFixture _fixture;
@@ -16,27 +14,19 @@ public sealed class SelectedItems_AddNull_HandledCorrectly : IClassFixture<Colle
     public SelectedItems_AddNull_HandledCorrectly(CollectionViewModelFixture fixture)
     {
         _fixture = fixture;
-        _fixture.ClearTestData();
     }
 
     [Fact]
-    public void ShouldThrowOrIgnoreNull()
+    public void Test_SelectedItems_AddNull_HandledCorrectly()
     {
         // Arrange
-        _fixture.TestDtoStore.Add(new TestDto { Name = "Test" });
+        var sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
+            _fixture.Services,
+            _fixture.ViewModelFactory);
 
-        var sut = new CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.DataStores,
-            _fixture.ViewModelFactory,
-            _fixture.ComparerService);
-
-        // Act & Assert - Entweder Exception oder wird ignoriert
+        // Act & Assert
         var act = () => sut.SelectedItems.Add(null!);
-        
-        // ObservableCollection erlaubt normalerweise null
-        // Aber CollectionViewModel könnte das verhindern
-        // Test prüft, dass es keine unerwartete Exception gibt
-        act.Should().NotThrow<NullReferenceException>();
+        act.Should().Throw<ArgumentNullException>();
 
         // Cleanup
         _fixture.ClearTestData();

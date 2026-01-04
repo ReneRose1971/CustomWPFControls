@@ -1,3 +1,4 @@
+using System;
 using CustomWPFControls.Tests.Testing;
 using CustomWPFControls.ViewModels;
 using FluentAssertions;
@@ -16,21 +17,15 @@ public sealed class SelectedItem_CanBeSetToNull : IClassFixture<CollectionViewMo
     public SelectedItem_CanBeSetToNull(CollectionViewModelFixture fixture)
     {
         _fixture = fixture;
-        _fixture.ClearTestData();
     }
 
     [Fact]
-    public void ShouldSetToNull()
+    public void Test_SelectedItem_CanBeSetToNull()
     {
         // Arrange
-        _fixture.TestDtoStore.Add(new TestDto { Name = "Test" });
-
-        var sut = new CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.DataStores,
-            _fixture.ViewModelFactory,
-            _fixture.ComparerService);
-
-        sut.SelectedItem = sut.Items.Single();
+        var sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
+            _fixture.Services,
+            _fixture.ViewModelFactory);
 
         // Act
         sut.SelectedItem = null;

@@ -1,3 +1,4 @@
+using System;
 using CustomWPFControls.Tests.Testing;
 using CustomWPFControls.ViewModels;
 using FluentAssertions;
@@ -13,10 +14,10 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.DataStoreRemove;
 /// Setup: 3 Items hinzufügen
 /// ACT: Mittleres Item entfernen
 /// </remarks>
-public sealed class RemoveSingleTests : IClassFixture<CollectionViewModelFixture>
+public sealed class RemoveSingleTests : IClassFixture<CollectionViewModelFixture>, IDisposable
 {
     private readonly CollectionViewModelFixture _fixture;
-    private readonly CollectionViewModel<TestDto, TestViewModel> _sut;
+    private readonly ViewModels.CollectionViewModel<TestDto, TestViewModel> _sut;
     private readonly TestDto _removedDto;
     private readonly TestDto[] _remainingDtos;
 
@@ -31,10 +32,9 @@ public sealed class RemoveSingleTests : IClassFixture<CollectionViewModelFixture
         var dto3 = new TestDto { Name = "Third" };
         _fixture.TestDtoStore.AddRange(new[] { dto1, dto2, dto3 });
 
-        _sut = new CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.DataStores,
-            _fixture.ViewModelFactory,
-            _fixture.ComparerService);
+        _sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
+            _fixture.Services,
+            _fixture.ViewModelFactory);
 
         // ACT: Mittleres Item entfernen
         _removedDto = dto2;
@@ -65,5 +65,10 @@ public sealed class RemoveSingleTests : IClassFixture<CollectionViewModelFixture
     public void RemovedModelNotInItems()
     {
         _sut.Items.Should().NotContain(vm => vm.Name == "Second");
+    }
+
+    public void Dispose()
+    {
+        // Clean up any resources, if needed.
     }
 }

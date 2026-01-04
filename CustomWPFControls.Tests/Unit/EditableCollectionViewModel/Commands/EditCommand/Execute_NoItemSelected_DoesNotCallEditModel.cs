@@ -19,22 +19,18 @@ public sealed class Execute_NoItemSelected_DoesNotCallEditModel : IClassFixture<
     {
         _fixture = fixture;
         _sut = new EditableCollectionViewModel<TestDto, TestViewModel>(
-            _fixture.DataStores,
-            _fixture.ViewModelFactory,
-            _fixture.ComparerService);
-
-        // Setup: EditModel-Delegate setzen
-        _sut.EditModel = model => _delegateCalled = true;
-
-        // Setup: Item hinzufügen aber NICHT selektieren
-        var model = new TestDto { Name = "Test" };
-        _fixture.TestDtoStore.Add(model);
-        _sut.SelectedItem = null;
+            _fixture.Services,
+            _fixture.ViewModelFactory);
+        
+        _sut.EditModel = _ => _delegateCalled = true;
     }
 
     [Fact]
-    public void EditCommand_Execute_DoesNotCallEditModel()
+    public void Test_Execute_NoItemSelected_DoesNotCallEditModel()
     {
+        // Arrange - kein Item selektiert
+        _sut.SelectedItem = null;
+
         // Act
         _sut.EditCommand.Execute(null);
 

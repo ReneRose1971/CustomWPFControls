@@ -1,34 +1,23 @@
 using System;
-using System.Linq;
 using CustomWPFControls.Tests.Testing;
 using CustomWPFControls.ViewModels;
+using FluentAssertions;
 using TestHelper.DataStores.Models;
 using Xunit;
 
-namespace CustomWPFControls.Tests.Unit;
+namespace CustomWPFControls.Tests.Unit.CollectionViewModel;
 
-/// <summary>
-/// Unit-Tests für CollectionViewModel mit echtem DataStores-Bootstrap.
-/// </summary>
-/// <remarks>
-/// Diese Tests verwenden die CollectionViewModelFixture, die den minimalen
-/// Bootstrap-Prozess für DataStores abbildet.
-/// TestDto-Store wird automatisch registriert via CustomWPFControlsTestDataStoreRegistrar.
-/// </remarks>
 public sealed class CollectionViewModelTests : IClassFixture<CollectionViewModelFixture>, IDisposable
 {
     private readonly CollectionViewModelFixture _fixture;
-    private readonly CollectionViewModel<TestDto, TestViewModel> _sut;
+    private readonly ViewModels.CollectionViewModel<TestDto, TestViewModel> _sut;
 
     public CollectionViewModelTests(CollectionViewModelFixture fixture)
     {
         _fixture = fixture;
-
-        // CollectionViewModel erstellen mit echten Dependencies aus Bootstrap
-        _sut = new CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.DataStores,
-            _fixture.ViewModelFactory,
-            _fixture.ComparerService);
+        _sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
+            _fixture.Services,
+            _fixture.ViewModelFactory);
     }
 
     [Fact]

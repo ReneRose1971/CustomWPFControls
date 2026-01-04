@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using CustomWPFControls.Tests.Testing;
 using CustomWPFControls.ViewModels;
 using FluentAssertions;
@@ -6,44 +8,33 @@ using Xunit;
 
 namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Properties;
 
-/// <summary>
-/// Tests für Count Property - Nach Remove-Operation.
-/// </summary>
-/// <remarks>
-/// Setup: 3 Items
-/// Act: 1 Item entfernen
-/// Assert: Count == 2
-/// </remarks>
-public sealed class CountProperty_AfterRemove : IDisposable
+public sealed class CountProperty_AfterRemove : IClassFixture<CollectionViewModelFixture>, IDisposable
 {
     private readonly CollectionViewModelFixture _fixture;
-    private readonly CollectionViewModel<TestDto, TestViewModel> _sut;
-    private readonly TestDto[] _dtos;
+    private readonly ViewModels.CollectionViewModel<TestDto, TestViewModel> _sut;
 
-    public CountProperty_AfterRemove()
+    public CountProperty_AfterRemove(CollectionViewModelFixture fixture)
     {
-        _fixture = new CollectionViewModelFixture();
+        _fixture = fixture;
+        _sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
+            _fixture.Services,
+            _fixture.ViewModelFactory);
         
-        // Setup: 3 Items
-        _dtos = new[]
+        // Setup: 3 Items hinzufügen
+        _fixture.TestDtoStore.AddRange(new[]
         {
             new TestDto { Name = "First" },
             new TestDto { Name = "Second" },
             new TestDto { Name = "Third" }
-        };
-        _fixture.TestDtoStore.AddRange(_dtos);
-
-        _sut = new CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.DataStores,
-            _fixture.ViewModelFactory,
-            _fixture.ComparerService);
+        });
     }
 
     [Fact]
     public void UpdatesCorrectly()
     {
         // Act
-        _fixture.TestDtoStore.Remove(_dtos[1]);
+        var secondItem = _sut.Items.Skip(1).First();
+        _fixture.TestDtoStore.Remove(secondItem.Model);
 
         // Assert
         _sut.Count.Should().Be(2);
@@ -51,7 +42,7 @@ public sealed class CountProperty_AfterRemove : IDisposable
 
     public void Dispose()
     {
+        _fixture.ClearTestData();
         _sut?.Dispose();
-        _fixture?.Dispose();
     }
 }

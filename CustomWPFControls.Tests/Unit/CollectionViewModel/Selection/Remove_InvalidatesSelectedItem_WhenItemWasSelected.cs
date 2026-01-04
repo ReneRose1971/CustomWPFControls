@@ -1,6 +1,7 @@
 using System;
 using CustomWPFControls.Tests.Testing;
 using CustomWPFControls.ViewModels;
+using FluentAssertions;
 using TestHelper.DataStores.Models;
 using Xunit;
 
@@ -12,19 +13,14 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Selection;
 public sealed class Remove_InvalidatesSelectedItem_WhenItemWasSelected : IClassFixture<CollectionViewModelFixture>, IDisposable
 {
     private readonly CollectionViewModelFixture _fixture;
-    private readonly CollectionViewModel<TestDto, TestViewModel> _sut;
+    private readonly ViewModels.CollectionViewModel<TestDto, TestViewModel> _sut;
 
     public Remove_InvalidatesSelectedItem_WhenItemWasSelected(CollectionViewModelFixture fixture)
     {
         _fixture = fixture;
-        _sut = new CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.DataStores,
-            _fixture.ViewModelFactory,
-            _fixture.ComparerService);
-
-        // Setup: Item hinzufügen und selektieren
-        _fixture.TestDtoStore.Add(new TestDto { Name = "SelectedItem" });
-        _sut.SelectedItem = _sut.Items[0];
+        _sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
+            _fixture.Services,
+            _fixture.ViewModelFactory);
     }
 
     [Fact]

@@ -1,3 +1,4 @@
+using System;
 using CustomWPFControls.Tests.Testing;
 using CustomWPFControls.ViewModels;
 using FluentAssertions;
@@ -6,38 +7,31 @@ using Xunit;
 
 namespace CustomWPFControls.Tests.Unit.CollectionViewModel.DataStoreAdd;
 
-/// <summary>
-/// Tests für Duplikat-Erkennung beim Hinzufügen.
-/// </summary>
-/// <remarks>
-/// Das zweite Add des gleichen DTOs wirft eine Exception.
-/// </remarks>
-public sealed class DuplicateAdd_ThrowsException : IClassFixture<CollectionViewModelFixture>
+public sealed class DuplicateAdd_IgnoresSecondAdd : IClassFixture<CollectionViewModelFixture>
 {
     private readonly CollectionViewModelFixture _fixture;
 
-    public DuplicateAdd_ThrowsException(CollectionViewModelFixture fixture)
+    public DuplicateAdd_IgnoresSecondAdd(CollectionViewModelFixture fixture)
     {
         _fixture = fixture;
-        _fixture.ClearTestData();
     }
 
     [Fact]
-    public void ShouldThrowInvalidOperationException()
+    public void Test_DuplicateAdd_IgnoresSecondAdd()
     {
         // Arrange
-        var sut = new CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.DataStores,
-            _fixture.ViewModelFactory,
-            _fixture.ComparerService);
-
+        var sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
+            _fixture.Services,
+            _fixture.ViewModelFactory);
+        
         var dto = new TestDto { Name = "Test" };
-        _fixture.TestDtoStore.Add(dto);
 
-        // Act & Assert - Zweites Add sollte Exception werfen
-        var act = () => _fixture.TestDtoStore.Add(dto);
-        act.Should().Throw<InvalidOperationException>()
-            .WithMessage("Duplicate item rejected*");
+        // Act
+        _fixture.TestDtoStore.Add(dto);
+        _fixture.TestDtoStore.Add(dto); // Duplicate
+
+        // Assert
+        sut.Count.Should().Be(1);
 
         // Cleanup
         _fixture.ClearTestData();

@@ -1,3 +1,4 @@
+using System;
 using CustomWPFControls.Tests.Testing;
 using CustomWPFControls.ViewModels;
 using FluentAssertions;
@@ -6,9 +7,6 @@ using Xunit;
 
 namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Properties;
 
-/// <summary>
-/// Tests für SelectedItem PropertyChanged Event.
-/// </summary>
 public sealed class SelectedItem_RaisesPropertyChanged : IClassFixture<CollectionViewModelFixture>
 {
     private readonly CollectionViewModelFixture _fixture;
@@ -16,19 +14,17 @@ public sealed class SelectedItem_RaisesPropertyChanged : IClassFixture<Collectio
     public SelectedItem_RaisesPropertyChanged(CollectionViewModelFixture fixture)
     {
         _fixture = fixture;
-        _fixture.ClearTestData();
     }
 
     [Fact]
-    public void ShouldRaisePropertyChanged()
+    public void Test_SelectedItem_RaisesPropertyChanged()
     {
         // Arrange
         _fixture.TestDtoStore.Add(new TestDto { Name = "Test" });
 
-        var sut = new CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.DataStores,
-            _fixture.ViewModelFactory,
-            _fixture.ComparerService);
+        var sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
+            _fixture.Services,
+            _fixture.ViewModelFactory);
 
         bool propertyChangedRaised = false;
         sut.PropertyChanged += (_, e) =>
@@ -38,7 +34,7 @@ public sealed class SelectedItem_RaisesPropertyChanged : IClassFixture<Collectio
         };
 
         // Act
-        sut.SelectedItem = sut.Items.Single();
+        sut.SelectedItem = sut.Items.First();
 
         // Assert
         propertyChangedRaised.Should().BeTrue();

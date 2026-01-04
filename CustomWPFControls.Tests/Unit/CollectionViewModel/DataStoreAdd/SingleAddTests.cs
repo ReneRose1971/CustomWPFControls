@@ -1,3 +1,4 @@
+using System;
 using CustomWPFControls.Tests.Testing;
 using CustomWPFControls.ViewModels;
 using FluentAssertions;
@@ -13,26 +14,18 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.DataStoreAdd;
 /// ACT: fixture.TestDtoStore.Add(single TestDto) im Constructor
 /// Mehrere Assertions testen verschiedene Aspekte dieser EINEN Operation.
 /// </remarks>
-public sealed class SingleAddTests : IClassFixture<CollectionViewModelFixture>
+public sealed class SingleAddTests : IClassFixture<CollectionViewModelFixture>, IDisposable
 {
     private readonly CollectionViewModelFixture _fixture;
-    private readonly CollectionViewModel<TestDto, TestViewModel> _sut;
+    private readonly ViewModels.CollectionViewModel<TestDto, TestViewModel> _sut;
     private readonly TestDto _addedDto;
 
     public SingleAddTests(CollectionViewModelFixture fixture)
     {
         _fixture = fixture;
-        _fixture.ClearTestData();
-
-        // SUT erstellen mit leerem Store
-        _sut = new CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.DataStores,
-            _fixture.ViewModelFactory,
-            _fixture.ComparerService);
-
-        // ACT: Ein TestDto hinzufügen
-        _addedDto = new TestDto { Name = "TestItem" };
-        _fixture.TestDtoStore.Add(_addedDto);
+        _sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
+            _fixture.Services,
+            _fixture.ViewModelFactory);
     }
 
     [Fact]
@@ -63,5 +56,10 @@ public sealed class SingleAddTests : IClassFixture<CollectionViewModelFixture>
     public void CountPropertyIsOne()
     {
         _sut.Count.Should().Be(1);
+    }
+
+    public void Dispose()
+    {
+        _fixture.ClearTestData();
     }
 }

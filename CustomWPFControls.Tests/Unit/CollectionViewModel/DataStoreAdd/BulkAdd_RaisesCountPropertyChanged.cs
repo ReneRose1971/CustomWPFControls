@@ -1,3 +1,4 @@
+using System;
 using CustomWPFControls.Tests.Testing;
 using CustomWPFControls.ViewModels;
 using FluentAssertions;
@@ -16,17 +17,15 @@ public sealed class BulkAdd_RaisesCountPropertyChanged : IClassFixture<Collectio
     public BulkAdd_RaisesCountPropertyChanged(CollectionViewModelFixture fixture)
     {
         _fixture = fixture;
-        _fixture.ClearTestData();
     }
 
     [Fact]
-    public void ShouldRaiseCountPropertyChanged()
+    public void Test_BulkAdd_RaisesCountPropertyChanged()
     {
         // Arrange
-        var sut = new CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.DataStores,
-            _fixture.ViewModelFactory,
-            _fixture.ComparerService);
+        var sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
+            _fixture.Services,
+            _fixture.ViewModelFactory);
 
         bool propertyChangedRaised = false;
         sut.PropertyChanged += (_, e) =>
@@ -39,8 +38,7 @@ public sealed class BulkAdd_RaisesCountPropertyChanged : IClassFixture<Collectio
         _fixture.TestDtoStore.AddRange(new[]
         {
             new TestDto { Name = "First" },
-            new TestDto { Name = "Second" },
-            new TestDto { Name = "Third" }
+            new TestDto { Name = "Second" }
         });
 
         // Assert

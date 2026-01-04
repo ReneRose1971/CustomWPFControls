@@ -12,15 +12,14 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Dispose;
 public sealed class Dispose_CanBeCalledMultipleTimes : IClassFixture<CollectionViewModelFixture>
 {
     private readonly CollectionViewModelFixture _fixture;
-    private readonly CollectionViewModel<TestDto, TestViewModel> _sut;
+    private readonly ViewModels.CollectionViewModel<TestDto, TestViewModel> _sut;
 
     public Dispose_CanBeCalledMultipleTimes(CollectionViewModelFixture fixture)
     {
         _fixture = fixture;
-        _sut = new CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.DataStores,
-            _fixture.ViewModelFactory,
-            _fixture.ComparerService);
+        _sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
+            _fixture.Services,
+            _fixture.ViewModelFactory);
     }
 
     [Fact]

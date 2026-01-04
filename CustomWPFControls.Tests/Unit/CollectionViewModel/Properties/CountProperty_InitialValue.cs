@@ -1,3 +1,4 @@
+using System;
 using CustomWPFControls.Tests.Testing;
 using CustomWPFControls.ViewModels;
 using FluentAssertions;
@@ -13,27 +14,17 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Properties;
 /// Shared Setup: 3 Items im Store
 /// Alle Tests prüfen den initialen Count-Wert nach dem Setup.
 /// </remarks>
-public sealed class CountProperty_InitialValue : IDisposable
+public sealed class CountProperty_InitialValue : IClassFixture<CollectionViewModelFixture>, IDisposable
 {
     private readonly CollectionViewModelFixture _fixture;
-    private readonly CollectionViewModel<TestDto, TestViewModel> _sut;
+    private readonly ViewModels.CollectionViewModel<TestDto, TestViewModel> _sut;
 
-    public CountProperty_InitialValue()
+    public CountProperty_InitialValue(CollectionViewModelFixture fixture)
     {
-        _fixture = new CollectionViewModelFixture();
-        
-        // Shared Setup: 3 Items
-        _fixture.TestDtoStore.AddRange(new[]
-        {
-            new TestDto { Name = "First" },
-            new TestDto { Name = "Second" },
-            new TestDto { Name = "Third" }
-        });
-
-        _sut = new CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.DataStores,
-            _fixture.ViewModelFactory,
-            _fixture.ComparerService);
+        _fixture = fixture;
+        _sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
+            _fixture.Services,
+            _fixture.ViewModelFactory);
     }
 
     [Fact]

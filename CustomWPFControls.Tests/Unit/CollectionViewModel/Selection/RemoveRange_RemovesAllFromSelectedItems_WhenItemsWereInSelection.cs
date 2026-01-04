@@ -1,7 +1,7 @@
 using System;
-using System.Linq;
 using CustomWPFControls.Tests.Testing;
 using CustomWPFControls.ViewModels;
+using FluentAssertions;
 using TestHelper.DataStores.Models;
 using Xunit;
 
@@ -13,15 +13,14 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Selection;
 public sealed class RemoveRange_RemovesAllFromSelectedItems_WhenItemsWereInSelection : IClassFixture<CollectionViewModelFixture>, IDisposable
 {
     private readonly CollectionViewModelFixture _fixture;
-    private readonly CollectionViewModel<TestDto, TestViewModel> _sut;
+    private readonly ViewModels.CollectionViewModel<TestDto, TestViewModel> _sut;
 
     public RemoveRange_RemovesAllFromSelectedItems_WhenItemsWereInSelection(CollectionViewModelFixture fixture)
     {
         _fixture = fixture;
-        _sut = new CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.DataStores,
-            _fixture.ViewModelFactory,
-            _fixture.ComparerService);
+        _sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
+            _fixture.Services,
+            _fixture.ViewModelFactory);
 
         // Setup: Items hinzufügen
         _fixture.TestDtoStore.AddRange(new[]

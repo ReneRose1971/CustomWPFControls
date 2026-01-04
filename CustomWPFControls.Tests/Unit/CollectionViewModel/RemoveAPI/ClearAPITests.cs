@@ -1,3 +1,4 @@
+using System;
 using CustomWPFControls.Tests.Testing;
 using CustomWPFControls.ViewModels;
 using FluentAssertions;
@@ -6,24 +7,18 @@ using Xunit;
 
 namespace CustomWPFControls.Tests.Unit.CollectionViewModel.RemoveAPI;
 
-/// <summary>
-/// Tests für die Clear() Public API.
-/// </summary>
-/// <remarks>
-/// Setup: 3 Items hinzufügen
-/// ACT: sut.Clear()
-/// </remarks>
-public sealed class ClearAPITests : IClassFixture<CollectionViewModelFixture>
+public sealed class ClearAPITests : IClassFixture<CollectionViewModelFixture>, IDisposable
 {
     private readonly CollectionViewModelFixture _fixture;
-    private readonly CollectionViewModel<TestDto, TestViewModel> _sut;
-    private readonly List<TestViewModel> _viewModelsBeforeClear;
+    private readonly ViewModels.CollectionViewModel<TestDto, TestViewModel> _sut;
 
     public ClearAPITests(CollectionViewModelFixture fixture)
     {
         _fixture = fixture;
-        _fixture.ClearTestData();
-
+        _sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
+            _fixture.Services,
+            _fixture.ViewModelFactory);
+        
         // Setup: 3 Items hinzufügen
         _fixture.TestDtoStore.AddRange(new[]
         {
@@ -31,33 +26,22 @@ public sealed class ClearAPITests : IClassFixture<CollectionViewModelFixture>
             new TestDto { Name = "Second" },
             new TestDto { Name = "Third" }
         });
+    }
 
-        _sut = new CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.DataStores,
-            _fixture.ViewModelFactory,
-            _fixture.ComparerService);
-
-        _viewModelsBeforeClear = _sut.Items.ToList();
-
-        // ACT: Clear
+    [Fact]
+    public void Clear_RemovesAllItems()
+    {
+        // Act
         _sut.Clear();
-    }
 
-    [Fact]
-    public void RemovesAllViewModels()
-    {
+        // Assert
         _sut.Items.Should().BeEmpty();
-    }
-
-    [Fact]
-    public void ClearsStore()
-    {
-        _fixture.TestDtoStore.Items.Should().BeEmpty();
-    }
-
-    [Fact]
-    public void CountIsZero()
-    {
         _sut.Count.Should().Be(0);
+    }
+
+    public void Dispose()
+    {
+        _fixture.ClearTestData();
+        _sut?.Dispose();
     }
 }

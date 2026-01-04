@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using CustomWPFControls.Tests.Testing;
 using CustomWPFControls.ViewModels;
 using TestHelper.DataStores.Models;
@@ -19,9 +18,8 @@ public sealed class Execute_WithMultipleSelectedItems_RemovesAllSelected : IClas
     {
         _fixture = fixture;
         _sut = new EditableCollectionViewModel<TestDto, TestViewModel>(
-            _fixture.DataStores,
-            _fixture.ViewModelFactory,
-            _fixture.ComparerService);
+            _fixture.Services,
+            _fixture.ViewModelFactory);
 
         // Setup: Mehrere Items hinzufügen
         _fixture.TestDtoStore.AddRange(new[]

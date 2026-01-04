@@ -1,3 +1,4 @@
+using System;
 using CustomWPFControls.Tests.Testing;
 using CustomWPFControls.ViewModels;
 using FluentAssertions;
@@ -13,27 +14,17 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Properties;
 /// Kritisch für WPF-Binding: Wenn ein selektiertes Item gelöscht wird,
 /// muss es aus SelectedItems entfernt werden.
 /// </remarks>
-public sealed class SelectedItems_ItemRemovedViaRemove_IsRemovedFromSelection : IDisposable
+public sealed class SelectedItems_ItemRemovedFromStore_IsRemovedFromSelection : IClassFixture<CollectionViewModelFixture>, IDisposable
 {
     private readonly CollectionViewModelFixture _fixture;
-    private readonly CollectionViewModel<TestDto, TestViewModel> _sut;
+    private readonly ViewModels.CollectionViewModel<TestDto, TestViewModel> _sut;
 
-    public SelectedItems_ItemRemovedViaRemove_IsRemovedFromSelection()
+    public SelectedItems_ItemRemovedFromStore_IsRemovedFromSelection(CollectionViewModelFixture fixture)
     {
-        _fixture = new CollectionViewModelFixture();
-        
-        // Setup: 3 Items hinzufügen
-        _fixture.TestDtoStore.AddRange(new[]
-        {
-            new TestDto { Name = "First" },
-            new TestDto { Name = "Second" },
-            new TestDto { Name = "Third" }
-        });
-
-        _sut = new CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.DataStores,
-            _fixture.ViewModelFactory,
-            _fixture.ComparerService);
+        _fixture = fixture;
+        _sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
+            _fixture.Services,
+            _fixture.ViewModelFactory);
     }
 
     [Fact]

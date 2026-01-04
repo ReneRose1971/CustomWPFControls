@@ -6,9 +6,6 @@ using Xunit;
 
 namespace CustomWPFControls.Tests.Unit.EditableCollectionViewModel.Commands.DeleteCommand;
 
-/// <summary>
-/// Test: DeleteCommand.Execute() entfernt das ausgewählte Item.
-/// </summary>
 public sealed class Execute_WithSelectedItem_RemovesItem : IClassFixture<CollectionViewModelFixture>, IDisposable
 {
     private readonly CollectionViewModelFixture _fixture;
@@ -18,9 +15,8 @@ public sealed class Execute_WithSelectedItem_RemovesItem : IClassFixture<Collect
     {
         _fixture = fixture;
         _sut = new EditableCollectionViewModel<TestDto, TestViewModel>(
-            _fixture.DataStores,
-            _fixture.ViewModelFactory,
-            _fixture.ComparerService);
+            _fixture.Services,
+            _fixture.ViewModelFactory);
 
         // Setup: Item hinzufügen und selektieren
         var model = new TestDto { Name = "ToDelete" };

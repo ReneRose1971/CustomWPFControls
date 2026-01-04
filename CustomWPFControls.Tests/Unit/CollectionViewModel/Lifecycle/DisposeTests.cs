@@ -32,9 +32,8 @@ public sealed class DisposeTests : IClassFixture<CollectionViewModelFixture>
     {
         // Arrange
         var sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.DataStores,
-            _fixture.ViewModelFactory,
-            _fixture.ComparerService);
+            _fixture.Services,
+            _fixture.ViewModelFactory);
 
         // Act & Assert - Sollte keine Exception werfen
         var act = () => sut.Dispose();
@@ -46,9 +45,8 @@ public sealed class DisposeTests : IClassFixture<CollectionViewModelFixture>
     {
         // Arrange
         var sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.DataStores,
-            _fixture.ViewModelFactory,
-            _fixture.ComparerService);
+            _fixture.Services,
+            _fixture.ViewModelFactory);
 
         // Act & Assert - Mehrfaches Dispose sollte keine Exception werfen
         sut.Dispose();
@@ -61,9 +59,8 @@ public sealed class DisposeTests : IClassFixture<CollectionViewModelFixture>
     {
         // Arrange
         var sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.DataStores,
-            _fixture.ViewModelFactory,
-            _fixture.ComparerService);
+            _fixture.Services,
+            _fixture.ViewModelFactory);
 
         // Act
         sut.Dispose();
@@ -77,9 +74,8 @@ public sealed class DisposeTests : IClassFixture<CollectionViewModelFixture>
     {
         // Arrange
         var sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.DataStores,
-            _fixture.ViewModelFactory,
-            _fixture.ComparerService);
+            _fixture.Services,
+            _fixture.ViewModelFactory);
 
         // Act
         sut.Dispose();
@@ -93,9 +89,8 @@ public sealed class DisposeTests : IClassFixture<CollectionViewModelFixture>
     {
         // Arrange
         var sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.DataStores,
-            _fixture.ViewModelFactory,
-            _fixture.ComparerService);
+            _fixture.Services,
+            _fixture.ViewModelFactory);
 
         // Act
         sut.Dispose();

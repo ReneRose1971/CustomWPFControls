@@ -32,9 +32,8 @@ public sealed class ConstructorTests : IClassFixture<CollectionViewModelFixture>
     {
         // Act
         var sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.DataStores,
-            _fixture.ViewModelFactory,
-            _fixture.ComparerService);
+            _fixture.Services,
+            _fixture.ViewModelFactory);
 
         // Assert
         sut.Should().NotBeNull();
@@ -48,9 +47,8 @@ public sealed class ConstructorTests : IClassFixture<CollectionViewModelFixture>
     {
         // Act
         var sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.DataStores,
-            _fixture.ViewModelFactory,
-            _fixture.ComparerService);
+            _fixture.Services,
+            _fixture.ViewModelFactory);
 
         // Assert
         sut.Items.Should().NotBeNull();
@@ -65,9 +63,8 @@ public sealed class ConstructorTests : IClassFixture<CollectionViewModelFixture>
     {
         // Act
         var sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.DataStores,
-            _fixture.ViewModelFactory,
-            _fixture.ComparerService);
+            _fixture.Services,
+            _fixture.ViewModelFactory);
 
         // Assert
         sut.SelectedItems.Should().NotBeNull();
@@ -82,9 +79,8 @@ public sealed class ConstructorTests : IClassFixture<CollectionViewModelFixture>
     {
         // Act
         var sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.DataStores,
-            _fixture.ViewModelFactory,
-            _fixture.ComparerService);
+            _fixture.Services,
+            _fixture.ViewModelFactory);
 
         // Assert
         sut.Count.Should().Be(0);
@@ -98,9 +94,8 @@ public sealed class ConstructorTests : IClassFixture<CollectionViewModelFixture>
     {
         // Act
         var sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.DataStores,
-            _fixture.ViewModelFactory,
-            _fixture.ComparerService);
+            _fixture.Services,
+            _fixture.ViewModelFactory);
 
         // Assert
         sut.SelectedItem.Should().BeNull();
@@ -114,16 +109,15 @@ public sealed class ConstructorTests : IClassFixture<CollectionViewModelFixture>
     #region Null Validation Tests
 
     [Fact]
-    public void Constructor_WithNullDataStores_ThrowsArgumentNullException()
+    public void Constructor_WithNullServices_ThrowsArgumentNullException()
     {
         // Act & Assert
         var act = () => new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
             null!,
-            _fixture.ViewModelFactory,
-            _fixture.ComparerService);
+            _fixture.ViewModelFactory);
 
         act.Should().Throw<ArgumentNullException>()
-            .WithParameterName("dataStores");
+            .WithParameterName("services");
     }
 
     [Fact]
@@ -131,25 +125,11 @@ public sealed class ConstructorTests : IClassFixture<CollectionViewModelFixture>
     {
         // Act & Assert
         var act = () => new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.DataStores,
-            null!,
-            _fixture.ComparerService);
-
-        act.Should().Throw<ArgumentNullException>()
-            .WithParameterName("viewModelFactory");
-    }
-
-    [Fact]
-    public void Constructor_WithNullComparerService_ThrowsArgumentNullException()
-    {
-        // Act & Assert
-        var act = () => new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.DataStores,
-            _fixture.ViewModelFactory,
+            _fixture.Services,
             null!);
 
         act.Should().Throw<ArgumentNullException>()
-            .WithParameterName("comparerService");
+            .WithParameterName("viewModelFactory");
     }
 
     #endregion

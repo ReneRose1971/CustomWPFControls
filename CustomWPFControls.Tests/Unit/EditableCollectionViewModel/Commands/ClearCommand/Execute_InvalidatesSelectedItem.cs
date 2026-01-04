@@ -18,14 +18,8 @@ public sealed class Execute_InvalidatesSelectedItem : IClassFixture<CollectionVi
     {
         _fixture = fixture;
         _sut = new EditableCollectionViewModel<TestDto, TestViewModel>(
-            _fixture.DataStores,
-            _fixture.ViewModelFactory,
-            _fixture.ComparerService);
-
-        // Setup: Item hinzufügen und selektieren
-        var model = new TestDto { Name = "Test" };
-        _fixture.TestDtoStore.Add(model);
-        _sut.SelectedItem = _sut.Items[0];
+            _fixture.Services,
+            _fixture.ViewModelFactory);
     }
 
     [Fact]

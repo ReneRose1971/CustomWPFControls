@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel;
 using CustomWPFControls.Tests.Testing;
 using CustomWPFControls.ViewModels;
+using FluentAssertions;
 using TestHelper.DataStores.Models;
 using Xunit;
 
@@ -13,41 +14,38 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.PropertyChanged;
 public sealed class Count_RaisesPropertyChanged_OnBulkAdd : IClassFixture<CollectionViewModelFixture>, IDisposable
 {
     private readonly CollectionViewModelFixture _fixture;
-    private readonly CollectionViewModel<TestDto, TestViewModel> _sut;
-    private bool _countPropertyChanged;
+    private readonly ViewModels.CollectionViewModel<TestDto, TestViewModel> _sut;
+    private int _propertyChangedCount = 0;
 
     public Count_RaisesPropertyChanged_OnBulkAdd(CollectionViewModelFixture fixture)
     {
         _fixture = fixture;
-        _sut = new CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.DataStores,
-            _fixture.ViewModelFactory,
-            _fixture.ComparerService);
-
-        _sut.PropertyChanged += OnPropertyChanged;
+        _sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
+            _fixture.Services,
+            _fixture.ViewModelFactory);
     }
 
     private void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(_sut.Count))
-        {
-            _countPropertyChanged = true;
-        }
+            _propertyChangedCount++;
     }
 
     [Fact]
-    public void Count_RaisesPropertyChanged_WhenBulkAddExecuted()
+    public void Test_Count_RaisesPropertyChanged_OnBulkAdd()
     {
+        // Arrange
+        _sut.PropertyChanged += OnPropertyChanged;
+
         // Act
         _fixture.TestDtoStore.AddRange(new[]
         {
-            new TestDto { Name = "Item1" },
-            new TestDto { Name = "Item2" },
-            new TestDto { Name = "Item3" }
+            new TestDto { Name = "First" },
+            new TestDto { Name = "Second" }
         });
 
         // Assert
-        Assert.True(_countPropertyChanged, "PropertyChanged für Count wurde nicht gefeuert");
+        _propertyChangedCount.Should().BeGreaterThan(0);
     }
 
     public void Dispose()

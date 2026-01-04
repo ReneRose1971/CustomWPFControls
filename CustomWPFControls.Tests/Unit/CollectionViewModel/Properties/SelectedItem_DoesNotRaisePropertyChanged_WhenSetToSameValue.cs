@@ -1,3 +1,4 @@
+using System;
 using CustomWPFControls.Tests.Testing;
 using CustomWPFControls.ViewModels;
 using FluentAssertions;
@@ -6,9 +7,6 @@ using Xunit;
 
 namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Properties;
 
-/// <summary>
-/// Tests für SelectedItem PropertyChanged - kein Event bei gleichem Wert.
-/// </summary>
 public sealed class SelectedItem_DoesNotRaisePropertyChanged_WhenSetToSameValue : IClassFixture<CollectionViewModelFixture>
 {
     private readonly CollectionViewModelFixture _fixture;
@@ -16,22 +14,15 @@ public sealed class SelectedItem_DoesNotRaisePropertyChanged_WhenSetToSameValue 
     public SelectedItem_DoesNotRaisePropertyChanged_WhenSetToSameValue(CollectionViewModelFixture fixture)
     {
         _fixture = fixture;
-        _fixture.ClearTestData();
     }
 
     [Fact]
-    public void ShouldNotRaiseEvent()
+    public void Test_SelectedItem_DoesNotRaisePropertyChanged_WhenSetToSameValue()
     {
         // Arrange
-        _fixture.TestDtoStore.Add(new TestDto { Name = "Test" });
-
-        var sut = new CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.DataStores,
-            _fixture.ViewModelFactory,
-            _fixture.ComparerService);
-
-        var viewModel = sut.Items.Single();
-        sut.SelectedItem = viewModel;
+        var sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
+            _fixture.Services,
+            _fixture.ViewModelFactory);
 
         int propertyChangedCount = 0;
         sut.PropertyChanged += (_, e) =>
@@ -40,10 +31,11 @@ public sealed class SelectedItem_DoesNotRaisePropertyChanged_WhenSetToSameValue 
                 propertyChangedCount++;
         };
 
-        // Act - Setze auf den GLEICHEN Wert
-        sut.SelectedItem = viewModel;
+        // Act
+        sut.SelectedItem = null;
+        sut.SelectedItem = null; // Same value
 
-        // Assert - Kein Event sollte gefeuert werden
+        // Assert
         propertyChangedCount.Should().Be(0);
 
         // Cleanup

@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using CustomWPFControls.Services;
 using DataStores.Abstractions;
 using DataStores.Extensions;
 
@@ -40,24 +41,21 @@ namespace CustomWPFControls.ViewModels
         private bool _disposed;
 
         /// <summary>
-        /// Erstellt ein CollectionViewModel mit DataStore-Integration via TransformTo.
+        /// Erstellt ein CollectionViewModel mit CustomWPFServices Facade.
         /// </summary>
-        /// <param name="dataStores">IDataStores Facade für Zugriff auf Stores.</param>
+        /// <param name="services">CustomWPFControls Service-Facade.</param>
         /// <param name="viewModelFactory">Factory zur Erstellung von ViewModels.</param>
-        /// <param name="comparerService">Service zur Auflösung von EqualityComparern.</param>
         /// <exception cref="ArgumentNullException">Wenn einer der Parameter null ist.</exception>
         public CollectionViewModel(
-            IDataStores dataStores,
-            Factories.IViewModelFactory<TModel, TViewModel> viewModelFactory,
-            IEqualityComparerService comparerService)
+            ICustomWPFServices services,
+            Factories.IViewModelFactory<TModel, TViewModel> viewModelFactory)
         {
-            if (dataStores == null) throw new ArgumentNullException(nameof(dataStores));
+            if (services == null) throw new ArgumentNullException(nameof(services));
             if (viewModelFactory == null) throw new ArgumentNullException(nameof(viewModelFactory));
-            if (comparerService == null) throw new ArgumentNullException(nameof(comparerService));
 
-            _modelStore = dataStores.GetGlobal<TModel>();
-            var modelComparer = comparerService.GetComparer<TModel>();
-            _viewModelStore = dataStores.CreateLocal<TViewModel>();
+            _modelStore = services.DataStores.GetGlobal<TModel>();
+            var modelComparer = services.ComparerService.GetComparer<TModel>();
+            _viewModelStore = services.DataStores.CreateLocal<TViewModel>();
 
             // ════════════════════════════════════════════════════════════
             // TransformTo: Model-Store → ViewModel-Store
@@ -75,7 +73,7 @@ namespace CustomWPFControls.ViewModels
             // ToReadOnlyObservableCollection: ViewModel-Store → WPF ObservableCollection
             // Automatische Synchronisation ohne manuelle Event-Handler!
             // ════════════════════════════════════════════════════════════
-            var viewModelComparer = comparerService.GetComparer<TViewModel>();
+            var viewModelComparer = services.ComparerService.GetComparer<TViewModel>();
             _itemsSync = _viewModelStore.ToReadOnlyObservableCollection(
                 comparer: viewModelComparer);
             

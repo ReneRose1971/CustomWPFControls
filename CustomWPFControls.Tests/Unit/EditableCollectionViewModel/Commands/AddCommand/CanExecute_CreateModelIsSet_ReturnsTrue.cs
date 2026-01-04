@@ -6,9 +6,6 @@ using Xunit;
 
 namespace CustomWPFControls.Tests.Unit.EditableCollectionViewModel.Commands.AddCommand;
 
-/// <summary>
-/// Test: AddCommand.CanExecute() gibt true zurück wenn CreateModel gesetzt ist.
-/// </summary>
 public sealed class CanExecute_CreateModelIsSet_ReturnsTrue : IClassFixture<CollectionViewModelFixture>, IDisposable
 {
     private readonly CollectionViewModelFixture _fixture;
@@ -18,12 +15,8 @@ public sealed class CanExecute_CreateModelIsSet_ReturnsTrue : IClassFixture<Coll
     {
         _fixture = fixture;
         _sut = new EditableCollectionViewModel<TestDto, TestViewModel>(
-            _fixture.DataStores,
-            _fixture.ViewModelFactory,
-            _fixture.ComparerService)
-        {
-            CreateModel = () => new TestDto()
-        };
+            _fixture.Services,
+            _fixture.ViewModelFactory);
     }
 
     [Fact]

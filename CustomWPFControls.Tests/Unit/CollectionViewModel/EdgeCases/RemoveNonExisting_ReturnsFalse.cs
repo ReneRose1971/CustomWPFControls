@@ -1,3 +1,4 @@
+using System;
 using CustomWPFControls.Tests.Testing;
 using CustomWPFControls.ViewModels;
 using FluentAssertions;
@@ -6,9 +7,6 @@ using Xunit;
 
 namespace CustomWPFControls.Tests.Unit.CollectionViewModel.EdgeCases;
 
-/// <summary>
-/// Tests für Remove-Rückgabewert bei nicht vorhandenem ViewModel.
-/// </summary>
 public sealed class RemoveNonExisting_ReturnsFalse : IClassFixture<CollectionViewModelFixture>
 {
     private readonly CollectionViewModelFixture _fixture;
@@ -16,26 +14,21 @@ public sealed class RemoveNonExisting_ReturnsFalse : IClassFixture<CollectionVie
     public RemoveNonExisting_ReturnsFalse(CollectionViewModelFixture fixture)
     {
         _fixture = fixture;
-        _fixture.ClearTestData();
     }
 
     [Fact]
-    public void ShouldReturnFalse()
+    public void Test_RemoveNonExisting_ReturnsFalse()
     {
         // Arrange
-        _fixture.TestDtoStore.Add(new TestDto { Name = "Test" });
-
-        var sut = new CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.DataStores,
-            _fixture.ViewModelFactory,
-            _fixture.ComparerService);
-
-        // Erstelle ein ViewModel das NICHT in der Collection ist
+        var sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
+            _fixture.Services,
+            _fixture.ViewModelFactory);
+        
         var nonExistingDto = new TestDto { Name = "NonExisting" };
-        var nonExistingViewModel = _fixture.ViewModelFactory.Create(nonExistingDto);
+        var nonExistingVm = _fixture.ViewModelFactory.Create(nonExistingDto);
 
         // Act
-        var result = sut.Remove(nonExistingViewModel);
+        var result = sut.Remove(nonExistingVm);
 
         // Assert
         result.Should().BeFalse();

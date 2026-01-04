@@ -1,3 +1,4 @@
+using System;
 using CustomWPFControls.Tests.Testing;
 using CustomWPFControls.ViewModels;
 using FluentAssertions;
@@ -14,27 +15,17 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Properties;
 /// Act: Store clearen
 /// Assert: Count == 0
 /// </remarks>
-public sealed class CountProperty_AfterClear : IDisposable
+public sealed class CountProperty_AfterClear : IClassFixture<CollectionViewModelFixture>, IDisposable
 {
     private readonly CollectionViewModelFixture _fixture;
-    private readonly CollectionViewModel<TestDto, TestViewModel> _sut;
+    private readonly ViewModels.CollectionViewModel<TestDto, TestViewModel> _sut;
 
-    public CountProperty_AfterClear()
+    public CountProperty_AfterClear(CollectionViewModelFixture fixture)
     {
-        _fixture = new CollectionViewModelFixture();
-        
-        // Setup: 3 Items
-        _fixture.TestDtoStore.AddRange(new[]
-        {
-            new TestDto { Name = "First" },
-            new TestDto { Name = "Second" },
-            new TestDto { Name = "Third" }
-        });
-
-        _sut = new CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.DataStores,
-            _fixture.ViewModelFactory,
-            _fixture.ComparerService);
+        _fixture = fixture;
+        _sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
+            _fixture.Services,
+            _fixture.ViewModelFactory);
     }
 
     [Fact]

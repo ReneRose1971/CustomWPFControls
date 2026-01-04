@@ -18,14 +18,8 @@ public sealed class CanExecute_NoItemSelected_ReturnsFalse : IClassFixture<Colle
     {
         _fixture = fixture;
         _sut = new EditableCollectionViewModel<TestDto, TestViewModel>(
-            _fixture.DataStores,
-            _fixture.ViewModelFactory,
-            _fixture.ComparerService);
-
-        // Setup: Item hinzufügen aber NICHT selektieren
-        var model = new TestDto { Name = "Test" };
-        _fixture.TestDtoStore.Add(model);
-        _sut.SelectedItem = null;
+            _fixture.Services,
+            _fixture.ViewModelFactory);
     }
 
     [Fact]

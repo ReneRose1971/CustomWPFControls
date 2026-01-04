@@ -18,9 +18,8 @@ public sealed class Execute_RemovesAllItems : IClassFixture<CollectionViewModelF
     {
         _fixture = fixture;
         _sut = new EditableCollectionViewModel<TestDto, TestViewModel>(
-            _fixture.DataStores,
-            _fixture.ViewModelFactory,
-            _fixture.ComparerService);
+            _fixture.Services,
+            _fixture.ViewModelFactory);
 
         // Setup: Mehrere Items hinzufügen
         _fixture.TestDtoStore.AddRange(new[]

@@ -1,3 +1,4 @@
+using System;
 using CustomWPFControls.Tests.Testing;
 using CustomWPFControls.ViewModels;
 using FluentAssertions;
@@ -13,10 +14,10 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.RemoveAPI;
 /// Setup: 3 Items hinzufügen
 /// ACT: sut.Remove(viewModel)
 /// </remarks>
-public sealed class RemoveSingleTests : IClassFixture<CollectionViewModelFixture>
+public sealed class RemoveSingleTests : IClassFixture<CollectionViewModelFixture>, IDisposable
 {
     private readonly CollectionViewModelFixture _fixture;
-    private readonly CollectionViewModel<TestDto, TestViewModel> _sut;
+    private readonly ViewModels.CollectionViewModel<TestDto, TestViewModel> _sut;
     private readonly TestViewModel _removedViewModel;
     private readonly bool _removeResult;
 
@@ -33,10 +34,9 @@ public sealed class RemoveSingleTests : IClassFixture<CollectionViewModelFixture
             new TestDto { Name = "Third" }
         });
 
-        _sut = new CollectionViewModel<TestDto, TestViewModel>(
-            _fixture.DataStores,
-            _fixture.ViewModelFactory,
-            _fixture.ComparerService);
+        _sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(
+            _fixture.Services,
+            _fixture.ViewModelFactory);
 
         // ACT: Mittleres ViewModel entfernen
         _removedViewModel = _sut.Items[1];
@@ -65,5 +65,10 @@ public sealed class RemoveSingleTests : IClassFixture<CollectionViewModelFixture
     public void ReturnsTrueOnSuccess()
     {
         _removeResult.Should().BeTrue();
+    }
+
+    public void Dispose()
+    {
+        _fixture.Dispose();
     }
 }

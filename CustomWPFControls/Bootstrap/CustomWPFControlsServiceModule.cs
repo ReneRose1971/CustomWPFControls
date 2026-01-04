@@ -41,7 +41,10 @@ public sealed class CustomWPFControlsServiceModule : IServiceModule
         
         // MessageBoxService als Singleton
         services.AddSingleton<IMessageBoxService, MessageBoxService>();
-        
+
+        // Facade registrieren (löst alle Dependencies automatisch auf)
+        services.AddSingleton<ICustomWPFServices, CustomWPFServices>();
+
         // DialogService mit WindowLayoutService-Integration
         // DialogService erhält WindowLayoutService via Constructor-Injection
         services.AddDialogService();

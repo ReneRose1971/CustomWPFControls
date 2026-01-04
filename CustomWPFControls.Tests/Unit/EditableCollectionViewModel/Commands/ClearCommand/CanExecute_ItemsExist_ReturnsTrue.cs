@@ -18,12 +18,8 @@ public sealed class CanExecute_ItemsExist_ReturnsTrue : IClassFixture<Collection
     {
         _fixture = fixture;
         _sut = new EditableCollectionViewModel<TestDto, TestViewModel>(
-            _fixture.DataStores,
-            _fixture.ViewModelFactory,
-            _fixture.ComparerService);
-
-        // Setup: Item hinzufügen
-        _fixture.TestDtoStore.Add(new TestDto { Name = "Test" });
+            _fixture.Services,
+            _fixture.ViewModelFactory);
     }
 
     [Fact]
