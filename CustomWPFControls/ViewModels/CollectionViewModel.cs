@@ -46,6 +46,7 @@ namespace CustomWPFControls.ViewModels
         private readonly ObservableCollection<TViewModel> _selectedItems;
         private IDisposable _unidirectionalSync;
         private bool _disposed;
+        private TViewModel? _selectedItem;
 
         /// <summary>
         /// Erstellt ein CollectionViewModel mit CustomWPFServices Facade.
@@ -118,8 +119,20 @@ namespace CustomWPFControls.ViewModels
         /// <summary>
         /// Ausgewähltes ViewModel (Single-Selection).
         /// Wird automatisch auf null gesetzt wenn das Item via Remove/RemoveRange/Clear entfernt wird.
+        /// Feuert PropertyChanged Event bei Änderungen.
         /// </summary>
-        public TViewModel? SelectedItem { get; set; }
+        public TViewModel? SelectedItem
+        {
+            get => _selectedItem;
+            set
+            {
+                if (_selectedItem != value)
+                {
+                    _selectedItem = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
 
         /// <summary>
         /// Ausgewählte ViewModels (Multi-Selection).
