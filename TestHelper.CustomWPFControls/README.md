@@ -7,9 +7,77 @@ Test-Utilities und Mock-Implementierungen für CustomWPFControls-Tests.
 Dieses Projekt stellt wiederverwendbare Test-Infrastruktur für Unit- und Integration-Tests bereit:
 
 - **Mock-Services** - Mock-Implementierungen von IDialogService und IMessageBoxService
+- **Test-Extensions** - LoadModelsAndWait für deterministische CollectionViewModel-Synchronisation
 - **Test-Helpers** - Utilities für Testdaten-Erstellung
 
 ## Hauptkomponenten
+
+### CollectionViewModelExtensions
+
+Test-Extensions für CollectionViewModel mit garantierter Synchronisation.
+
+#### LoadModelsAndWait
+
+Lädt Models UND wartet event-basiert auf Items-Synchronisation.
+
+```csharp
+using TestHelper.CustomWPFControls.Extensions;
+
+public class ViewModelTest
+{
+    [Fact]
+    public void LoadModels_SynchronizesCorrectly()
+    {
+        // Arrange
+        var models = new[] { model1, model2, model3 };
+        
+        // Act - Wartet auf TransformTo-Synchronisation
+        viewModel.LoadModelsAndWait(models);
+        
+        // Assert - Garantiert synchronisiert
+        Assert.Equal(3, viewModel.Items.Count);
+        Assert.Equal("Model1", viewModel.Items[0].Name);
+    }
+}
+```
+
+**Features:**
+- ? Event-basierte Synchronisation (CollectionChanged)
+- ? Deterministisch - wartet auf tatsächliche Events, nicht auf Zeit
+- ? Schnell - reagiert sofort (keine Sleep-Delays)
+- ? Race-Condition-sicher - Event wird VOR LoadModels registriert
+- ? Timeout-Schutz (default: 500ms)
+- ? Async-Variante verfügbar (LoadModelsAndWaitAsync)
+
+**Warum notwendig?**
+
+`LoadModels()` ruft `Clear()` und `ModelStore.AddRange()` synchron auf, aber die **ViewModel-Erstellung** via `TransformTo` läuft asynchron. `LoadModelsAndWait` garantiert, dass `viewModel.Items` synchronisiert ist:
+
+```csharp
+// ? Race Condition möglich
+viewModel.LoadModels(models);
+Assert.Equal(3, viewModel.Items.Count);  // Kann fehlschlagen!
+
+// ? Garantiert synchronisiert
+viewModel.LoadModelsAndWait(models);
+Assert.Equal(3, viewModel.Items.Count);  // Immer korrekt!
+```
+
+**API-Varianten:**
+
+```csharp
+// Standard: expectedCount = models.Count
+viewModel.LoadModelsAndWait(models);
+
+// Mit expliziter Anzahl
+viewModel.LoadModelsAndWait(modelsWithDuplicates, expectedCount: 3);
+
+// Mit custom Timeout
+viewModel.LoadModelsAndWait(largeSet, timeout: TimeSpan.FromSeconds(2));
+
+// Async-Variante
+await viewModel.LoadModelsAndWaitAsync(models);
+```
 
 ### MockDialogService
 
