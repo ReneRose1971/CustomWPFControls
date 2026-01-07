@@ -54,7 +54,7 @@ public class CustomerViewModel : ViewModelBase<Customer>
 }
 ```
 
-**Warum?**
+**Vorteile:**
 - Automatisches PropertyChanged via Fody
 - Model-Property bereits vorhanden
 - Equals/GetHashCode implementiert
@@ -70,8 +70,7 @@ public class CustomerComparer : IEqualityComparer<Customer>
 {
     public bool Equals(Customer? x, Customer? y)
     {
-        if (x == null || y == null) return false
-;
+        if (x == null || y == null) return false;
         return x.Id == y.Id; // Stabile Property (Id)
     }
 
@@ -85,7 +84,7 @@ public class CustomerComparer : IEqualityComparer<Customer>
 services.AddSingleton<IEqualityComparer<Customer>>(new CustomerComparer());
 ```
 
-**Warum Id verwenden?**
+**Wichtig: Id verwenden**
 - Id ist unveränderlich nach DB-Insert
 - HashCode bleibt stabil
 - Dictionary-Lookups funktionieren zuverlässig
@@ -112,7 +111,7 @@ public class ViewModelModule : IServiceModule
 
 ```csharp
 var viewModel = new EditableCollectionViewModel<Customer, CustomerViewModel>(
-    dataStores, factory, comparerService);
+    services, factory);
 
 viewModel.CreateModel = () => new Customer
 {
@@ -289,14 +288,14 @@ public void CustomerViewModel_Name_ReturnsModelName()
 
 ```csharp
 [Fact]
-public void CollectionViewModel_DataStoreAdd_CreatesViewModel()
+public void CollectionViewModel_ModelStoreAdd_CreatesViewModel()
 {
     // Arrange
     var viewModel = new CollectionViewModel<Customer, CustomerViewModel>(
-        dataStores, factory, comparerService);
+        services, factory);
     
     // Act
-    dataStores.GetGlobal<Customer>().Add(new Customer { Name = "Bob" });
+    viewModel.ModelStore.Add(new Customer { Name = "Bob" });
     
     // Assert
     Assert.Equal(1, viewModel.Count);
@@ -308,11 +307,11 @@ public void CollectionViewModel_DataStoreAdd_CreatesViewModel()
 
 ```csharp
 [Fact]
-public void AddCommand_WithCreateModel_AddsToDataStore()
+public void AddCommand_WithCreateModel_AddsToModelStore()
 {
     // Arrange
     var viewModel = new EditableCollectionViewModel<Customer, CustomerViewModel>(
-        dataStores, factory, comparerService);
+        services, factory);
     viewModel.CreateModel = () => new Customer { Name = "New" };
     
     // Act
@@ -338,7 +337,7 @@ public void AddCommand_WithCreateModel_AddsToDataStore()
 ### DI-Registrierung-Checklist
 
 - IEqualityComparer registriert
-- ViewModelFactory registriert (via AddViewModelFactory)
+- ViewModelFactory registriert (via AddViewModelPackage)
 - CollectionViewModel registriert
 
 ### Control-Checklist
