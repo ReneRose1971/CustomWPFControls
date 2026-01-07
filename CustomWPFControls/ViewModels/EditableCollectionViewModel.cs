@@ -20,6 +20,7 @@ namespace CustomWPFControls.ViewModels
     /// <para>
     /// <b>Commands:</b> AddCommand fügt Models zum lokalen ModelStore hinzu.
     /// DeleteCommand nutzt die Remove()-Methode des CollectionViewModel.
+    /// Commands nutzen ObservableCommand für automatische CanExecuteChanged-Benachrichtigungen.
     /// </para>
     /// </remarks>
     public class EditableCollectionViewModel<TModel, TViewModel> : CollectionViewModel<TModel, TViewModel>
@@ -75,36 +76,39 @@ namespace CustomWPFControls.ViewModels
         /// <summary>
         /// Command zum Löschen des ausgewählten Elements.
         /// Nutzt die Remove()-Methode des CollectionViewModel.
+        /// Reagiert automatisch auf SelectedItem-Änderungen.
         /// </summary>
-        public ICommand DeleteCommand => _deleteCommand ??= new RelayCommand(_ =>
+        public ICommand DeleteCommand => _deleteCommand ??= new ObservableCommand(_ =>
         {
             if (SelectedItem != null)
             {
                 Remove(SelectedItem);
             }
-        }, _ => SelectedItem != null);
+        }, _ => SelectedItem != null, this, nameof(SelectedItem));
 
         private ICommand? _clearCommand;
         /// <summary>
         /// Command zum Löschen aller Elemente.
         /// Nutzt die Clear()-Methode des CollectionViewModel.
+        /// Reagiert automatisch auf Count-Änderungen.
         /// </summary>
-        public ICommand ClearCommand => _clearCommand ??= new RelayCommand(_ =>
+        public ICommand ClearCommand => _clearCommand ??= new ObservableCommand(_ =>
         {
             Clear();
-        }, _ => Count > 0);
+        }, _ => Count > 0, this, nameof(Count));
 
         private ICommand? _editCommand;
         /// <summary>
         /// Command zum Bearbeiten des ausgewählten Elements.
+        /// Reagiert automatisch auf SelectedItem-Änderungen.
         /// </summary>
-        public ICommand EditCommand => _editCommand ??= new RelayCommand(_ =>
+        public ICommand EditCommand => _editCommand ??= new ObservableCommand(_ =>
         {
             if (SelectedItem != null && EditModel != null)
             {
                 EditModel(SelectedItem.Model);
             }
-        }, _ => SelectedItem != null && EditModel != null);
+        }, _ => SelectedItem != null && EditModel != null, this, nameof(SelectedItem));
 
         private ICommand? _deleteSelectedCommand;
         /// <summary>
