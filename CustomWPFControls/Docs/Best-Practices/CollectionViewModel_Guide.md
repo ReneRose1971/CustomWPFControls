@@ -8,6 +8,7 @@ Umfassender Leitfaden für die Verwendung von `CollectionViewModel<TModel, TViewM
 - [Grundlegende Verwendung](#grundlegende-verwendung)
 - [DI-Registrierung mit AddViewModelPackage](#di-registrierung-mit-addviewmodelpackage)
 - [ModelStore-Konzept](#modelstore-konzept)
+- [LoadModels API](#loadmodels-api)
 - [LoadData Extension](#loaddata-extension)
 - [TransformTo-Integration](#transformto-integration)
 - [Selection-Management](#selection-management)
@@ -23,7 +24,7 @@ Umfassender Leitfaden für die Verwendung von `CollectionViewModel<TModel, TViewM
 - **Automatische Synchronisation**: Via TransformTo und ToReadOnlyObservableCollection
 - **ViewModel-Lifecycle**: Automatische Erstellung und Dispose von ViewModels
 - **Selection-Tracking**: SelectedItem und SelectedItems für UI-Binding
-- **Remove-API**: Remove(), RemoveRange(), Clear() mit automatischer Invalidierung
+- **Collection-API**: Remove(), RemoveRange(), Clear(), LoadModels() mit automatischer Selection-Invalidierung
 
 ---
 
@@ -133,7 +134,7 @@ public class ViewModelModule : IServiceModule
         services.AddViewModelPackage<Customer, CustomerViewModel>();
         
         // 4. EqualityComparer
-        services.AddSingleton<IEqualityComparer<Customer>>(
+        services.AddSingleton<IEqualityComparer<Customer>(
             new FallbackEqualsComparer<Customer>());
         
         // 5. Container-ViewModel
@@ -226,6 +227,135 @@ inactiveCustomers.ModelStore.Add(customer2);
 
 // activeCustomers.Items.Count = 1
 // inactiveCustomers.Items.Count = 1
+```
+
+---
+
+## LoadModels API
+
+### Zweck
+
+Die `LoadModels()` Methode ist eine **Produktions-API** des CollectionViewModel, die das Ersetzen aller Models in der Collection vereinfacht und garantiert konsistente Selection-Invalidierung.
+
+### Signatur
+
+```csharp
+public void LoadModels(IEnumerable<TModel> models)
+```
+
+### Funktionalität
+
+Die Methode führt folgende Schritte aus:
+
+1. **Clear()** - Entfernt alle vorhandenen Items und invalidiert Selection
+2. **ModelStore.AddRange(models)** - Fügt die neuen Models hinzu
+3. **TransformTo** - Erstellt automatisch neue ViewModels
+4. **ToReadOnlyObservableCollection** - Synchronisiert Items-Collection
+
+### Verwendung
+
+```csharp
+// Standard: Alle Items ersetzen
+var customers = await repository.GetAllAsync();
+collectionViewModel.LoadModels(customers);
+
+// Leere Liste ist valide (leert die Collection)
+collectionViewModel.LoadModels(Array.Empty<Customer>());
+
+ // ? Null wirft ArgumentNullException
+collectionViewModel.LoadModels(null);  // Exception!
+```
+
+### Vergleich: LoadModels vs. LoadData Extension
+
+| Feature | LoadModels (API) | LoadData (Extension) |
+|---------|------------------|---------------------|
+| **Typ** | Produktions-API (Teil von CollectionViewModel) | Test-Helper-Extension |
+| **Selection-Invalidierung** | ? Garantiert (via Clear) | ? Garantiert (via Clear) |
+| **Automatische Selektion** | ? Nein | ? Ja (selectFirst Parameter) |
+| **Null-Handling** | ? ArgumentNullException | ? Behandelt als Empty |
+| **Verwendung** | Produktionscode | Tests und Prototyping |
+
+**Wann was verwenden:**
+- **LoadModels**: Produktionscode, wo manuelle Selektion gewünscht ist
+- **LoadData**: Tests und Prototyping, wo automatische Selektion hilfreich ist
+
+### Praktisches Beispiel
+
+```csharp
+public class CustomerListViewModel
+{
+    private readonly CollectionViewModel<Customer, CustomerViewModel> _customers;
+    private readonly ICustomerRepository _repository;
+    
+    public CustomerListViewModel(
+        ICustomWPFServices services,
+        IViewModelFactory<Customer, CustomerViewModel> factory,
+        ICustomerRepository repository)
+    {
+        _customers = new CollectionViewModel<Customer, CustomerViewModel>(
+            services, factory);
+        _repository = repository;
+    }
+    
+    public async Task LoadAllCustomersAsync()
+    {
+        var customers = await _repository.GetAllAsync();
+        
+        // ? Ersetzt alle Kunden, invalidiert Selection
+        _customers.LoadModels(customers);
+        
+        // Optional: Manuelle Selektion
+        if (_customers.Items.Count > 0)
+            _customers.SelectedItem = _customers.Items[0];
+    }
+    
+    public async Task LoadActiveCustomersAsync()
+    {
+        var activeCustomers = await _repository.GetActiveAsync();
+        
+        // ? Ersetzt mit neuen Daten
+        _customers.LoadModels(activeCustomers);
+    }
+    
+    public void ClearCustomers()
+    {
+        // ? Leere Liste ist valide
+        _customers.LoadModels(Array.Empty<Customer>());
+    }
+}
+```
+
+### Vorteile
+
+**1. Atomare Operation:**
+```csharp
+// ? Manuell (mehrere Schritte, fehleranfällig)
+collectionViewModel.ModelStore.Clear();
+collectionViewModel.SelectedItem = null;
+collectionViewModel.SelectedItems.Clear();
+collectionViewModel.ModelStore.AddRange(models);
+
+// ? LoadModels (eine Zeile, garantiert korrekt)
+collectionViewModel.LoadModels(models);
+```
+
+**2. Selection-Invalidierung garantiert:**
+```csharp
+// ? Vergessene Selection-Invalidierung
+collectionViewModel.ModelStore.Clear();
+collectionViewModel.ModelStore.AddRange(newModels);
+// Selection zeigt auf gelöschte Items! ??
+
+// ? LoadModels (Selection wird automatisch zurückgesetzt)
+collectionViewModel.LoadModels(newModels);
+// SelectedItem = null, SelectedItems ist leer ?
+```
+
+**3. Klare Semantik:**
+```csharp
+// Code-Intent ist sofort klar
+collectionViewModel.LoadModels(newCustomers);  // "Lade neue Kunden"
 ```
 
 ---
@@ -466,7 +596,13 @@ public class CustomerListViewModel : IDisposable
     private async Task LoadCustomersAsync()
     {
         var customers = await _repository.GetAllAsync();
-        _customers.LoadData(customers);
+        
+        // ? Produktions-API: LoadModels
+        _customers.LoadModels(customers);
+        
+        // Optional: Manuelle Selektion
+        if (_customers.Items.Count > 0)
+            _customers.SelectedItem = _customers.Items[0];
     }
     
     public void Dispose()
@@ -521,7 +657,9 @@ public class MasterDetailViewModel : IDisposable
         {
             var orders = await _orderRepository.GetByCustomerIdAsync(
                 _customers.SelectedItem.Id);
-            _orders.LoadData(orders);
+            
+            // ? LoadModels für atomare Ersetzung
+            _orders.LoadModels(orders);
         }
     }
     
@@ -563,7 +701,9 @@ public class FilterableCustomerListViewModel : IDisposable
     private async Task LoadCustomersAsync()
     {
         var customers = await _repository.GetAllAsync();
-        _customers.LoadData(customers);
+        
+        // ? LoadModels für atomare Ersetzung
+        _customers.LoadModels(customers);
         
         // ICollectionView für Filtering erstellen
         _customersView = CollectionViewSource.GetDefaultView(_customers.Items);
@@ -592,7 +732,7 @@ public class FilterableCustomerListViewModel : IDisposable
 }
 ```
 
-### Beispiel 4: Lazy Loading mit LoadData
+### Beispiel 4: Lazy Loading mit LoadModels
 
 ```csharp
 public class LazyLoadingViewModel : IDisposable
@@ -629,10 +769,10 @@ public class LazyLoadingViewModel : IDisposable
         if (customers.Count < PageSize)
             CanLoadMore = false;
         
-        // Erste Seite: LoadData verwenden
+        // Erste Seite: LoadModels verwenden (ersetzt alle)
         if (_currentPage == 0)
         {
-            _customers.LoadData(customers);
+            _customers.LoadModels(customers);
         }
         // Weitere Seiten: Direkt an ModelStore anhängen
         else
@@ -658,10 +798,21 @@ public class LazyLoadingViewModel : IDisposable
 
 1. **AddViewModelPackage**: Registriert alle benötigten Services in einem Aufruf
 2. **Lokaler ModelStore**: Jede CollectionViewModel-Instanz ist isoliert
-3. **LoadData Extension**: Vereinfacht das Laden und Ersetzen von Daten
-4. **TransformTo**: Automatische ViewModel-Erstellung und Synchronisation
-5. **Selection-Management**: Automatische Invalidierung bei Remove-Operationen
-6. **MultiSelectBehavior**: Erforderlich für Multi-Selection in ListBox
+3. **LoadModels API**: Produktions-API zum Ersetzen aller Models mit Selection-Invalidierung
+4. **LoadData Extension**: Test-Helper mit optionaler automatischer Selektion
+5. **TransformTo**: Automatische ViewModel-Erstellung und Synchronisation
+6. **Selection-Management**: Automatische Invalidierung bei Remove-Operationen
+7. **MultiSelectBehavior**: Erforderlich für Multi-Selection in ListBox
+
+### API-Übersicht: Daten laden
+
+| Methode | Typ | Verwendung | Selection |
+|---------|-----|------------|-----------|
+| **LoadModels** | Produktions-API | Ersetzt alle Models | ? Invalidiert (Clear) |
+| **LoadData** | Extension | Test-Helper | ? Optional selectFirst |
+| **ModelStore.Add** | Direct API | Einzelnes Item | - Keine Änderung |
+| **ModelStore.AddRange** | Direct API | Mehrere Items | - Keine Änderung |
+| **Clear** | Produktions-API | Leert Collection | ? Invalidiert |
 
 ### Weiterführende Dokumentation
 

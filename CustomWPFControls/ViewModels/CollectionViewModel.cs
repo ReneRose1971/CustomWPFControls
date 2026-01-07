@@ -27,7 +27,7 @@ namespace CustomWPFControls.ViewModels
     /// Synchronisation zwischen DataStore und WPF-bindbare ObservableCollection.
     /// </para>
     /// <para>
-    /// <b>High-Level API:</b> Bietet Remove/RemoveRange/Clear Methoden für Commands.
+    /// <b>High-Level API:</b> Bietet Remove/RemoveRange/Clear/LoadModels Methoden für Commands.
     /// SelectedItem/SelectedItems werden automatisch invalidiert wenn Items via diese Methoden entfernt werden.
     /// </para>
     /// </remarks>
@@ -228,6 +228,35 @@ namespace CustomWPFControls.ViewModels
             // Invalidierung: Selektion komplett zurücksetzen
             SelectedItem = null;
             _selectedItems.Clear();
+        }
+
+        /// <summary>
+        /// Ersetzt alle Models in der Collection (Clear + AddRange).
+        /// TransformTo synchronisiert automatisch: Alle alten ViewModels werden entfernt/disposed, neue werden erstellt.
+        /// ToReadOnlyObservableCollection synchronisiert automatisch: Items wird aktualisiert.
+        /// Invalidiert automatisch SelectedItem und SelectedItems.
+        /// </summary>
+        /// <param name="models">Die neuen Models, die geladen werden sollen.</param>
+        /// <exception cref="ArgumentNullException">Wenn <paramref name="models"/> null ist.</exception>
+        /// <remarks>
+        /// Diese Methode ist eine atomare Operation, die erst alle vorhandenen Models entfernt (via <see cref="Clear"/>)
+        /// und dann die neuen Models hinzufügt. Die Selection wird dabei automatisch zurückgesetzt.
+        /// ViewModels werden automatisch erstellt und synchronisiert.
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// // Ersetze alle Items in der Collection
+        /// var newModels = new[] { model1, model2, model3 };
+        /// viewModel.LoadModels(newModels);
+        /// // Items.Count == 3, SelectedItem == null
+        /// </code>
+        /// </example>
+        public void LoadModels(IEnumerable<TModel> models)
+        {
+            if (models == null) throw new ArgumentNullException(nameof(models));
+            
+            Clear();
+            _modelStore.AddRange(models);
         }
 
         #endregion

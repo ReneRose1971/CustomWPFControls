@@ -76,10 +76,11 @@ public class CollectionViewModel<TModel, TViewModel> : INotifyPropertyChanged, I
     public ObservableCollection<TViewModel> SelectedItems { get; }
     public int Count { get; }
     
-    // ??? Removal API
+    // ??? Collection Manipulation API
     public bool Remove(TViewModel item);
     public int RemoveRange(IEnumerable<TViewModel> items);
     public void Clear();
+    public void LoadModels(IEnumerable<TModel> models);
     
     // ??? Constructor mit CustomWPFServices Facade
     public CollectionViewModel(
@@ -92,7 +93,31 @@ public class CollectionViewModel<TModel, TViewModel> : INotifyPropertyChanged, I
 - ? **ModelStore Property** - Lokaler DataStore für diese Instanz
 - ? **Constructor** - Verwendet CustomWPFServices Facade (kein dataStore Parameter mehr)
 - ? **Isolation** - Jede Instanz hat eigene Daten (kein globaler Shared State)
+- ? **LoadModels** - Ersetzt alle Models (Clear + AddRange) mit automatischer Selection-Invalidierung
 - ? **Removed** - `AddModel()`/`RemoveModel()` Methoden (verwende `ModelStore.Add()`)
+
+#### Public API: Collection Manipulation
+
+| Method | Signatur | Description |
+|--------|----------|-------------|
+| **Remove** | `bool Remove(TViewModel item)` | Entfernt ein ViewModel und Model, invalidiert Selection |
+| **RemoveRange** | `int RemoveRange(IEnumerable<TViewModel> items)` | Entfernt mehrere ViewModels und Models, invalidiert Selection |
+| **Clear** | `void Clear()` | Entfernt alle Items, invalidiert Selection |
+| **LoadModels** | `void LoadModels(IEnumerable<TModel> models)` | Ersetzt alle Models (Clear + AddRange), invalidiert Selection |
+
+**LoadModels Details:**
+```csharp
+// Ersetzt alle Items in der Collection
+var newModels = new[] { model1, model2, model3 };
+collectionViewModel.LoadModels(newModels);
+
+// Entspricht:
+collectionViewModel.Clear();  // Invalidiert SelectedItem/SelectedItems
+collectionViewModel.ModelStore.AddRange(newModels);
+
+// ? Wirft ArgumentNullException bei null
+collectionViewModel.LoadModels(null);
+```
 
 [Vollständige Dokumentation](CollectionViewModel.md)
 
