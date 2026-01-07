@@ -1,7 +1,7 @@
 using CustomWPFControls.Services.Dialogs;
-using CustomWPFControls.TestHelpers.Mocks;
 using FluentAssertions;
 using System.Windows;
+using TestHelper.CustomWPFControls.Mocks;
 using Xunit;
 
 namespace CustomWPFControls.Tests.Unit

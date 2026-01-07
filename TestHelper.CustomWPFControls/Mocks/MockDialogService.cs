@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using CustomWPFControls.Services.Dialogs;
 
-namespace CustomWPFControls.TestHelpers.Mocks
+namespace TestHelper.CustomWPFControls.Mocks
 {
     /// <summary>
     /// Mock-Implementation des IDialogService für Unit-Tests.
@@ -39,7 +39,7 @@ namespace CustomWPFControls.TestHelpers.Mocks
     ///     viewModel.AddCustomerCommand.Execute(null);
     ///     
     ///     // Assert
-    ///     mockDialog.VerifyDialogShown&lt;CustomerEditViewModel&gt;();
+    ///     mockDialog.VerifyDialogShown<CustomerEditViewModel>();
     ///     Assert.Single(mockDialog.Calls);
     /// }
     /// </code>

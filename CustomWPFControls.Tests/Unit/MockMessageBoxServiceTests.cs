@@ -1,5 +1,5 @@
 using System.Windows;
-using CustomWPFControls.TestHelpers.Mocks;
+using TestHelper.CustomWPFControls.Mocks;
 using FluentAssertions;
 using Xunit;
 
@@ -149,7 +149,7 @@ namespace CustomWPFControls.Tests.Unit
         }
 
         [Fact]
-        public void VerifyMessageShown_SucceedsWhenMessageWasShown()
+        public void VerifyMessageShown_SucceedsCuandoMensajeFueMostrado()
         {
             // Arrange
             var mock = new MockMessageBoxService();
@@ -160,7 +160,7 @@ namespace CustomWPFControls.Tests.Unit
         }
 
         [Fact]
-        public void VerifyMessageShown_ThrowsWhenMessageWasNotShown()
+        public void VerifyMessageShown_ThrowsCuandoElMensajeNoFueMostrado()
         {
             // Arrange
             var mock = new MockMessageBoxService();
@@ -220,7 +220,7 @@ namespace CustomWPFControls.Tests.Unit
         }
 
         [Fact]
-        public void VerifyCallCount_ThrowsWhenCountMismatch()
+        public void VerifyCallCount_ThrowsCuandoCountMismatch()
         {
             // Arrange
             var mock = new MockMessageBoxService();

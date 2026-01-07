@@ -4,7 +4,7 @@ using System.Linq;
 using System.Windows;
 using CustomWPFControls.Services.MessageBoxes;
 
-namespace CustomWPFControls.TestHelpers.Mocks
+namespace TestHelper.CustomWPFControls.Mocks
 {
     /// <summary>
     /// Mock-Implementierung des IMessageBoxService für Unit-Tests.

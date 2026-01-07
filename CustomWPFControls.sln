@@ -15,7 +15,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Projektmappenelemente", "Pr
 		..\..\..\Documents\Visual Studio 2022\Projects\CSharp\copilot\global-copilot-instructions.md = ..\..\..\Documents\Visual Studio 2022\Projects\CSharp\copilot\global-copilot-instructions.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomWPFControls.TestHelpers", "CustomWPFControls.TestHelpers\CustomWPFControls.TestHelpers.csproj", "{27FAE11A-6A60-A52C-F3F2-D4BAF4F495BA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestHelper.CustomWPFControls", "TestHelper.CustomWPFControls\TestHelper.CustomWPFControls.csproj", "{975C569A-052D-A416-291B-7385998DD2D6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -31,10 +31,10 @@ Global
 		{76DA744C-02EF-7970-4AC2-74605FEC5392}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{76DA744C-02EF-7970-4AC2-74605FEC5392}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{76DA744C-02EF-7970-4AC2-74605FEC5392}.Release|Any CPU.Build.0 = Release|Any CPU
-		{27FAE11A-6A60-A52C-F3F2-D4BAF4F495BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{27FAE11A-6A60-A52C-F3F2-D4BAF4F495BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{27FAE11A-6A60-A52C-F3F2-D4BAF4F495BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{27FAE11A-6A60-A52C-F3F2-D4BAF4F495BA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{975C569A-052D-A416-291B-7385998DD2D6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{975C569A-052D-A416-291B-7385998DD2D6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{975C569A-052D-A416-291B-7385998DD2D6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{975C569A-052D-A416-291B-7385998DD2D6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

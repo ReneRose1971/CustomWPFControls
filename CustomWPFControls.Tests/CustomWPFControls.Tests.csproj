@@ -37,7 +37,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CustomWPFControls\CustomWPFControls.csproj" />
-    <ProjectReference Include="..\CustomWPFControls.TestHelpers\CustomWPFControls.TestHelpers.csproj" />
+    <ProjectReference Include="..\TestHelper.CustomWPFControls\TestHelper.CustomWPFControls.csproj" />
   </ItemGroup>
 
   <ItemGroup>
