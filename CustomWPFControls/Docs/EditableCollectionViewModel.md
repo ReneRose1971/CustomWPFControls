@@ -1,12 +1,13 @@
 # EditableCollectionViewModel<TModel, TViewModel>
 
-Erweitert CollectionViewModel um Commands (Add, Delete, Clear, Edit) für vollständige CRUD-Operationen in der UI.
+Erweitert CollectionViewModel um Commands (Add, Delete, Clear, Edit) für vollständige CRUD-Operationen in der UI mit **automatischen CanExecuteChanged-Benachrichtigungen**.
 
 ## ?? Inhaltsverzeichnis
 
 - [Übersicht](#übersicht)
 - [Features](#features)
 - [Commands](#commands)
+- [Automatische CanExecuteChanged-Events](#automatische-canexecutechanged-events)
 - [Verwendung](#verwendung)
 - [XAML-Binding](#xaml-binding)
 - [Best Practices](#best-practices)
@@ -17,10 +18,10 @@ Erweitert CollectionViewModel um Commands (Add, Delete, Clear, Edit) für vollstä
 `EditableCollectionViewModel<TModel, TViewModel>` erweitert [CollectionViewModel](CollectionViewModel.md) um **ICommand-Properties** für CRUD-Operationen. Sie bietet:
 
 - ? **AddCommand** - Fügt neue Elemente hinzu
-- ? **DeleteCommand** - Löscht ausgewähltes Element
-- ? **ClearCommand** - Löscht alle Elemente
-- ? **EditCommand** - Bearbeitet ausgewähltes Element
-- ? **CanExecute-Logic** - Automatische Command-Validation
+- ? **DeleteCommand** - Löscht ausgewähltes Element (mit automatischem CanExecuteChanged)
+- ? **ClearCommand** - Löscht alle Elemente (mit automatischem CanExecuteChanged)
+- ? **EditCommand** - Bearbeitet ausgewähltes Element (mit automatischem CanExecuteChanged)
+- ? **Automatische CanExecuteChanged-Events** - Keine manuelle Benachrichtigung nötig
 - ? **Delegate-Pattern** - CreateModel & EditModel für Flexibilität
 
 ### Definition
@@ -40,11 +41,11 @@ public class EditableCollectionViewModel<TModel, TViewModel>
     public ICommand DeleteCommand { get; }
     public ICommand ClearCommand { get; }
     public ICommand EditCommand { get; }
+    public ICommand DeleteSelectedCommand { get; }
     
     public EditableCollectionViewModel(
-        IDataStore<TModel> dataStore,
-        IViewModelFactory<TModel, TViewModel> viewModelFactory,
-        IEqualityComparer<TModel> modelComparer);
+        ICustomWPFServices services,
+        IViewModelFactory<TModel, TViewModel> viewModelFactory);
 }
 ```
 
@@ -55,20 +56,58 @@ public class EditableCollectionViewModel<TModel, TViewModel>
 **AddCommand:**
 - **Execute:** Ruft `CreateModel()` auf ? fügt Model zu DataStore hinzu
 - **CanExecute:** `CreateModel != null`
+- **Implementation:** `RelayCommand` (keine PropertyChanged-Abhängigkeit)
 
 **DeleteCommand:**
 - **Execute:** Entfernt `SelectedItem` aus DataStore
 - **CanExecute:** `SelectedItem != null`
+- **Implementation:** `ObservableCommand` (überwacht `SelectedItem`)
+- **? Automatisch:** Feuert `CanExecuteChanged` bei `SelectedItem`-Änderung
 
 **ClearCommand:**
 - **Execute:** Leert DataStore (alle Items)
 - **CanExecute:** `Count > 0`
+- **Implementation:** `ObservableCommand` (überwacht `Count`)
+- **? Automatisch:** Feuert `CanExecuteChanged` bei `Count`-Änderung
 
 **EditCommand:**
 - **Execute:** Ruft `EditModel(SelectedItem.Model)` auf
 - **CanExecute:** `SelectedItem != null && EditModel != null`
+- **Implementation:** `ObservableCommand` (überwacht `SelectedItem`)
+- **? Automatisch:** Feuert `CanExecuteChanged` bei `SelectedItem`-Änderung
 
-### 2. Delegate-Pattern
+**DeleteSelectedCommand:**
+- **Execute:** Entfernt alle `SelectedItems` (Multi-Selection)
+- **CanExecute:** `SelectedItems.Count > 0`
+- **Implementation:** `RelayCommand` (SelectedItems ist ObservableCollection)
+
+### 2. Automatische CanExecuteChanged-Events
+
+**Problem gelöst:**
+Früher mussten Consumer manuell `CommandManager.InvalidateRequerySuggested()` aufrufen oder auf WPF-UI-Events warten.
+
+**Neue Lösung mit ObservableCommand:**
+```csharp
+// ? NEU: Automatische Benachrichtigung
+viewModel.SelectedItem = null;
+// ? DeleteCommand.CanExecuteChanged wird AUTOMATISCH gefeuert
+// ? EditCommand.CanExecuteChanged wird AUTOMATISCH gefeuert
+
+viewModel.SelectedItem = someItem;
+// ? DeleteCommand.CanExecuteChanged wird AUTOMATISCH gefeuert
+// ? EditCommand.CanExecuteChanged wird AUTOMATISCH gefeuert
+
+viewModel.ModelStore.Add(newItem);
+// ? ClearCommand.CanExecuteChanged wird AUTOMATISCH gefeuert
+```
+
+**Vorteile:**
+- ? **Testbar ohne WPF**: Funktioniert in Unit-Tests ohne `CommandManager`
+- ? **Explizit**: Klare Abhängigkeiten zwischen Properties und Commands
+- ? **Performant**: Nur relevante PropertyChanged-Events werden überwacht
+- ? **Keine manuelle Benachrichtigung**: Consumer muss nichts tun
+
+### 3. Delegate-Pattern
 
 **CreateModel - Factory für neue Models:**
 ```csharp
@@ -109,22 +148,64 @@ editableVM.EditModel = (customer) =>
 };
 ```
 
-### 3. Automatische UI-Updates
+## Automatische CanExecuteChanged-Events
 
-**WPF CommandManager:**
-- Commands implementieren `CommandManager.RequerySuggested`
-- CanExecute wird automatisch neu evaluiert bei:
-  - SelectedItem-Änderung
-  - Count-Änderung
-  - Focus-Änderung
-- Buttons werden automatisch enabled/disabled
+### Wie funktioniert es?
 
-**Beispiel:**
-```xml
-<Button Command="{Binding DeleteCommand}" Content="Löschen"/>
-<!-- Button ist disabled, wenn SelectedItem == null -->
-<!-- Button ist enabled, sobald ein Item ausgewählt wird -->
+**ObservableCommand-Integration:**
+```csharp
+// DeleteCommand überwacht SelectedItem-Property
+public ICommand DeleteCommand => _deleteCommand ??= new ObservableCommand(
+    execute: _ => { if (SelectedItem != null) Remove(SelectedItem); },
+    canExecute: _ => SelectedItem != null,
+    observedObject: this,                    // Überwacht dieses ViewModel
+    observedProperties: nameof(SelectedItem)); // Nur SelectedItem-Änderungen
+
+// Bei SelectedItem-Änderung:
+// 1. CollectionViewModel feuert PropertyChanged für SelectedItem
+// 2. ObservableCommand empfängt PropertyChanged-Event
+// 3. ObservableCommand feuert CanExecuteChanged
+// 4. WPF re-evaluiert CanExecute ? Button enabled/disabled
 ```
+
+### Überwachte Properties
+
+| Command | Überwachtes Property | Trigger |
+|---------|---------------------|---------|
+| **DeleteCommand** | `SelectedItem` | Bei Selection-Änderung |
+| **EditCommand** | `SelectedItem` | Bei Selection-Änderung |
+| **ClearCommand** | `Count` | Bei Item-Hinzufügung/-Entfernung |
+| **AddCommand** | (keine) | Nur `CreateModel != null` |
+| **DeleteSelectedCommand** | (keine) | `SelectedItems` ist ObservableCollection |
+
+### Test-Beispiel
+
+```csharp
+[Fact]
+public void DeleteCommand_CanExecuteChanged_FiresWhenSelectedItemChanges()
+{
+    // Arrange
+    var viewModel = new EditableCollectionViewModel<TestDto, TestViewModel>(
+        services, viewModelFactory);
+    
+    viewModel.ModelStore.Add(new TestDto { Name = "Test" });
+    
+    bool canExecuteChangedFired = false;
+    viewModel.DeleteCommand.CanExecuteChanged += (s, e) => canExecuteChangedFired = true;
+    
+    // Act
+    viewModel.SelectedItem = viewModel.Items[0];
+    
+    // Assert
+    Assert.True(canExecuteChangedFired);  // ? Event wurde gefeuert!
+    Assert.True(viewModel.DeleteCommand.CanExecute(null));
+}
+```
+
+**Wichtig für Tests:**
+- ? Funktioniert **ohne** `CommandManager.InvalidateRequerySuggested()`
+- ? Funktioniert **ohne** WPF-Dispatcher
+- ? Synchrone, deterministische Benachrichtigungen
 
 ## Commands
 
@@ -140,9 +221,17 @@ _addCommand = new RelayCommand(_ =>
         throw new InvalidOperationException("CreateModel muss gesetzt sein.");
 
     var model = CreateModel();
-    AddModel(model);  // Aus CollectionViewModel
+    if (model != null)
+    {
+        ModelStore.Add(model);
+    }
 }, _ => CreateModel != null);
 ```
+
+**Warum RelayCommand statt ObservableCommand?**
+- `CreateModel` ist ein Delegate (ändert sich nicht zur Laufzeit)
+- Keine Property-Abhängigkeit ? keine automatische Benachrichtigung nötig
+- CommandManager.RequerySuggested ist ausreichend
 
 **Verwendung:**
 ```csharp
@@ -168,14 +257,25 @@ if (editableVM.AddCommand.CanExecute(null))
 ```csharp
 public ICommand DeleteCommand { get; }
 
-// Implementation:
-_deleteCommand = new RelayCommand(_ =>
+// Implementation mit ObservableCommand:
+_deleteCommand = new ObservableCommand(_ =>
 {
     if (SelectedItem != null)
     {
-        RemoveViewModel(SelectedItem);  // Aus CollectionViewModel
+        Remove(SelectedItem);
     }
-}, _ => SelectedItem != null);
+}, _ => SelectedItem != null, this, nameof(SelectedItem));
+```
+
+**? Neu: Automatisches CanExecuteChanged**
+```csharp
+// Früher (mit RelayCommand):
+viewModel.SelectedItem = null;
+CommandManager.InvalidateRequerySuggested();  // ? Manuell nötig!
+
+// Jetzt (mit ObservableCommand):
+viewModel.SelectedItem = null;
+// ? CanExecuteChanged wird AUTOMATISCH gefeuert!
 ```
 
 **Verwendung:**
@@ -201,11 +301,24 @@ editableVM.DeleteCommand = new RelayCommand(_ =>
 ```csharp
 public ICommand ClearCommand { get; }
 
-// Implementation:
-_clearCommand = new RelayCommand(_ =>
+// Implementation mit ObservableCommand:
+_clearCommand = new ObservableCommand(_ =>
 {
-    Clear();  // Aus CollectionViewModel
-}, _ => Count > 0);
+    Clear();
+}, _ => Count > 0, this, nameof(Count));
+```
+
+**? Neu: Automatisches CanExecuteChanged bei Count-Änderung**
+```csharp
+// Items hinzufügen
+viewModel.ModelStore.Add(new TestDto { Name = "Test" });
+// ? ClearCommand.CanExecuteChanged wird AUTOMATISCH gefeuert
+// ? Button wird enabled
+
+// Alle Items löschen
+viewModel.Clear();
+// ? ClearCommand.CanExecuteChanged wird AUTOMATISCH gefeuert
+// ? Button wird disabled
 ```
 
 **Verwendung:**
@@ -232,14 +345,25 @@ editableVM.ClearCommand = new RelayCommand(_ =>
 ```csharp
 public ICommand EditCommand { get; }
 
-// Implementation:
-_editCommand = new RelayCommand(_ =>
+// Implementation mit ObservableCommand:
+_editCommand = new ObservableCommand(_ =>
 {
     if (SelectedItem != null && EditModel != null)
     {
         EditModel(SelectedItem.Model);
     }
-}, _ => SelectedItem != null && EditModel != null);
+}, _ => SelectedItem != null && EditModel != null, this, nameof(SelectedItem));
+```
+
+**? Neu: Automatisches CanExecuteChanged**
+```csharp
+// Setup
+editableVM.EditModel = (customer) => OpenEditDialog(customer);
+
+// Selection ändert sich
+viewModel.SelectedItem = viewModel.Items[0];
+// ? EditCommand.CanExecuteChanged wird AUTOMATISCH gefeuert
+// ? Button wird enabled
 ```
 
 **Verwendung:**

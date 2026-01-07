@@ -100,7 +100,7 @@ public class CollectionViewModel<TModel, TViewModel> : INotifyPropertyChanged, I
 
 ### `EditableCollectionViewModel<TModel, TViewModel>`
 
-Erweitert CollectionViewModel um Commands mit **lokalem ModelStore**.
+Erweitert CollectionViewModel um Commands mit **lokalem ModelStore** und **automatischen CanExecuteChanged-Benachrichtigungen**.
 
 ```csharp
 public class EditableCollectionViewModel<TModel, TViewModel> : CollectionViewModel<TModel, TViewModel>
@@ -122,10 +122,17 @@ public class EditableCollectionViewModel<TModel, TViewModel> : CollectionViewMod
 }
 ```
 
-**Wichtige Änderungen:**
-- ? **AddCommand** - Fügt jetzt zu **lokalem** ModelStore hinzu (nicht global!)
-- ? **Constructor** - Verwendet CustomWPFServices Facade
-- ? **Isolation** - Commands arbeiten mit lokalem Store
+**Wichtige Features:**
+- ? **AddCommand** - Fügt zu lokalem ModelStore hinzu
+- ? **DeleteCommand** - Verwendet `ObservableCommand`, reagiert automatisch auf `SelectedItem`-Änderungen
+- ? **ClearCommand** - Verwendet `ObservableCommand`, reagiert automatisch auf `Count`-Änderungen
+- ? **EditCommand** - Verwendet `ObservableCommand`, reagiert automatisch auf `SelectedItem`-Änderungen
+- ? **Automatische CanExecuteChanged-Events** - Keine manuelle Benachrichtigung nötig
+
+**Command-Verhalten:**
+- **DeleteCommand** & **EditCommand**: Feuern `CanExecuteChanged` automatisch wenn `SelectedItem` sich ändert
+- **ClearCommand**: Feuert `CanExecuteChanged` automatisch wenn `Count` sich ändert
+- **Testbar**: Funktioniert in Unit-Tests ohne WPF CommandManager
 
 [Vollständige Dokumentation](EditableCollectionViewModel.md)
 
@@ -324,7 +331,7 @@ public class DropDownEditorView : BaseComboBoxView
 
 ### `RelayCommand`
 
-Standard ICommand-Implementierung.
+Standard ICommand-Implementierung mit CommandManager.RequerySuggested.
 
 ```csharp
 public class RelayCommand : ICommand
@@ -337,6 +344,11 @@ public class RelayCommand : ICommand
 }
 ```
 
+**CanExecuteChanged-Verhalten:**
+- Verwendet `CommandManager.RequerySuggested`
+- Automatische Re-Evaluation bei UI-Aktionen (Focus, Mausklicks)
+- **Nicht automatisch** bei PropertyChanged-Events
+
 #### Example
 
 ```csharp
@@ -347,6 +359,91 @@ var command = new RelayCommand(
 
 ---
 
+### `ObservableCommand`
+
+ICommand-Implementierung mit automatischen CanExecuteChanged-Benachrichtigungen bei PropertyChanged-Events.
+
+```csharp
+public class ObservableCommand : ICommand
+{
+    public ObservableCommand(
+        Action<object?> execute, 
+        Func<object?, bool>? canExecute = null,
+        INotifyPropertyChanged? observedObject = null,
+        params string[]? observedProperties);
+    
+    public bool CanExecute(object? parameter);
+    public void Execute(object? parameter);
+    public void RaiseCanExecuteChanged();
+    public event EventHandler? CanExecuteChanged;
+}
+```
+
+**Features:**
+- ? **PropertyChanged-Monitoring**: Überwacht INotifyPropertyChanged-Objekte
+- ? **Selektive Überwachung**: Nur spezifische Properties überwachen
+- ? **Testfreundlich**: Funktioniert ohne CommandManager (Unit-Test-kompatibel)
+- ? **Explizite Benachrichtigung**: `RaiseCanExecuteChanged()` für manuelle Steuerung
+
+#### Constructor Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| **execute** | `Action<object?>` | Die auszuführende Aktion (required) |
+| **canExecute** | `Func<object?, bool>?` | Funktion zur CanExecute-Prüfung (optional) |
+| **observedObject** | `INotifyPropertyChanged?` | Zu überwachendes Objekt (optional) |
+| **observedProperties** | `params string[]?` | Zu überwachende Property-Namen. Null/leer = alle Properties |
+
+#### Example - Spezifisches Property überwachen
+
+```csharp
+var command = new ObservableCommand(
+    execute: _ => DeleteItem(),
+    canExecute: _ => SelectedItem != null,
+    observedObject: this,  // ViewModel
+    observedProperties: nameof(SelectedItem));  // Nur SelectedItem überwachen
+
+// CanExecuteChanged wird automatisch gefeuert wenn SelectedItem sich ändert
+```
+
+#### Example - Alle Properties überwachen
+
+```csharp
+var command = new ObservableCommand(
+    execute: _ => SaveChanges(),
+    canExecute: _ => HasChanges && IsValid,
+    observedObject: this);  // Überwacht alle PropertyChanged-Events
+
+// CanExecuteChanged wird bei JEDEM PropertyChanged gefeuert
+```
+
+#### Example - Manuelle Benachrichtigung
+
+```csharp
+var command = new ObservableCommand(
+    execute: _ => ProcessData(),
+    canExecute: _ => CanProcess());
+
+// Manuell CanExecuteChanged auslösen
+command.RaiseCanExecuteChanged();
+```
+
+#### Vergleich: RelayCommand vs ObservableCommand
+
+| Feature | RelayCommand | ObservableCommand |
+|---------|--------------|-------------------|
+| CanExecuteChanged | CommandManager.RequerySuggested | PropertyChanged-Events |
+| PropertyChanged-Support | ? Nein (nur UI-Aktionen) | ? Ja (explizit) |
+| Unit-Test-freundlich | ?? Bedingt (benötigt CommandManager) | ? Ja (kein CommandManager) |
+| Performance | Gut (lazy evaluation) | Sehr gut (selective monitoring) |
+| Verwendung | Standard WPF Commands | Property-abhängige Commands |
+
+**Wann welches Command verwenden:**
+- **RelayCommand**: Standard-Szenarien, keine Property-Abhängigkeiten
+- **ObservableCommand**: Commands die auf Property-Änderungen reagieren sollen (z.B. DeleteCommand bei SelectedItem-Änderung)
+
+---
+
 ### `AsyncRelayCommand`
 
 Asynchrone ICommand-Implementierung.
@@ -354,7 +451,7 @@ Asynchrone ICommand-Implementierung.
 ```csharp
 public class AsyncRelayCommand : ICommand
 {
-    public AsyncRelayCommand(Func<object?, Task> execute, Func<object?, bool>? canExecute = null);
+    public AsyncRelayCommand(Func<Task> execute, Func<bool>? canExecute = null);
     
     public bool CanExecute(object? parameter);
     public async void Execute(object? parameter);
@@ -366,8 +463,8 @@ public class AsyncRelayCommand : ICommand
 
 ```csharp
 var command = new AsyncRelayCommand(
-    execute: async _ => await LoadDataAsync(),
-    canExecute: _ => !IsLoading);
+    execute: async () => await LoadDataAsync(),
+    canExecute: () => !IsLoading);
 ```
 
 ---
