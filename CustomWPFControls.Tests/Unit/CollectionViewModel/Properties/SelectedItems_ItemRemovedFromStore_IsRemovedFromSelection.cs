@@ -13,11 +13,11 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Properties;
 /// Kritisch für WPF-Binding: Wenn ein selektiertes Item gelöscht wird,
 /// muss es aus SelectedItems entfernt werden.
 /// </remarks>
-public sealed class SelectedItems_ItemRemovedFromStore_IsRemovedFromSelection : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class SelectedItems_ItemRemovedFromStore_IsRemovedFromSelection : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
 
-    public SelectedItems_ItemRemovedFromStore_IsRemovedFromSelection(CollectionViewModelFixture fixture)
+    public SelectedItems_ItemRemovedFromStore_IsRemovedFromSelection(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _fixture.ClearTestData();

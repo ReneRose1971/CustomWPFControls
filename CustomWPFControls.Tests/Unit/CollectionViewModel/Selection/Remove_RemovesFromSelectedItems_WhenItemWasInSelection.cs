@@ -9,11 +9,11 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Selection;
 /// <summary>
 /// Test: Remove() entfernt Item aus SelectedItems wenn es dort vorhanden war.
 /// </summary>
-public sealed class Remove_RemovesFromSelectedItems_WhenItemWasInSelection : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class Remove_RemovesFromSelectedItems_WhenItemWasInSelection : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
 
-    public Remove_RemovesFromSelectedItems_WhenItemWasInSelection(CollectionViewModelFixture fixture)
+    public Remove_RemovesFromSelectedItems_WhenItemWasInSelection(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _fixture.ClearTestData();

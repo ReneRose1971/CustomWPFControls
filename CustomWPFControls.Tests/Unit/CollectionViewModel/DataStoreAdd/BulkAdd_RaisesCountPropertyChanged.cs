@@ -10,11 +10,11 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.DataStoreAdd;
 /// <summary>
 /// Tests für PropertyChanged Event beim BulkAdd.
 /// </summary>
-public sealed class BulkAdd_RaisesCountPropertyChanged : IClassFixture<CollectionViewModelFixture>
+public sealed class BulkAdd_RaisesCountPropertyChanged : IClassFixture<TestHelperCustomWPFControlsTestFixture>
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
 
-    public BulkAdd_RaisesCountPropertyChanged(CollectionViewModelFixture fixture)
+    public BulkAdd_RaisesCountPropertyChanged(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
     }

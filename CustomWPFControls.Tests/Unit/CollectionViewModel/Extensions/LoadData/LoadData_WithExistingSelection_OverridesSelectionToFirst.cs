@@ -15,12 +15,12 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Extensions.LoadData;
 /// ACT: Item manuell selektieren, dann LoadData mit neuen Daten im Constructor.
 /// Validiert deterministisches Verhalten: Erstes Item wird IMMER selektiert bei selectFirst = true.
 /// </remarks>
-public sealed class LoadData_WithExistingSelection_OverridesSelectionToFirst : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class LoadData_WithExistingSelection_OverridesSelectionToFirst : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
     private readonly TestDto[] _newData;
 
-    public LoadData_WithExistingSelection_OverridesSelectionToFirst(CollectionViewModelFixture fixture)
+    public LoadData_WithExistingSelection_OverridesSelectionToFirst(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _fixture.ClearTestData();

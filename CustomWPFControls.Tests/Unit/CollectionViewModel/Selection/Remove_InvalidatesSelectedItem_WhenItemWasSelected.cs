@@ -10,11 +10,11 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Selection;
 /// <summary>
 /// Test: Remove() invalidiert SelectedItem wenn das entfernte Item selektiert war.
 /// </summary>
-public sealed class Remove_InvalidatesSelectedItem_WhenItemWasSelected : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class Remove_InvalidatesSelectedItem_WhenItemWasSelected : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
 
-    public Remove_InvalidatesSelectedItem_WhenItemWasSelected(CollectionViewModelFixture fixture)
+    public Remove_InvalidatesSelectedItem_WhenItemWasSelected(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _fixture.ClearTestData();

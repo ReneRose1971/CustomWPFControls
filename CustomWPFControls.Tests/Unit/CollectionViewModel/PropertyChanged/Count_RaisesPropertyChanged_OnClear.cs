@@ -8,12 +8,12 @@ using Xunit;
 
 namespace CustomWPFControls.Tests.Unit.CollectionViewModel.PropertyChanged;
 
-public sealed class Count_RaisesPropertyChanged_OnClear : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class Count_RaisesPropertyChanged_OnClear : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
     private int _propertyChangedCount = 0;
 
-    public Count_RaisesPropertyChanged_OnClear(CollectionViewModelFixture fixture)
+    public Count_RaisesPropertyChanged_OnClear(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _fixture.ClearTestData();

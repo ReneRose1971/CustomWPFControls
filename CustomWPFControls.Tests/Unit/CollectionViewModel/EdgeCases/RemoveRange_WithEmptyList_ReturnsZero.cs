@@ -11,11 +11,11 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.EdgeCases;
 /// <summary>
 /// Test: RemoveRange() mit leerer Liste gibt 0 zurück.
 /// </summary>
-public sealed class RemoveRange_WithEmptyList_ReturnsZero : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class RemoveRange_WithEmptyList_ReturnsZero : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
 
-    public RemoveRange_WithEmptyList_ReturnsZero(CollectionViewModelFixture fixture)
+    public RemoveRange_WithEmptyList_ReturnsZero(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _fixture.ClearTestData();

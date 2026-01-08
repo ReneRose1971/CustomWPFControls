@@ -15,12 +15,12 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Extensions.LoadData;
 /// ACT: Erst 2 Items hinzufügen, dann LoadData mit 3 neuen Items im Constructor.
 /// Validiert, dass LoadData Clear + AddRange ausführt (vollständiger Ersatz).
 /// </remarks>
-public sealed class LoadData_WithExistingData_ReplacesCompletelyWithNewData : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class LoadData_WithExistingData_ReplacesCompletelyWithNewData : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
     private readonly TestDto[] _newData;
 
-    public LoadData_WithExistingData_ReplacesCompletelyWithNewData(CollectionViewModelFixture fixture)
+    public LoadData_WithExistingData_ReplacesCompletelyWithNewData(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _fixture.ClearTestData();

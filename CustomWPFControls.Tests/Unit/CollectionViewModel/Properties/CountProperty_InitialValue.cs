@@ -14,11 +14,11 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Properties;
 /// Shared Setup: 3 Items im Store
 /// Alle Tests prüfen den initialen Count-Wert nach dem Setup.
 /// </remarks>
-public sealed class CountProperty_InitialValue : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class CountProperty_InitialValue : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
 
-    public CountProperty_InitialValue(CollectionViewModelFixture fixture)
+    public CountProperty_InitialValue(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _fixture.ClearTestData();

@@ -15,11 +15,11 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Properties;
 /// Act: 1 Item hinzufügen
 /// Assert: Count == 4
 /// </remarks>
-public sealed class CountProperty_AfterAdd : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class CountProperty_AfterAdd : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
 
-    public CountProperty_AfterAdd(CollectionViewModelFixture fixture)
+    public CountProperty_AfterAdd(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _fixture.ClearTestData();

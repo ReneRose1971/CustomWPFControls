@@ -14,12 +14,12 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Extensions.LoadData;
 /// Szenario: LoadData wird mit mehreren Items aufgerufen (selectFirst = default/true).
 /// ACT: LoadData mit 3 TestDtos im Constructor.
 /// </remarks>
-public sealed class LoadData_WithValidData_LoadsDataAndSelectsFirst : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class LoadData_WithValidData_LoadsDataAndSelectsFirst : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
     private readonly TestDto[] _testData;
 
-    public LoadData_WithValidData_LoadsDataAndSelectsFirst(CollectionViewModelFixture fixture)
+    public LoadData_WithValidData_LoadsDataAndSelectsFirst(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _fixture.ClearTestData();

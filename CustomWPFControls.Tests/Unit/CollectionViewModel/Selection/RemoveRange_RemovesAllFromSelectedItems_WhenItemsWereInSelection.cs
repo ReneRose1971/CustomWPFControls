@@ -9,11 +9,11 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Selection;
 /// <summary>
 /// Test: RemoveRange() entfernt alle betroffenen Items aus SelectedItems.
 /// </summary>
-public sealed class RemoveRange_RemovesAllFromSelectedItems_WhenItemsWereInSelection : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class RemoveRange_RemovesAllFromSelectedItems_WhenItemsWereInSelection : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
 
-    public RemoveRange_RemovesAllFromSelectedItems_WhenItemsWereInSelection(CollectionViewModelFixture fixture)
+    public RemoveRange_RemovesAllFromSelectedItems_WhenItemsWereInSelection(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _fixture.ClearTestData();

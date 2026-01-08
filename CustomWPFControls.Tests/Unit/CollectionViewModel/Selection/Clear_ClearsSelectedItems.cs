@@ -9,11 +9,11 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Selection;
 /// <summary>
 /// Test: Clear() leert SelectedItems Collection.
 /// </summary>
-public sealed class Clear_ClearsSelectedItems : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class Clear_ClearsSelectedItems : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
 
-    public Clear_ClearsSelectedItems(CollectionViewModelFixture fixture)
+    public Clear_ClearsSelectedItems(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _fixture.ClearTestData();

@@ -9,13 +9,13 @@ namespace CustomWPFControls.Tests.Unit.EditableCollectionViewModel.Commands.Edit
 /// <summary>
 /// Test: EditCommand.Execute() ruft EditModel nicht auf wenn kein Item selektiert ist.
 /// </summary>
-public sealed class Execute_NoItemSelected_DoesNotCallEditModel : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class Execute_NoItemSelected_DoesNotCallEditModel : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
     private readonly EditableCollectionViewModel<TestDto, TestViewModel> _sut;
     private bool _delegateCalled;
 
-    public Execute_NoItemSelected_DoesNotCallEditModel(CollectionViewModelFixture fixture)
+    public Execute_NoItemSelected_DoesNotCallEditModel(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _sut = new EditableCollectionViewModel<TestDto, TestViewModel>(

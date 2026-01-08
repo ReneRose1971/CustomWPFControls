@@ -13,13 +13,13 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.RemoveAPI;
 /// Setup: 3 Items hinzufügen
 /// ACT: sut.Remove(viewModel)
 /// </remarks>
-public sealed class RemoveSingleTests : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class RemoveSingleTests : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
     private readonly TestViewModel _removedViewModel;
     private readonly bool _removeResult;
 
-    public RemoveSingleTests(CollectionViewModelFixture fixture)
+    public RemoveSingleTests(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _fixture.ClearTestData();

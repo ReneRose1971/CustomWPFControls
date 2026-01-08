@@ -9,12 +9,12 @@ namespace CustomWPFControls.Tests.Unit.EditableCollectionViewModel.Commands.AddC
 /// <summary>
 /// Test: AddCommand.Execute() mit null CreateModel wirft InvalidOperationException.
 /// </summary>
-public sealed class Execute_WithNullCreateModel_ThrowsInvalidOperationException : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class Execute_WithNullCreateModel_ThrowsInvalidOperationException : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
     private readonly EditableCollectionViewModel<TestDto, TestViewModel> _sut;
 
-    public Execute_WithNullCreateModel_ThrowsInvalidOperationException(CollectionViewModelFixture fixture)
+    public Execute_WithNullCreateModel_ThrowsInvalidOperationException(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _sut = new EditableCollectionViewModel<TestDto, TestViewModel>(

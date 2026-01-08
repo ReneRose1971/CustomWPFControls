@@ -9,12 +9,12 @@ namespace CustomWPFControls.Tests.Unit.EditableCollectionViewModel.Commands.Edit
 /// <summary>
 /// Test: EditCommand.CanExecute() gibt true zurück wenn Item selektiert und EditModel gesetzt ist.
 /// </summary>
-public sealed class CanExecute_ItemSelectedAndEditModelSet_ReturnsTrue : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class CanExecute_ItemSelectedAndEditModelSet_ReturnsTrue : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
     private readonly EditableCollectionViewModel<TestDto, TestViewModel> _sut;
 
-    public CanExecute_ItemSelectedAndEditModelSet_ReturnsTrue(CollectionViewModelFixture fixture)
+    public CanExecute_ItemSelectedAndEditModelSet_ReturnsTrue(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _fixture.ClearTestData();

@@ -7,11 +7,11 @@ using Xunit;
 
 namespace CustomWPFControls.Tests.Unit.CollectionViewModel.DataStoreAdd;
 
-public sealed class SingleAdd_RaisesCountPropertyChanged : IClassFixture<CollectionViewModelFixture>
+public sealed class SingleAdd_RaisesCountPropertyChanged : IClassFixture<TestHelperCustomWPFControlsTestFixture>
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
 
-    public SingleAdd_RaisesCountPropertyChanged(CollectionViewModelFixture fixture)
+    public SingleAdd_RaisesCountPropertyChanged(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
     }

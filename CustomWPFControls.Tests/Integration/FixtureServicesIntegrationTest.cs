@@ -11,14 +11,14 @@ using Xunit;
 namespace CustomWPFControls.Tests.Integration;
 
 /// <summary>
-/// Integrationstest zur Validierung der CollectionViewModelFixture-Services.
+/// Integrationstest zur Validierung der TestHelperCustomWPFControlsTestFixture-Services.
 /// Prüft ob alle Services korrekt aufgelöst werden und der ServiceProvider verfügbar ist.
 /// </summary>
-public sealed class FixtureServicesIntegrationTest : IClassFixture<CollectionViewModelFixture>
+public sealed class FixtureServicesIntegrationTest : IClassFixture<TestHelperCustomWPFControlsTestFixture>
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
 
-    public FixtureServicesIntegrationTest(CollectionViewModelFixture fixture)
+    public FixtureServicesIntegrationTest(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
     }

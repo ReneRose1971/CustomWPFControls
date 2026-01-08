@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Linq;
+using Common.Bootstrap;
+using CustomWPFControls.Bootstrap;
 using CustomWPFControls.Factories;
 using CustomWPFControls.Services;
+using CustomWPFControls.Tests.Testing.Bootstrap;
 using CustomWPFControls.ViewModels;
 using DataStores.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
+using TestHelper.DataStores.Bootstrap;
 using TestHelper.DataStores.Models;
 
 namespace CustomWPFControls.Tests.Testing;
@@ -30,7 +34,7 @@ namespace CustomWPFControls.Tests.Testing;
 /// Verwenden Sie <see cref="Sut"/>.ModelStore für Daten-Operationen.
 /// </para>
 /// </remarks>
-public class CollectionViewModelFixture : DataStoresFixtureBase
+public class TestHelperCustomWPFControlsTestFixture : TestHelperDataStoresFixtureBase
 {
     /// <summary>
     /// ViewModelFactory für TestDto → TestViewModel.
@@ -73,10 +77,23 @@ public class CollectionViewModelFixture : DataStoresFixtureBase
     /// <summary>
     /// Erstellt die Fixture und führt den kompletten Bootstrap-Prozess aus.
     /// </summary>
-    public CollectionViewModelFixture()
+    public TestHelperCustomWPFControlsTestFixture()
     {
         // Basisklasse führt Bootstrap-Prozess aus und ruft dann
         // InitializeServices() und InitializeData() auf
+    }
+
+    protected override IBootstrapWrapper CreateBootstrapDecorator()
+    {
+        return new CustomWPFControlsBootstrapDecorator( base.CreateBootstrapDecorator());
+    }
+
+    protected override void RegisterAdditionalAssembly(IServiceCollection services, IBootstrapWrapper bootstrapDecorator)
+    {
+        base.RegisterAdditionalAssembly(services, bootstrapDecorator);
+
+        bootstrapDecorator.RegisterServices(services, typeof(CustomWPFControlsServiceModule).Assembly);
+        bootstrapDecorator.RegisterServices(services, typeof(CustomWPFControlsTestServiceModule).Assembly);
     }
 
     /// <summary>

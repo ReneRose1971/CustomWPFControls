@@ -7,11 +7,11 @@ using Xunit;
 
 namespace CustomWPFControls.Tests.Unit.CollectionViewModel.RemoveAPI;
 
-public sealed class RemoveRangeTests : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class RemoveRangeTests : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
 
-    public RemoveRangeTests(CollectionViewModelFixture fixture)
+    public RemoveRangeTests(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _fixture.ClearTestData();

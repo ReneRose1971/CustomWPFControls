@@ -15,12 +15,12 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Dispose;
 /// Shared Setup: Neue Instanz mit Daten erstellt und disposed.
 /// Alle Tests prüfen verschiedene Aspekte des Zustands nach Dispose.
 /// </remarks>
-public sealed class CollectionViewModel_AfterDispose_CollectionsAreEmpty : IClassFixture<CollectionViewModelFixture>
+public sealed class CollectionViewModel_AfterDispose_CollectionsAreEmpty : IClassFixture<TestHelperCustomWPFControlsTestFixture>
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
     private readonly CollectionViewModel<TestDto, TestViewModel> _sut;
 
-    public CollectionViewModel_AfterDispose_CollectionsAreEmpty(CollectionViewModelFixture fixture)
+    public CollectionViewModel_AfterDispose_CollectionsAreEmpty(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         

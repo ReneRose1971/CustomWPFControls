@@ -7,12 +7,12 @@ using Xunit;
 
 namespace CustomWPFControls.Tests.Unit.CollectionViewModel.RemoveAPI;
 
-public sealed class ClearAPITests : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class ClearAPITests : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
     private readonly ViewModels.CollectionViewModel<TestDto, TestViewModel> _sut;
 
-    public ClearAPITests(CollectionViewModelFixture fixture)
+    public ClearAPITests(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(

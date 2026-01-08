@@ -11,11 +11,11 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Properties;
 /// <summary>
 /// Tests für Duplikat-Handling in SelectedItems.
 /// </summary>
-public sealed class SelectedItems_AddDuplicate_HandledCorrectly : IClassFixture<CollectionViewModelFixture>
+public sealed class SelectedItems_AddDuplicate_HandledCorrectly : IClassFixture<TestHelperCustomWPFControlsTestFixture>
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
 
-    public SelectedItems_AddDuplicate_HandledCorrectly(CollectionViewModelFixture fixture)
+    public SelectedItems_AddDuplicate_HandledCorrectly(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
     }

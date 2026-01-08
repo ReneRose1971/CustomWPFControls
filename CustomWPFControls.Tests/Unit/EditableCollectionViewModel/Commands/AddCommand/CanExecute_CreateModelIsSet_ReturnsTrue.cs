@@ -6,12 +6,12 @@ using Xunit;
 
 namespace CustomWPFControls.Tests.Unit.EditableCollectionViewModel.Commands.AddCommand;
 
-public sealed class CanExecute_CreateModelIsSet_ReturnsTrue : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class CanExecute_CreateModelIsSet_ReturnsTrue : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
     private readonly EditableCollectionViewModel<TestDto, TestViewModel> _sut;
 
-    public CanExecute_CreateModelIsSet_ReturnsTrue(CollectionViewModelFixture fixture)
+    public CanExecute_CreateModelIsSet_ReturnsTrue(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _sut = new EditableCollectionViewModel<TestDto, TestViewModel>(

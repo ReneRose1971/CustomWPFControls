@@ -15,11 +15,11 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Extensions.LoadData;
 /// ACT: LoadData(null) im Constructor.
 /// Validiert defensives Verhalten: Null wird als leere Collection behandelt.
 /// </remarks>
-public sealed class LoadData_WithNullData_TreatsAsEmptyCollection : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class LoadData_WithNullData_TreatsAsEmptyCollection : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
 
-    public LoadData_WithNullData_TreatsAsEmptyCollection(CollectionViewModelFixture fixture)
+    public LoadData_WithNullData_TreatsAsEmptyCollection(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _fixture.ClearTestData();

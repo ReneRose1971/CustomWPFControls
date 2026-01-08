@@ -15,12 +15,12 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Extensions.LoadData;
 /// ACT: LoadData mit einem TestDto im Constructor.
 /// Validiert Edge-Case: Einzelnes Item wird korrekt geladen und selektiert.
 /// </remarks>
-public sealed class LoadData_WithSingleItem_LoadsAndSelectsItem : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class LoadData_WithSingleItem_LoadsAndSelectsItem : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
     private readonly TestDto _singleItem;
 
-    public LoadData_WithSingleItem_LoadsAndSelectsItem(CollectionViewModelFixture fixture)
+    public LoadData_WithSingleItem_LoadsAndSelectsItem(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _fixture.ClearTestData();

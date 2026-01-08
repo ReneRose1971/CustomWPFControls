@@ -13,12 +13,12 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Dispose;
 /// Testet, dass einmaliges Dispose ohne Exception ausgeführt werden kann.
 /// Shared Setup: Neue Instanz erstellt und disposed.
 /// </remarks>
-public sealed class CollectionViewModel_Dispose_CanBeCalledSafely : IClassFixture<CollectionViewModelFixture>
+public sealed class CollectionViewModel_Dispose_CanBeCalledSafely : IClassFixture<TestHelperCustomWPFControlsTestFixture>
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
     private readonly Exception? _exception;
 
-    public CollectionViewModel_Dispose_CanBeCalledSafely(CollectionViewModelFixture fixture)
+    public CollectionViewModel_Dispose_CanBeCalledSafely(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         

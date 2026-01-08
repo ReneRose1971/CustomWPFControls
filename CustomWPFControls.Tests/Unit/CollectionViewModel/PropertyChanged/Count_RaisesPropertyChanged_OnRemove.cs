@@ -10,12 +10,12 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.PropertyChanged;
 /// <summary>
 /// Test: CollectionViewModel feuert PropertyChanged für Count wenn ein Item entfernt wird.
 /// </summary>
-public sealed class Count_RaisesPropertyChanged_OnRemove : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class Count_RaisesPropertyChanged_OnRemove : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
     private bool _countPropertyChanged;
 
-    public Count_RaisesPropertyChanged_OnRemove(CollectionViewModelFixture fixture)
+    public Count_RaisesPropertyChanged_OnRemove(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _fixture.ClearTestData();

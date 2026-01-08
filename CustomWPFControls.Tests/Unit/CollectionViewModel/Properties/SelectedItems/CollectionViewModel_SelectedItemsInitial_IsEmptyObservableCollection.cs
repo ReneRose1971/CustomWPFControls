@@ -15,11 +15,11 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Properties.SelectedIt
 /// Shared Setup: Keine Items selektiert.
 /// Alle Tests prüfen verschiedene Aspekte des initialen Zustands.
 /// </remarks>
-public sealed class CollectionViewModel_SelectedItemsInitial_IsEmptyObservableCollection : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class CollectionViewModel_SelectedItemsInitial_IsEmptyObservableCollection : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
 
-    public CollectionViewModel_SelectedItemsInitial_IsEmptyObservableCollection(CollectionViewModelFixture fixture)
+    public CollectionViewModel_SelectedItemsInitial_IsEmptyObservableCollection(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _fixture.ClearTestData();

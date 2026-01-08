@@ -8,11 +8,11 @@ using Xunit;
 
 namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Selection;
 
-public sealed class Clear_InvalidatesSelectedItem : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class Clear_InvalidatesSelectedItem : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
 
-    public Clear_InvalidatesSelectedItem(CollectionViewModelFixture fixture)
+    public Clear_InvalidatesSelectedItem(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _fixture.ClearTestData();

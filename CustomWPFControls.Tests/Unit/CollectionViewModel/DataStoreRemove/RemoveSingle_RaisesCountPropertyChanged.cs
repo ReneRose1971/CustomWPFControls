@@ -7,11 +7,11 @@ using Xunit;
 
 namespace CustomWPFControls.Tests.Unit.CollectionViewModel.DataStoreRemove;
 
-public sealed class RemoveSingle_RaisesCountPropertyChanged : IClassFixture<CollectionViewModelFixture>
+public sealed class RemoveSingle_RaisesCountPropertyChanged : IClassFixture<TestHelperCustomWPFControlsTestFixture>
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
 
-    public RemoveSingle_RaisesCountPropertyChanged(CollectionViewModelFixture fixture)
+    public RemoveSingle_RaisesCountPropertyChanged(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
     }

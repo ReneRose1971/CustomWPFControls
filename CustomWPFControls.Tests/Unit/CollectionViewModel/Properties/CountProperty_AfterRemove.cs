@@ -8,11 +8,11 @@ using Xunit;
 
 namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Properties;
 
-public sealed class CountProperty_AfterRemove : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class CountProperty_AfterRemove : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
 
-    public CountProperty_AfterRemove(CollectionViewModelFixture fixture)
+    public CountProperty_AfterRemove(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _fixture.ClearTestData();

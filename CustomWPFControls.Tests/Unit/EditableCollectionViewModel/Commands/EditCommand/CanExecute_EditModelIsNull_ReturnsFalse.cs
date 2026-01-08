@@ -6,12 +6,12 @@ using Xunit;
 
 namespace CustomWPFControls.Tests.Unit.EditableCollectionViewModel.Commands.EditCommand;
 
-public sealed class CanExecute_EditModelIsNull_ReturnsFalse : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class CanExecute_EditModelIsNull_ReturnsFalse : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
     private readonly EditableCollectionViewModel<TestDto, TestViewModel> _sut;
 
-    public CanExecute_EditModelIsNull_ReturnsFalse(CollectionViewModelFixture fixture)
+    public CanExecute_EditModelIsNull_ReturnsFalse(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _sut = new EditableCollectionViewModel<TestDto, TestViewModel>(

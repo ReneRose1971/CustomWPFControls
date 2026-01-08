@@ -16,11 +16,11 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Extensions.LoadData;
 /// ACT: LoadData mit Enumerable.Empty im Constructor.
 /// Validiert Library-Verhalten: Keine Exception, UI bleibt einfach leer.
 /// </remarks>
-public sealed class LoadData_WithEmptyData_ClearsCollectionWithoutError : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class LoadData_WithEmptyData_ClearsCollectionWithoutError : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
 
-    public LoadData_WithEmptyData_ClearsCollectionWithoutError(CollectionViewModelFixture fixture)
+    public LoadData_WithEmptyData_ClearsCollectionWithoutError(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _fixture.ClearTestData();

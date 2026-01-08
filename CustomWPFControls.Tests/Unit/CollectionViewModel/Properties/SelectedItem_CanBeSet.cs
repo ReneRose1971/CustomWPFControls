@@ -7,11 +7,11 @@ using Xunit;
 
 namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Properties;
 
-public sealed class SelectedItem_CanBeSet : IClassFixture<CollectionViewModelFixture>
+public sealed class SelectedItem_CanBeSet : IClassFixture<TestHelperCustomWPFControlsTestFixture>
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
 
-    public SelectedItem_CanBeSet(CollectionViewModelFixture fixture)
+    public SelectedItem_CanBeSet(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
     }

@@ -15,12 +15,12 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Synchronization;
 /// Shared Setup: 1 Model im Store.
 /// Alle Tests prüfen verschiedene Aspekte der automatischen ViewModel-Erstellung.
 /// </remarks>
-public sealed class CollectionViewModel_ModelStoreAdd_SynchronizesItems : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class CollectionViewModel_ModelStoreAdd_SynchronizesItems : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
     private readonly TestDto _model;
 
-    public CollectionViewModel_ModelStoreAdd_SynchronizesItems(CollectionViewModelFixture fixture)
+    public CollectionViewModel_ModelStoreAdd_SynchronizesItems(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _fixture.ClearTestData();

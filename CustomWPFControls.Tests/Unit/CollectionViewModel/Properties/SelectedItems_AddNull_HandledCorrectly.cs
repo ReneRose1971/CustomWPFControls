@@ -10,11 +10,11 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Properties;
 /// <summary>
 /// Test: SelectedItems erlaubt Add(null) ohne Exception (Standard ObservableCollection-Verhalten).
 /// </summary>
-public sealed class SelectedItems_AddNull_HandledCorrectly : IClassFixture<CollectionViewModelFixture>
+public sealed class SelectedItems_AddNull_HandledCorrectly : IClassFixture<TestHelperCustomWPFControlsTestFixture>
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
 
-    public SelectedItems_AddNull_HandledCorrectly(CollectionViewModelFixture fixture)
+    public SelectedItems_AddNull_HandledCorrectly(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
     }

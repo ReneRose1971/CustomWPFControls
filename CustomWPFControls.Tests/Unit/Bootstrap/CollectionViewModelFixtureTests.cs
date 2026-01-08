@@ -13,7 +13,7 @@ using Xunit;
 namespace CustomWPFControls.Tests.Unit.Bootstrap;
 
 /// <summary>
-/// Unit-Tests für CollectionViewModelFixture.
+/// Unit-Tests für TestHelperCustomWPFControlsTestFixture.
 /// </summary>
 /// <remarks>
 /// Testet alle Aspekte der Fixture:
@@ -26,7 +26,7 @@ namespace CustomWPFControls.Tests.Unit.Bootstrap;
 /// </remarks>
 public sealed class CollectionViewModelFixtureTests : IDisposable
 {
-    private CollectionViewModelFixture? _fixture;
+    private TestHelperCustomWPFControlsTestFixture? _fixture;
 
     #region Constructor & Bootstrap Tests
 
@@ -34,7 +34,7 @@ public sealed class CollectionViewModelFixtureTests : IDisposable
     public void Constructor_InitializesServiceProvider()
     {
         // Act
-        _fixture = new CollectionViewModelFixture();
+        _fixture = new TestHelperCustomWPFControlsTestFixture();
 
         // Assert
         _fixture.ServiceProvider.Should().NotBeNull();
@@ -44,7 +44,7 @@ public sealed class CollectionViewModelFixtureTests : IDisposable
     public void Constructor_InitializesDataStores()
     {
         // Act
-        _fixture = new CollectionViewModelFixture();
+        _fixture = new TestHelperCustomWPFControlsTestFixture();
 
         // Assert
         _fixture.DataStores.Should().NotBeNull();
@@ -54,7 +54,7 @@ public sealed class CollectionViewModelFixtureTests : IDisposable
     public void Constructor_InitializesComparerService()
     {
         // Act
-        _fixture = new CollectionViewModelFixture();
+        _fixture = new TestHelperCustomWPFControlsTestFixture();
 
         // Assert
         _fixture.ComparerService.Should().NotBeNull();
@@ -64,7 +64,7 @@ public sealed class CollectionViewModelFixtureTests : IDisposable
     public void Constructor_InitializesPathProvider()
     {
         // Act
-        _fixture = new CollectionViewModelFixture();
+        _fixture = new TestHelperCustomWPFControlsTestFixture();
 
         // Assert
         _fixture.PathProvider.Should().NotBeNull();
@@ -79,7 +79,7 @@ public sealed class CollectionViewModelFixtureTests : IDisposable
     public void Constructor_InitializesTestDtoStore()
     {
         // Act
-        _fixture = new CollectionViewModelFixture();
+        _fixture = new TestHelperCustomWPFControlsTestFixture();
 
         // Assert
         _fixture.TestDtoStore.Should().NotBeNull();
@@ -90,7 +90,7 @@ public sealed class CollectionViewModelFixtureTests : IDisposable
     public void Constructor_InitializesViewModelFactory()
     {
         // Act
-        _fixture = new CollectionViewModelFixture();
+        _fixture = new TestHelperCustomWPFControlsTestFixture();
 
         // Assert
         _fixture.ViewModelFactory.Should().NotBeNull();
@@ -101,7 +101,7 @@ public sealed class CollectionViewModelFixtureTests : IDisposable
     public void Constructor_InitializesSut()
     {
         // Act
-        _fixture = new CollectionViewModelFixture();
+        _fixture = new TestHelperCustomWPFControlsTestFixture();
 
         // Assert
         _fixture.Sut.Should().NotBeNull();
@@ -112,7 +112,7 @@ public sealed class CollectionViewModelFixtureTests : IDisposable
     public void TestDtoStore_IsAdapterToSutModelStore()
     {
         // Arrange
-        _fixture = new CollectionViewModelFixture();
+        _fixture = new TestHelperCustomWPFControlsTestFixture();
 
         // Act & Assert
         _fixture.TestDtoStore.Should().BeSameAs(_fixture.Sut.ModelStore);
@@ -122,7 +122,7 @@ public sealed class CollectionViewModelFixtureTests : IDisposable
     public void TestDtoStore_StartsEmpty()
     {
         // Arrange
-        _fixture = new CollectionViewModelFixture();
+        _fixture = new TestHelperCustomWPFControlsTestFixture();
 
         // Assert
         _fixture.TestDtoStore.Items.Should().BeEmpty();
@@ -136,7 +136,7 @@ public sealed class CollectionViewModelFixtureTests : IDisposable
     public void TestDtoStore_CanAddItems()
     {
         // Arrange
-        _fixture = new CollectionViewModelFixture();
+        _fixture = new TestHelperCustomWPFControlsTestFixture();
         var dto = new TestDto { Name = "Test" };
 
         // Act
@@ -151,7 +151,7 @@ public sealed class CollectionViewModelFixtureTests : IDisposable
     public void TestDtoStore_CanRemoveItems()
     {
         // Arrange
-        _fixture = new CollectionViewModelFixture();
+        _fixture = new TestHelperCustomWPFControlsTestFixture();
         var dto = new TestDto { Name = "Test" };
         _fixture.TestDtoStore.Add(dto);
 
@@ -167,7 +167,7 @@ public sealed class CollectionViewModelFixtureTests : IDisposable
     public void TestDtoStore_CanClearItems()
     {
         // Arrange
-        _fixture = new CollectionViewModelFixture();
+        _fixture = new TestHelperCustomWPFControlsTestFixture();
         _fixture.TestDtoStore.AddRange(new[]
         {
             new TestDto { Name = "Test1" },
@@ -190,7 +190,7 @@ public sealed class CollectionViewModelFixtureTests : IDisposable
     public void ViewModelFactory_CanCreateViewModels()
     {
         // Arrange
-        _fixture = new CollectionViewModelFixture();
+        _fixture = new TestHelperCustomWPFControlsTestFixture();
         var dto = new TestDto { Name = "Test" };
 
         // Act
@@ -206,7 +206,7 @@ public sealed class CollectionViewModelFixtureTests : IDisposable
     public void ViewModelFactory_UsesCorrectServiceProvider()
     {
         // Arrange
-        _fixture = new CollectionViewModelFixture();
+        _fixture = new TestHelperCustomWPFControlsTestFixture();
         var dto = new TestDto { Name = "Test" };
 
         // Act
@@ -221,7 +221,7 @@ public sealed class CollectionViewModelFixtureTests : IDisposable
     public void ViewModelFactory_IsRegisteredInServiceProvider()
     {
         // Arrange
-        _fixture = new CollectionViewModelFixture();
+        _fixture = new TestHelperCustomWPFControlsTestFixture();
 
         // Act
         var factory = _fixture.ServiceProvider.GetRequiredService<IViewModelFactory<TestDto, TestViewModel>>();
@@ -239,7 +239,7 @@ public sealed class CollectionViewModelFixtureTests : IDisposable
     public void ComparerService_CanResolveComparerForTestDto()
     {
         // Arrange
-        _fixture = new CollectionViewModelFixture();
+        _fixture = new TestHelperCustomWPFControlsTestFixture();
 
         // Act
         var comparer = _fixture.ComparerService.GetComparer<TestDto>();
@@ -252,7 +252,7 @@ public sealed class CollectionViewModelFixtureTests : IDisposable
     public void ComparerService_ReturnsWorkingComparer()
     {
         // Arrange
-        _fixture = new CollectionViewModelFixture();
+        _fixture = new TestHelperCustomWPFControlsTestFixture();
         var comparer = _fixture.ComparerService.GetComparer<TestDto>();
         var dto1 = new TestDto { Name = "Test" };
         var dto2 = dto1; // Gleiche Referenz
@@ -272,7 +272,7 @@ public sealed class CollectionViewModelFixtureTests : IDisposable
     public void ClearTestData_RemovesAllItemsFromStore()
     {
         // Arrange
-        _fixture = new CollectionViewModelFixture();
+        _fixture = new TestHelperCustomWPFControlsTestFixture();
         _fixture.TestDtoStore.AddRange(new[]
         {
             new TestDto { Name = "Test1" },
@@ -291,7 +291,7 @@ public sealed class CollectionViewModelFixtureTests : IDisposable
     public void ClearTestData_CanBeCalledMultipleTimes()
     {
         // Arrange
-        _fixture = new CollectionViewModelFixture();
+        _fixture = new TestHelperCustomWPFControlsTestFixture();
         _fixture.TestDtoStore.Add(new TestDto { Name = "Test" });
 
         // Act
@@ -306,7 +306,7 @@ public sealed class CollectionViewModelFixtureTests : IDisposable
     public void ClearTestData_AllowsAddingNewItemsAfterClear()
     {
         // Arrange
-        _fixture = new CollectionViewModelFixture();
+        _fixture = new TestHelperCustomWPFControlsTestFixture();
         _fixture.TestDtoStore.Add(new TestDto { Name = "Test1" });
         _fixture.ClearTestData();
 
@@ -327,7 +327,7 @@ public sealed class CollectionViewModelFixtureTests : IDisposable
     public void PathProvider_HasCorrectBaseName()
     {
         // Arrange
-        _fixture = new CollectionViewModelFixture();
+        _fixture = new TestHelperCustomWPFControlsTestFixture();
 
         // Act
         var pathProvider = _fixture.PathProvider as TestDataStorePathProvider;
@@ -341,7 +341,7 @@ public sealed class CollectionViewModelFixtureTests : IDisposable
     public void PathProvider_IsRegisteredInServiceProvider()
     {
         // Arrange
-        _fixture = new CollectionViewModelFixture();
+        _fixture = new TestHelperCustomWPFControlsTestFixture();
 
         // Act
         var pathProvider = _fixture.ServiceProvider.GetRequiredService<IDataStorePathProvider>();
@@ -359,7 +359,7 @@ public sealed class CollectionViewModelFixtureTests : IDisposable
     public void Dispose_DisposesServiceProvider()
     {
         // Arrange
-        _fixture = new CollectionViewModelFixture();
+        _fixture = new TestHelperCustomWPFControlsTestFixture();
         var serviceProvider = _fixture.ServiceProvider;
 
         // Act
@@ -375,7 +375,7 @@ public sealed class CollectionViewModelFixtureTests : IDisposable
     public void Dispose_CanBeCalledMultipleTimes()
     {
         // Arrange
-        _fixture = new CollectionViewModelFixture();
+        _fixture = new TestHelperCustomWPFControlsTestFixture();
 
         // Act & Assert - Sollte keine Exception werfen
         _fixture.Dispose();
@@ -386,7 +386,7 @@ public sealed class CollectionViewModelFixtureTests : IDisposable
     public void Dispose_CleansUpPathProvider()
     {
         // Arrange
-        _fixture = new CollectionViewModelFixture();
+        _fixture = new TestHelperCustomWPFControlsTestFixture();
         var pathProvider = _fixture.PathProvider as TestDataStorePathProvider;
 
         // Act
@@ -406,7 +406,7 @@ public sealed class CollectionViewModelFixtureTests : IDisposable
     public void FullWorkflow_AddDataCreateViewModelClear_WorksCorrectly()
     {
         // Arrange
-        _fixture = new CollectionViewModelFixture();
+        _fixture = new TestHelperCustomWPFControlsTestFixture();
         var dto1 = new TestDto { Name = "Test1" };
         var dto2 = new TestDto { Name = "Test2" };
 
@@ -436,8 +436,8 @@ public sealed class CollectionViewModelFixtureTests : IDisposable
     public void MultipleFixtureInstances_AreIsolated()
     {
         // Arrange & Act
-        using var fixture1 = new CollectionViewModelFixture();
-        using var fixture2 = new CollectionViewModelFixture();
+        using var fixture1 = new TestHelperCustomWPFControlsTestFixture();
+        using var fixture2 = new TestHelperCustomWPFControlsTestFixture();
 
         fixture1.TestDtoStore.Add(new TestDto { Name = "Fixture1" });
         fixture1.TestDtoStore.Add(new TestDto { Name = "Fixture1_2" });

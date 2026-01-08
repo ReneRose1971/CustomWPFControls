@@ -9,12 +9,12 @@ namespace CustomWPFControls.Tests.Unit.EditableCollectionViewModel.Commands.AddC
 /// <summary>
 /// Test: AddCommand.Execute() mit gültigem CreateModel fügt Model zum Store hinzu.
 /// </summary>
-public sealed class Execute_WithValidCreateModel_AddsModelToStore : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class Execute_WithValidCreateModel_AddsModelToStore : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
     private readonly EditableCollectionViewModel<TestDto, TestViewModel> _sut;
 
-    public Execute_WithValidCreateModel_AddsModelToStore(CollectionViewModelFixture fixture)
+    public Execute_WithValidCreateModel_AddsModelToStore(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _fixture.ClearTestData();

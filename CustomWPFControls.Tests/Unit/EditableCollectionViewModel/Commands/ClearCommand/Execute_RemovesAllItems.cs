@@ -9,12 +9,12 @@ namespace CustomWPFControls.Tests.Unit.EditableCollectionViewModel.Commands.Clea
 /// <summary>
 /// Test: ClearCommand.Execute() entfernt alle Items.
 /// </summary>
-public sealed class Execute_RemovesAllItems : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class Execute_RemovesAllItems : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
     private readonly EditableCollectionViewModel<TestDto, TestViewModel> _sut;
 
-    public Execute_RemovesAllItems(CollectionViewModelFixture fixture)
+    public Execute_RemovesAllItems(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _fixture.ClearTestData();

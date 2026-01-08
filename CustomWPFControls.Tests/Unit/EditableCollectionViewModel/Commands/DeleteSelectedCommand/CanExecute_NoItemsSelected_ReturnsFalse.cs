@@ -9,12 +9,12 @@ namespace CustomWPFControls.Tests.Unit.EditableCollectionViewModel.Commands.Dele
 /// <summary>
 /// Test: DeleteSelectedCommand.CanExecute() gibt false zurück wenn keine Items selektiert sind.
 /// </summary>
-public sealed class CanExecute_NoItemsSelected_ReturnsFalse : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class CanExecute_NoItemsSelected_ReturnsFalse : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
     private readonly EditableCollectionViewModel<TestDto, TestViewModel> _sut;
 
-    public CanExecute_NoItemsSelected_ReturnsFalse(CollectionViewModelFixture fixture)
+    public CanExecute_NoItemsSelected_ReturnsFalse(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _sut = new EditableCollectionViewModel<TestDto, TestViewModel>(

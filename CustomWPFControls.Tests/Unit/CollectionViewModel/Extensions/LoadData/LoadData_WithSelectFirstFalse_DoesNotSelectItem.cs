@@ -14,12 +14,12 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Extensions.LoadData;
 /// Szenario: LoadData wird mit selectFirst = false aufgerufen.
 /// ACT: LoadData mit 3 TestDtos und selectFirst = false im Constructor.
 /// </remarks>
-public sealed class LoadData_WithSelectFirstFalse_DoesNotSelectItem : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class LoadData_WithSelectFirstFalse_DoesNotSelectItem : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
     private readonly TestDto[] _testData;
 
-    public LoadData_WithSelectFirstFalse_DoesNotSelectItem(CollectionViewModelFixture fixture)
+    public LoadData_WithSelectFirstFalse_DoesNotSelectItem(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _fixture.ClearTestData();

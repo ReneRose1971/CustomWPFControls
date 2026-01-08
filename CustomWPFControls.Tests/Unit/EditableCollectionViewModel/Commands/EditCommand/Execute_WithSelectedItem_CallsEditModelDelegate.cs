@@ -6,13 +6,13 @@ using Xunit;
 
 namespace CustomWPFControls.Tests.Unit.EditableCollectionViewModel.Commands.EditCommand;
 
-public sealed class Execute_WithSelectedItem_CallsEditModelDelegate : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class Execute_WithSelectedItem_CallsEditModelDelegate : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
     private readonly EditableCollectionViewModel<TestDto, TestViewModel> _sut;
     private TestDto? _editedModel;
 
-    public Execute_WithSelectedItem_CallsEditModelDelegate(CollectionViewModelFixture fixture)
+    public Execute_WithSelectedItem_CallsEditModelDelegate(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _fixture.ClearTestData();

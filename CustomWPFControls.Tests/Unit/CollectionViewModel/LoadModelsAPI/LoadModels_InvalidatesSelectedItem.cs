@@ -9,11 +9,11 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.LoadModelsAPI;
 /// <summary>
 /// Test: LoadModels invalidiert SelectedItem.
 /// </summary>
-public sealed class LoadModels_InvalidatesSelectedItem : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class LoadModels_InvalidatesSelectedItem : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
 
-    public LoadModels_InvalidatesSelectedItem(CollectionViewModelFixture fixture)
+    public LoadModels_InvalidatesSelectedItem(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _fixture.ClearTestData();

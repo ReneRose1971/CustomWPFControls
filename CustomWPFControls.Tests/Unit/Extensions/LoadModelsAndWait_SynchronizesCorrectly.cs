@@ -10,11 +10,11 @@ namespace CustomWPFControls.Tests.Unit.Extensions;
 /// <summary>
 /// Tests für LoadModelsAndWait Extension.
 /// </summary>
-public sealed class LoadModelsAndWait_SynchronizesCorrectly : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class LoadModelsAndWait_SynchronizesCorrectly : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
 
-    public LoadModelsAndWait_SynchronizesCorrectly(CollectionViewModelFixture fixture)
+    public LoadModelsAndWait_SynchronizesCorrectly(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _fixture.ClearTestData();

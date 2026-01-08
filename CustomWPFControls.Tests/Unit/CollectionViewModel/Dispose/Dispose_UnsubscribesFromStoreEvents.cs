@@ -11,13 +11,13 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Dispose;
 /// <summary>
 /// Test: Dispose() unsubscribed von Store-Events (keine PropertyChanged-Events mehr).
 /// </summary>
-public sealed class Dispose_UnsubscribesFromStoreEvents : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class Dispose_UnsubscribesFromStoreEvents : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
     private readonly ViewModels.CollectionViewModel<TestDto, TestViewModel> _sut;
     private int _propertyChangedCount = 0;
 
-    public Dispose_UnsubscribesFromStoreEvents(CollectionViewModelFixture fixture)
+    public Dispose_UnsubscribesFromStoreEvents(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(

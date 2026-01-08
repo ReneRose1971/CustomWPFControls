@@ -10,12 +10,12 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Dispose;
 /// <summary>
 /// Test: Dispose() leert SelectedItems Collection.
 /// </summary>
-public sealed class Dispose_ClearsSelectedItems : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class Dispose_ClearsSelectedItems : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
     private readonly ViewModels.CollectionViewModel<TestDto, TestViewModel> _sut;
 
-    public Dispose_ClearsSelectedItems(CollectionViewModelFixture fixture)
+    public Dispose_ClearsSelectedItems(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         

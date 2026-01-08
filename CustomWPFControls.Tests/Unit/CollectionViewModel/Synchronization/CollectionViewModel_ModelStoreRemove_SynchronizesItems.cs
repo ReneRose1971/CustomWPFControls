@@ -14,11 +14,11 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Synchronization;
 /// Shared Setup: 1 Model hinzugefügt, dann entfernt.
 /// Alle Tests prüfen, dass das ViewModel automatisch entfernt wurde.
 /// </remarks>
-public sealed class CollectionViewModel_ModelStoreRemove_SynchronizesItems : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class CollectionViewModel_ModelStoreRemove_SynchronizesItems : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
 
-    public CollectionViewModel_ModelStoreRemove_SynchronizesItems(CollectionViewModelFixture fixture)
+    public CollectionViewModel_ModelStoreRemove_SynchronizesItems(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _fixture.ClearTestData();

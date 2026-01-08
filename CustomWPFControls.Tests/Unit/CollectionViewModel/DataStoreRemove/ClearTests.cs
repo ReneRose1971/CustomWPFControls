@@ -10,12 +10,12 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.DataStoreRemove;
 /// <summary>
 /// Tests für das Leeren des DataStores via Clear().
 /// </summary>
-public sealed class ClearTests : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class ClearTests : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
     private readonly ViewModels.CollectionViewModel<TestDto, TestViewModel> _sut;
 
-    public ClearTests(CollectionViewModelFixture fixture)
+    public ClearTests(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(

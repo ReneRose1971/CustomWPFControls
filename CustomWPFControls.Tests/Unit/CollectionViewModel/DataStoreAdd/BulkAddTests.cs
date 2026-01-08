@@ -14,12 +14,12 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.DataStoreAdd;
 /// ACT: fixture.TestDtoStore.AddRange([3 DTOs]) im Constructor
 /// Mehrere Assertions testen verschiedene Aspekte dieser EINEN Operation.
 /// </remarks>
-public sealed class BulkAddTests : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class BulkAddTests : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
     private readonly TestDto[] _addedDtos;
 
-    public BulkAddTests(CollectionViewModelFixture fixture)
+    public BulkAddTests(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _fixture.ClearTestData();

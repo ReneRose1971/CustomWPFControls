@@ -9,12 +9,12 @@ namespace CustomWPFControls.Tests.Unit.EditableCollectionViewModel.Commands.Dele
 /// <summary>
 /// Test: DeleteCommand.Execute() invalidiert SelectedItem nach Löschen.
 /// </summary>
-public sealed class Execute_AfterDeletion_InvalidatesSelectedItem : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class Execute_AfterDeletion_InvalidatesSelectedItem : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
     private readonly EditableCollectionViewModel<TestDto, TestViewModel> _sut;
 
-    public Execute_AfterDeletion_InvalidatesSelectedItem(CollectionViewModelFixture fixture)
+    public Execute_AfterDeletion_InvalidatesSelectedItem(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _sut = new EditableCollectionViewModel<TestDto, TestViewModel>(

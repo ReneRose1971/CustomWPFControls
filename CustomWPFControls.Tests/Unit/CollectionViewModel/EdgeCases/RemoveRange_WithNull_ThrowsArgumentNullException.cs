@@ -10,12 +10,12 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.EdgeCases;
 /// <summary>
 /// Test: RemoveRange() mit null-Parameter wirft ArgumentNullException.
 /// </summary>
-public sealed class RemoveRange_WithNull_ThrowsArgumentNullException : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class RemoveRange_WithNull_ThrowsArgumentNullException : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
     private readonly ViewModels.CollectionViewModel<TestDto, TestViewModel> _sut;
 
-    public RemoveRange_WithNull_ThrowsArgumentNullException(CollectionViewModelFixture fixture)
+    public RemoveRange_WithNull_ThrowsArgumentNullException(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(

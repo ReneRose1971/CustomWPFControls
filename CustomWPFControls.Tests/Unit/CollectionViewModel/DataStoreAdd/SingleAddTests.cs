@@ -15,12 +15,12 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.DataStoreAdd;
 /// ACT: fixture.TestDtoStore.Add(single TestDto) im Constructor
 /// Mehrere Assertions testen verschiedene Aspekte dieser EINEN Operation.
 /// </remarks>
-public sealed class SingleAddTests : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class SingleAddTests : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
     private readonly TestDto _addedDto;
 
-    public SingleAddTests(CollectionViewModelFixture fixture)
+    public SingleAddTests(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _fixture.ClearTestData();

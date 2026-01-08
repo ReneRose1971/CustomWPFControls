@@ -11,13 +11,13 @@ namespace CustomWPFControls.Tests.Unit.EditableCollectionViewModel.Commands.Dele
 /// Setup: ViewModel mit einem Item.
 /// Test: CanExecute gibt false zurück wenn SelectedItem null ist, true wenn gesetzt.
 /// </summary>
-public sealed class CanExecute_ChangesWithSelectedItem : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class CanExecute_ChangesWithSelectedItem : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
     private readonly EditableCollectionViewModel<TestDto, TestViewModel> _sut;
     private readonly TestDto _testDto;
 
-    public CanExecute_ChangesWithSelectedItem(CollectionViewModelFixture fixture)
+    public CanExecute_ChangesWithSelectedItem(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         

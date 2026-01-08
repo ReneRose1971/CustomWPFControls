@@ -10,11 +10,11 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.DataStoreRemove;
 /// <summary>
 /// Tests für PropertyChanged Event beim Clear.
 /// </summary>
-public sealed class Clear_RaisesCountPropertyChanged : IClassFixture<CollectionViewModelFixture>
+public sealed class Clear_RaisesCountPropertyChanged : IClassFixture<TestHelperCustomWPFControlsTestFixture>
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
 
-    public Clear_RaisesCountPropertyChanged(CollectionViewModelFixture fixture)
+    public Clear_RaisesCountPropertyChanged(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
     }

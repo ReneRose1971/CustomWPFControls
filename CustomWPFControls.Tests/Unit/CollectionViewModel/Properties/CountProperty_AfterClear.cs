@@ -15,11 +15,11 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Properties;
 /// Act: Store clearen
 /// Assert: Count == 0
 /// </remarks>
-public sealed class CountProperty_AfterClear : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class CountProperty_AfterClear : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
 
-    public CountProperty_AfterClear(CollectionViewModelFixture fixture)
+    public CountProperty_AfterClear(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _fixture.ClearTestData();

@@ -15,12 +15,12 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.RemovalAPI;
 /// Shared Setup: 1 Model hinzugefügt, dann per Remove() entfernt.
 /// Alle Tests prüfen, dass sowohl ViewModel als auch Model entfernt wurden.
 /// </remarks>
-public sealed class CollectionViewModel_Remove_RemovesItemFromStore : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class CollectionViewModel_Remove_RemovesItemFromStore : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
     private readonly bool _removeResult;
 
-    public CollectionViewModel_Remove_RemovesItemFromStore(CollectionViewModelFixture fixture)
+    public CollectionViewModel_Remove_RemovesItemFromStore(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _fixture.ClearTestData();

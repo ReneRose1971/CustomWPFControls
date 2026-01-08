@@ -6,12 +6,12 @@ using Xunit;
 
 namespace CustomWPFControls.Tests.Unit.EditableCollectionViewModel.Commands.DeleteCommand;
 
-public sealed class Execute_WithSelectedItem_RemovesItem : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class Execute_WithSelectedItem_RemovesItem : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
     private readonly EditableCollectionViewModel<TestDto, TestViewModel> _sut;
 
-    public Execute_WithSelectedItem_RemovesItem(CollectionViewModelFixture fixture)
+    public Execute_WithSelectedItem_RemovesItem(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _fixture.ClearTestData();

@@ -9,12 +9,12 @@ namespace CustomWPFControls.Tests.Unit.EditableCollectionViewModel.Commands.Clea
 /// <summary>
 /// Test: ClearCommand.CanExecute() gibt true zurück wenn Items existieren.
 /// </summary>
-public sealed class CanExecute_ItemsExist_ReturnsTrue : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class CanExecute_ItemsExist_ReturnsTrue : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
     private readonly EditableCollectionViewModel<TestDto, TestViewModel> _sut;
 
-    public CanExecute_ItemsExist_ReturnsTrue(CollectionViewModelFixture fixture)
+    public CanExecute_ItemsExist_ReturnsTrue(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _fixture.ClearTestData();

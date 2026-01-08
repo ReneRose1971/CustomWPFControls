@@ -11,13 +11,13 @@ namespace CustomWPFControls.Tests.Unit.EditableCollectionViewModel.Commands.Edit
 /// Setup: ViewModel mit einem Item, EditModel-Delegate gesetzt, SelectedItem ist null.
 /// Test: CanExecuteChanged wird gefeuert wenn SelectedItem gesetzt wird.
 /// </summary>
-public sealed class CanExecuteChanged_WhenSelectedItemChangesFromNullToItem_RaisesEvent : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class CanExecuteChanged_WhenSelectedItemChangesFromNullToItem_RaisesEvent : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
     private readonly EditableCollectionViewModel<TestDto, TestViewModel> _sut;
     private readonly TestDto _testDto;
 
-    public CanExecuteChanged_WhenSelectedItemChangesFromNullToItem_RaisesEvent(CollectionViewModelFixture fixture)
+    public CanExecuteChanged_WhenSelectedItemChangesFromNullToItem_RaisesEvent(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         

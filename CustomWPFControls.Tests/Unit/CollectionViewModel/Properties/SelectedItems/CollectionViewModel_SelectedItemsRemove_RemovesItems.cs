@@ -14,12 +14,12 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Properties.SelectedIt
 /// Shared Setup: 3 Models im Store, 2 Items zu SelectedItems hinzugefügt, dann 1 Item entfernt.
 /// Alle Tests prüfen verschiedene Aspekte nach dem Entfernen.
 /// </remarks>
-public sealed class CollectionViewModel_SelectedItemsRemove_RemovesItems : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class CollectionViewModel_SelectedItemsRemove_RemovesItems : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
     private readonly TestViewModel _remainingItem;
 
-    public CollectionViewModel_SelectedItemsRemove_RemovesItems(CollectionViewModelFixture fixture)
+    public CollectionViewModel_SelectedItemsRemove_RemovesItems(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _fixture.ClearTestData();

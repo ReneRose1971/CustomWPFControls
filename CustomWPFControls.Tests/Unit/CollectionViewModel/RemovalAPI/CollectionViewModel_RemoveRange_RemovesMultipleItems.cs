@@ -15,12 +15,12 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.RemovalAPI;
 /// Shared Setup: 3 Models hinzugefügt, dann 2 per RemoveRange() entfernt.
 /// Alle Tests prüfen, dass die korrekten ViewModels und Models entfernt wurden.
 /// </remarks>
-public sealed class CollectionViewModel_RemoveRange_RemovesMultipleItems : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class CollectionViewModel_RemoveRange_RemovesMultipleItems : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
     private readonly int _removedCount;
 
-    public CollectionViewModel_RemoveRange_RemovesMultipleItems(CollectionViewModelFixture fixture)
+    public CollectionViewModel_RemoveRange_RemovesMultipleItems(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _fixture.ClearTestData();

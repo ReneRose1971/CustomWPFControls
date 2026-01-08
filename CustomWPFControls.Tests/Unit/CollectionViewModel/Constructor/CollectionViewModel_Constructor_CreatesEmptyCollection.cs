@@ -13,11 +13,11 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Constructor;
 /// Testet den Initialzustand einer neuen CollectionViewModel-Instanz.
 /// Alle Tests prüfen verschiedene Aspekte des leeren Zustands.
 /// </remarks>
-public sealed class CollectionViewModel_Constructor_CreatesEmptyCollection : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class CollectionViewModel_Constructor_CreatesEmptyCollection : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
 
-    public CollectionViewModel_Constructor_CreatesEmptyCollection(CollectionViewModelFixture fixture)
+    public CollectionViewModel_Constructor_CreatesEmptyCollection(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _fixture.ClearTestData();

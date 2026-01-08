@@ -7,11 +7,11 @@ using Xunit;
 
 namespace CustomWPFControls.Tests.Unit.CollectionViewModel.EdgeCases;
 
-public sealed class RemoveNonExisting_DoesNotThrow : IClassFixture<CollectionViewModelFixture>
+public sealed class RemoveNonExisting_DoesNotThrow : IClassFixture<TestHelperCustomWPFControlsTestFixture>
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
 
-    public RemoveNonExisting_DoesNotThrow(CollectionViewModelFixture fixture)
+    public RemoveNonExisting_DoesNotThrow(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
     }

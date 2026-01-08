@@ -16,12 +16,12 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Properties.SelectedIt
 /// Shared Setup: 1 Model im Store, 1 Item zu SelectedItems hinzugefügt, dann wieder entfernt.
 /// Alle Tests prüfen verschiedene Aspekte des CollectionChanged-Events.
 /// </remarks>
-public sealed class CollectionViewModel_SelectedItemsRemove_RaisesCollectionChanged : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class CollectionViewModel_SelectedItemsRemove_RaisesCollectionChanged : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
     private NotifyCollectionChangedAction? _capturedAction;
 
-    public CollectionViewModel_SelectedItemsRemove_RaisesCollectionChanged(CollectionViewModelFixture fixture)
+    public CollectionViewModel_SelectedItemsRemove_RaisesCollectionChanged(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _fixture.ClearTestData();

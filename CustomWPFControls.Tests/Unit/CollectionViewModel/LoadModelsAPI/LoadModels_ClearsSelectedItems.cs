@@ -9,11 +9,11 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.LoadModelsAPI;
 /// <summary>
 /// Test: LoadModels leert SelectedItems.
 /// </summary>
-public sealed class LoadModels_ClearsSelectedItems : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class LoadModels_ClearsSelectedItems : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
 
-    public LoadModels_ClearsSelectedItems(CollectionViewModelFixture fixture)
+    public LoadModels_ClearsSelectedItems(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _fixture.ClearTestData();

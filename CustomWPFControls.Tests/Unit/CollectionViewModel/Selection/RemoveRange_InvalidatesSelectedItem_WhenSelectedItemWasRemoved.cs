@@ -11,11 +11,11 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Selection;
 /// <summary>
 /// Test: RemoveRange() invalidiert SelectedItem wenn das selektierte Item entfernt wurde.
 /// </summary>
-public sealed class RemoveRange_InvalidatesSelectedItem_WhenSelectedItemWasRemoved : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class RemoveRange_InvalidatesSelectedItem_WhenSelectedItemWasRemoved : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
 
-    public RemoveRange_InvalidatesSelectedItem_WhenSelectedItemWasRemoved(CollectionViewModelFixture fixture)
+    public RemoveRange_InvalidatesSelectedItem_WhenSelectedItemWasRemoved(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _fixture.ClearTestData();

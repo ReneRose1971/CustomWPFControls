@@ -7,11 +7,11 @@ using Xunit;
 
 namespace CustomWPFControls.Tests.Unit.CollectionViewModel.DataStoreAdd;
 
-public sealed class DuplicateAdd_IgnoresSecondAdd : IClassFixture<CollectionViewModelFixture>
+public sealed class DuplicateAdd_IgnoresSecondAdd : IClassFixture<TestHelperCustomWPFControlsTestFixture>
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
 
-    public DuplicateAdd_IgnoresSecondAdd(CollectionViewModelFixture fixture)
+    public DuplicateAdd_IgnoresSecondAdd(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
     }

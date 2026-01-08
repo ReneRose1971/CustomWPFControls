@@ -9,12 +9,12 @@ namespace CustomWPFControls.Tests.Unit.EditableCollectionViewModel.Commands.Dele
 /// <summary>
 /// Test: DeleteSelectedCommand.Execute() entfernt alle selektierten Items.
 /// </summary>
-public sealed class Execute_WithMultipleSelectedItems_RemovesAllSelected : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class Execute_WithMultipleSelectedItems_RemovesAllSelected : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
     private readonly EditableCollectionViewModel<TestDto, TestViewModel> _sut;
 
-    public Execute_WithMultipleSelectedItems_RemovesAllSelected(CollectionViewModelFixture fixture)
+    public Execute_WithMultipleSelectedItems_RemovesAllSelected(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _fixture.ClearTestData();

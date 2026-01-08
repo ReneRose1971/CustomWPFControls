@@ -9,11 +9,11 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.LoadModelsAPI;
 /// <summary>
 /// Test: LoadModels ersetzt alle vorhandenen Items durch neue Items.
 /// </summary>
-public sealed class LoadModels_ReplacesAllItems : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class LoadModels_ReplacesAllItems : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
 
-    public LoadModels_ReplacesAllItems(CollectionViewModelFixture fixture)
+    public LoadModels_ReplacesAllItems(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _fixture.ClearTestData();

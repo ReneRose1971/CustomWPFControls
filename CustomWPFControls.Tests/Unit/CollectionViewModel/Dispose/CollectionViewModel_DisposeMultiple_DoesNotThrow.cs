@@ -13,12 +13,12 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Dispose;
 /// Testet, dass mehrfaches Dispose ohne Exception ausgeführt werden kann.
 /// Shared Setup: Neue Instanz erstellt und dreimal disposed.
 /// </remarks>
-public sealed class CollectionViewModel_DisposeMultiple_DoesNotThrow : IClassFixture<CollectionViewModelFixture>
+public sealed class CollectionViewModel_DisposeMultiple_DoesNotThrow : IClassFixture<TestHelperCustomWPFControlsTestFixture>
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
     private readonly Exception? _exception;
 
-    public CollectionViewModel_DisposeMultiple_DoesNotThrow(CollectionViewModelFixture fixture)
+    public CollectionViewModel_DisposeMultiple_DoesNotThrow(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         

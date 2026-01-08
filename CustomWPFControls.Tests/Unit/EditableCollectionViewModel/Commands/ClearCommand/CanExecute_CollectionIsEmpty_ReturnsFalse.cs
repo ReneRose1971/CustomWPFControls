@@ -9,12 +9,12 @@ namespace CustomWPFControls.Tests.Unit.EditableCollectionViewModel.Commands.Clea
 /// <summary>
 /// Test: ClearCommand.CanExecute() gibt false zurück wenn Collection leer ist.
 /// </summary>
-public sealed class CanExecute_CollectionIsEmpty_ReturnsFalse : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class CanExecute_CollectionIsEmpty_ReturnsFalse : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
     private readonly EditableCollectionViewModel<TestDto, TestViewModel> _sut;
 
-    public CanExecute_CollectionIsEmpty_ReturnsFalse(CollectionViewModelFixture fixture)
+    public CanExecute_CollectionIsEmpty_ReturnsFalse(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _sut = new EditableCollectionViewModel<TestDto, TestViewModel>(

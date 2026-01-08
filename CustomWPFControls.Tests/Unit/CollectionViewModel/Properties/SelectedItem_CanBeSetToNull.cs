@@ -10,11 +10,11 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Properties;
 /// <summary>
 /// Tests für SelectedItem Property - Set to Null.
 /// </summary>
-public sealed class SelectedItem_CanBeSetToNull : IClassFixture<CollectionViewModelFixture>
+public sealed class SelectedItem_CanBeSetToNull : IClassFixture<TestHelperCustomWPFControlsTestFixture>
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
 
-    public SelectedItem_CanBeSetToNull(CollectionViewModelFixture fixture)
+    public SelectedItem_CanBeSetToNull(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
     }

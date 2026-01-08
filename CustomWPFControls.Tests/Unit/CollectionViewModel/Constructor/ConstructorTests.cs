@@ -16,11 +16,11 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Constructor;
 /// - Initialisierung der Properties
 /// KEINE Daten-Tests!
 /// </remarks>
-public sealed class ConstructorTests : IClassFixture<CollectionViewModelFixture>
+public sealed class ConstructorTests : IClassFixture<TestHelperCustomWPFControlsTestFixture>
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
 
-    public ConstructorTests(CollectionViewModelFixture fixture)
+    public ConstructorTests(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
     }

@@ -7,11 +7,11 @@ using Xunit;
 
 namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Properties;
 
-public sealed class SelectedItem_DoesNotRaisePropertyChanged_WhenSetToSameValue : IClassFixture<CollectionViewModelFixture>
+public sealed class SelectedItem_DoesNotRaisePropertyChanged_WhenSetToSameValue : IClassFixture<TestHelperCustomWPFControlsTestFixture>
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
 
-    public SelectedItem_DoesNotRaisePropertyChanged_WhenSetToSameValue(CollectionViewModelFixture fixture)
+    public SelectedItem_DoesNotRaisePropertyChanged_WhenSetToSameValue(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
     }

@@ -9,12 +9,12 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Dispose;
 /// <summary>
 /// Test: Dispose() kann mehrfach aufgerufen werden ohne Fehler.
 /// </summary>
-public sealed class Dispose_CanBeCalledMultipleTimes : IClassFixture<CollectionViewModelFixture>
+public sealed class Dispose_CanBeCalledMultipleTimes : IClassFixture<TestHelperCustomWPFControlsTestFixture>
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
     private readonly ViewModels.CollectionViewModel<TestDto, TestViewModel> _sut;
 
-    public Dispose_CanBeCalledMultipleTimes(CollectionViewModelFixture fixture)
+    public Dispose_CanBeCalledMultipleTimes(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _sut = new ViewModels.CollectionViewModel<TestDto, TestViewModel>(

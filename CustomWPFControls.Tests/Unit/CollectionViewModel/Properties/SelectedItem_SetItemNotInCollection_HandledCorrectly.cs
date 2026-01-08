@@ -7,11 +7,11 @@ using Xunit;
 
 namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Properties;
 
-public sealed class SelectedItem_SetItemNotInCollection_HandledCorrectly : IClassFixture<CollectionViewModelFixture>
+public sealed class SelectedItem_SetItemNotInCollection_HandledCorrectly : IClassFixture<TestHelperCustomWPFControlsTestFixture>
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
 
-    public SelectedItem_SetItemNotInCollection_HandledCorrectly(CollectionViewModelFixture fixture)
+    public SelectedItem_SetItemNotInCollection_HandledCorrectly(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
     }

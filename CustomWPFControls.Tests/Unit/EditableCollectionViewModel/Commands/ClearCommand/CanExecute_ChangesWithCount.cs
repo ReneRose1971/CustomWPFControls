@@ -11,12 +11,12 @@ namespace CustomWPFControls.Tests.Unit.EditableCollectionViewModel.Commands.Clea
 /// Setup: Leeres ViewModel.
 /// Test: CanExecute gibt false zurück wenn Count = 0, true wenn Count > 0.
 /// </summary>
-public sealed class CanExecute_ChangesWithCount : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class CanExecute_ChangesWithCount : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
     private readonly EditableCollectionViewModel<TestDto, TestViewModel> _sut;
 
-    public CanExecute_ChangesWithCount(CollectionViewModelFixture fixture)
+    public CanExecute_ChangesWithCount(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         

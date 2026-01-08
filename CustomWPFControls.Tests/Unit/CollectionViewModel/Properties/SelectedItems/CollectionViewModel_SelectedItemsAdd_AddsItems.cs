@@ -14,11 +14,11 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Properties.SelectedIt
 /// Shared Setup: 3 Models im Store, 2 Items zu SelectedItems hinzugefügt.
 /// Alle Tests prüfen verschiedene Aspekte der hinzugefügten Items.
 /// </remarks>
-public sealed class CollectionViewModel_SelectedItemsAdd_AddsItems : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class CollectionViewModel_SelectedItemsAdd_AddsItems : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
 
-    public CollectionViewModel_SelectedItemsAdd_AddsItems(CollectionViewModelFixture fixture)
+    public CollectionViewModel_SelectedItemsAdd_AddsItems(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _fixture.ClearTestData();

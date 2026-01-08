@@ -9,11 +9,11 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.LoadModelsAPI;
 /// <summary>
 /// Test: LoadModels mit leerer Liste leert die Collection.
 /// </summary>
-public sealed class LoadModels_WithEmptyList_ClearsCollection : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class LoadModels_WithEmptyList_ClearsCollection : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
 
-    public LoadModels_WithEmptyList_ClearsCollection(CollectionViewModelFixture fixture)
+    public LoadModels_WithEmptyList_ClearsCollection(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _fixture.ClearTestData();

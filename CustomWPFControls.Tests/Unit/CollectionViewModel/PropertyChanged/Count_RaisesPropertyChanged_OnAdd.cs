@@ -11,12 +11,12 @@ namespace CustomWPFControls.Tests.Unit.CollectionViewModel.PropertyChanged;
 /// <summary>
 /// Test: CollectionViewModel feuert PropertyChanged für Count wenn ein Item hinzugefügt wird.
 /// </summary>
-public sealed class Count_RaisesPropertyChanged_OnAdd : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class Count_RaisesPropertyChanged_OnAdd : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
     private int _propertyChangedCount = 0;
 
-    public Count_RaisesPropertyChanged_OnAdd(CollectionViewModelFixture fixture)
+    public Count_RaisesPropertyChanged_OnAdd(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _fixture.ClearTestData();

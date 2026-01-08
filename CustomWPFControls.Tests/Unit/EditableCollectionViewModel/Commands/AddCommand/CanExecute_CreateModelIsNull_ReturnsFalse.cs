@@ -9,12 +9,12 @@ namespace CustomWPFControls.Tests.Unit.EditableCollectionViewModel.Commands.AddC
 /// <summary>
 /// Test: AddCommand.CanExecute() gibt false zurück wenn CreateModel null ist.
 /// </summary>
-public sealed class CanExecute_CreateModelIsNull_ReturnsFalse : IClassFixture<CollectionViewModelFixture>, IDisposable
+public sealed class CanExecute_CreateModelIsNull_ReturnsFalse : IClassFixture<TestHelperCustomWPFControlsTestFixture>, IDisposable
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
     private readonly EditableCollectionViewModel<TestDto, TestViewModel> _sut;
 
-    public CanExecute_CreateModelIsNull_ReturnsFalse(CollectionViewModelFixture fixture)
+    public CanExecute_CreateModelIsNull_ReturnsFalse(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
         _sut = new EditableCollectionViewModel<TestDto, TestViewModel>(

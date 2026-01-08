@@ -7,11 +7,11 @@ using Xunit;
 
 namespace CustomWPFControls.Tests.Unit.CollectionViewModel.Properties;
 
-public sealed class SelectedItem_RaisesPropertyChanged : IClassFixture<CollectionViewModelFixture>
+public sealed class SelectedItem_RaisesPropertyChanged : IClassFixture<TestHelperCustomWPFControlsTestFixture>
 {
-    private readonly CollectionViewModelFixture _fixture;
+    private readonly TestHelperCustomWPFControlsTestFixture _fixture;
 
-    public SelectedItem_RaisesPropertyChanged(CollectionViewModelFixture fixture)
+    public SelectedItem_RaisesPropertyChanged(TestHelperCustomWPFControlsTestFixture fixture)
     {
         _fixture = fixture;
     }
