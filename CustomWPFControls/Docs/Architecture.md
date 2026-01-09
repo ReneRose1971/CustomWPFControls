@@ -1,354 +1,124 @@
 # Architecture - CustomWPFControls
 
-Detaillierte Architektur-Übersicht des MVVM-Frameworks.
+Architektur-Übersicht des MVVM-Frameworks.
 
-## ?? Architektur-Übersicht
+## Schichtenarchitektur
 
 ```
-???????????????????????????????????????????????????????????????????????
-?                         WPF Application                              ?
-???????????????????????????????????????????????????????????????????????
-                                   ?
-                                   ? uses
-                                   ?
-???????????????????????????????????????????????????????????????????????
-?                       CustomWPFControls                              ?
-???????????????????????????????????????????????????????????????????????
-?                                                                      ?
-?  ????????????????????????????????????????????????????????????     ?
-?  ?           ViewModels (Presentation Layer)                 ?     ?
-?  ????????????????????????????????????????????????????????????     ?
-?  ?  - ViewModelBase<TModel>                                  ?     ?
-?  ?  - CollectionViewModel<TModel, TViewModel>               ?     ?
-?  ?  - EditableCollectionViewModel<TModel, TViewModel>       ?     ?
-?  ????????????????????????????????????????????????????????????     ?
-?                   ?                          ?                      ?
-?                   ? wraps                    ? observes             ?
-?                   ?                          ?                      ?
-?  ????????????????????????????  ????????????????????????????????  ?
-?  ?   Factories               ?  ?   DataToolKit                 ?  ?
-?  ????????????????????????????  ????????????????????????????????  ?
-?  ?  - IViewModelFactory      ?  ?  - IDataStore<T>             ?  ?
-?  ?  - ViewModelFactory       ?  ?  - InMemoryDataStore<T>      ?  ?
-?  ?  - Extensions (DI)        ?  ?  - PersistentDataStore<T>    ?  ?
-?  ????????????????????????????  ????????????????????????????????  ?
-?                                                  ?                  ?
-???????????????????????????????????????????????????????????????????????
-                                                   ? persists
-                                                   ?
-                                    ????????????????????????????
-                                    ?   Storage Layer          ?
-                                    ????????????????????????????
-                                    ?  - JSON Repository       ?
-                                    ?  - LiteDB Repository     ?
-                                    ????????????????????????????
+WPF Application
+    |
+    v
+CustomWPFControls
+    |-- ViewModels (ViewModelBase, CollectionViewModel, EditableCollectionViewModel)
+    |-- Factories (IViewModelFactory, ViewModelFactory)
+    |-- Controls (ListEditorView, DropDownEditorView)
+    |-- Commands (RelayCommand, ObservableCommand, AsyncRelayCommand)
+    |-- Services (DialogService, MessageBoxService)
+    |
+    v
+DataStores
+    |-- IDataStore<T>
+    |-- InMemoryDataStore<T>
+    |-- PersistentDataStore<T>
+    |
+    v
+Storage Layer (JSON, LiteDB)
 ```
 
----
+## Komponenten
 
-## ?? Komponenten
+### ViewModelBase<TModel>
 
-### **1. ViewModelBase<TModel>**
-
-**Zweck:** Basisklasse für alle ViewModels mit automatischem PropertyChanged.
+Basisklasse für ViewModels mit PropertyChanged-Support via Fody.
 
 **Verantwortlichkeiten:**
 - Model-Wrapping
-- PropertyChanged-Events (via Fody)
+- PropertyChanged-Events
 - Equals/GetHashCode-Delegation
-- ToString-Delegation
 
-**Abhängigkeiten:**
-- PropertyChanged.Fody
+### CollectionViewModel<TModel, TViewModel>
 
-**Beispiel:**
-```csharp
-public class CustomerViewModel : ViewModelBase<Customer>
-{
-    public CustomerViewModel(Customer model) : base(model) { }
-    public string Name => Model.Name; // Read-only
-    public bool IsSelected { get; set; } // Mit PropertyChanged
-}
-```
-
----
-
-### **2. CollectionViewModel<TModel, TViewModel>**
-
-**Zweck:** Bidirektionale Synchronisation zwischen DataStore und ViewModels.
+Bidirektionale Synchronisation zwischen DataStore und ViewModels.
 
 **Verantwortlichkeiten:**
 - ViewModel-Erstellung via Factory
-- Synchronisation DataStore ? ViewModels
-- Synchronisation ViewModels ? DataStore
+- Synchronisation DataStore <-> ViewModels
 - SelectedItem-Verwaltung
-- ViewModel-Lifecycle (Create/Dispose)
+- ViewModel-Lifecycle
 
 **Abhängigkeiten:**
-- `IDataStore<TModel>` (DataToolKit)
-- `IViewModelFactory<TModel, TViewModel>` (eigene Factory)
-- `IEqualityComparer<TModel>` (Common.Bootstrap)
+- IDataStore<TModel>
+- IViewModelFactory<TModel, TViewModel>
+- IEqualityComparer<TModel>
 
-**Ereignis-Flow:**
-```
-DataStore.Add(model)
-  ? OnDataStoreChanged (CollectionChanged)
-  ? Factory.Create(model)
-  ? _viewModels.Add(viewModel)
-  ? Items (ReadOnlyObservableCollection)
-  ? View (ListBox ItemsSource)
-```
+### EditableCollectionViewModel<TModel, TViewModel>
 
----
-
-### **3. EditableCollectionViewModel<TModel, TViewModel>**
-
-**Zweck:** Erweitert CollectionViewModel um Commands.
+Erweitert CollectionViewModel um Commands.
 
 **Verantwortlichkeiten:**
-- AddCommand (mit CreateModel-Callback)
-- DeleteCommand (mit SelectedItem)
-- EditCommand (mit EditModel-Callback)
-- ClearCommand
+- AddCommand, DeleteCommand, EditCommand, ClearCommand
 - CanExecute-Logik
+- CreateModel/EditModel-Callbacks
 
-**Commands:**
-| Command | CanExecute | Execute |
-|---------|-----------|---------|
-| **AddCommand** | CreateModel != null | AddModel(CreateModel()) |
-| **DeleteCommand** | SelectedItem != null | RemoveViewModel(SelectedItem) |
-| **EditCommand** | SelectedItem != null && EditModel != null | EditModel(SelectedItem.Model) |
-| **ClearCommand** | Count > 0 | Clear() |
+### ViewModelFactory<TModel, TViewModel>
 
----
-
-### **4. ViewModelFactory<TModel, TViewModel>**
-
-**Zweck:** DI-basierte Factory für ViewModel-Erstellung.
+DI-basierte Factory für ViewModel-Erstellung.
 
 **Verantwortlichkeiten:**
 - ViewModel-Instanziierung via ActivatorUtilities
 - DI-Dependency-Auflösung
-- Exception-Handling
 
-**DI-Integration:**
-```csharp
-services.AddViewModelFactory<Customer, CustomerViewModel>();
+## Datenfluss
 
-// Automatisch registriert:
-// - IViewModelFactory<Customer, CustomerViewModel>
-// - ViewModelFactory<Customer, CustomerViewModel>
-```
-
----
-
-## ?? Datenfluss
-
-### **Szenario 1: User fügt Item hinzu (via Command)**
+### Item hinzufügen
 
 ```
-1. User klickt "Add"-Button
-   ??? AddCommand.Execute(null)
-       ??? CreateModel() ? neues Customer-Objekt
-           ??? AddModel(customer)
-               ??? _dataStore.Add(customer)
-                   ??? DataStore.Items.CollectionChanged (Add)
-                       ??? OnDataStoreChanged(Add)
-                           ??? Factory.Create(customer) ? CustomerViewModel
-                               ??? _viewModels.Add(viewModel)
-                                   ??? Items (ReadOnlyObservableCollection)
-                                       ??? View-Update (ListBox)
+AddCommand.Execute()
+  -> CreateModel()
+  -> ModelStore.Add(model)
+  -> DataStore CollectionChanged
+  -> Factory.Create(model)
+  -> ViewModel zu Items hinzugefügt
+  -> View-Update
 ```
 
-### **Szenario 2: DataStore ändert sich (extern)**
+### Item löschen
 
 ```
-1. Andere Komponente: dataStore.Add(customer)
-   ??? DataStore.Items.CollectionChanged (Add)
-       ??? OnDataStoreChanged(Add)
-           ??? Factory.Create(customer) ? CustomerViewModel
-               ??? _viewModels.Add(viewModel)
-                   ??? Items (ReadOnlyObservableCollection)
-                       ??? View-Update (automatisch via Binding)
+DeleteCommand.Execute()
+  -> ModelStore.Remove(model)
+  -> DataStore CollectionChanged
+  -> ViewModel aus Items entfernt
+  -> ViewModel.Dispose()
+  -> View-Update
 ```
 
-### **Szenario 3: User löscht Item**
+### Externe DataStore-Änderung
 
 ```
-1. User wählt Item aus
-   ??? SelectedItem = viewModel
-       ??? PropertyChanged("SelectedItem")
-           ??? DeleteCommand.CanExecute() ? true
-
-2. User klickt "Delete"-Button
-   ??? DeleteCommand.Execute(null)
-       ??? RemoveViewModel(SelectedItem)
-           ??? _dataStore.Remove(viewModel.Model)
-               ??? DataStore.Items.CollectionChanged (Remove)
-                   ??? OnDataStoreChanged(Remove)
-                       ??? if (SelectedItem == viewModel) ? SelectedItem = null
-                       ??? _viewModels.Remove(viewModel)
-                       ??? DisposeViewModel(viewModel)
-                           ??? View-Update (Item verschwindet)
+DataStore.Add(model) (extern)
+  -> DataStore CollectionChanged
+  -> Factory.Create(model)
+  -> ViewModel zu Items hinzugefügt
+  -> View-Update (automatisch via Binding)
 ```
 
----
+## Design-Patterns
 
-## ?? Design-Patterns
+- **MVVM**: Model-View-ViewModel Trennung
+- **Factory**: IViewModelFactory für ViewModel-Erstellung
+- **Observer**: CollectionChanged-Events für Synchronisation
+- **Dependency Injection**: Constructor Injection für alle Dependencies
 
-### **1. MVVM (Model-View-ViewModel)**
+## Thread-Safety
 
-```
-Model (Domain)
-  ?? Customer, Order, Product
-     ?? Pure C# classes, no UI dependencies
-
-ViewModel (Presentation)
-  ?? CustomerViewModel, OrderViewModel
-     ?? Wraps Model, adds UI-specific logic
-
-View (XAML)
-  ?? MainWindow.xaml
-     ?? Binds to ViewModel properties/commands
-```
-
-### **2. Factory-Pattern**
-
-```
-IViewModelFactory<TModel, TViewModel>
-  ?? Abstraktion für ViewModel-Erstellung
-     ?? ViewModelFactory<TModel, TViewModel>
-        ?? Konkrete Implementierung mit DI
-```
-
-### **3. Observer-Pattern**
-
-```
-IDataStore<T>.Items (Observable)
-  ?? ReadOnlyObservableCollection<T>
-     ?? CollectionChanged-Events
-        ?? CollectionViewModel (Observer)
-           ?? OnDataStoreChanged()
-```
-
-### **4. Dependency Injection**
-
-```
-IServiceCollection
-  ?? AddViewModelFactory<TModel, TViewModel>()
-  ?? AddSingleton<IDataStore<T>>()
-  ?? AddSingleton<CollectionViewModel<T, TVM>>()
-     ?? Constructor Injection
-```
-
-### **5. Template Method**
-
-```
-CollectionViewModel<TModel, TViewModel>
-  ?? OnViewModelRemoving(TViewModel) ? Hook (protected virtual)
-     ?? EditableCollectionViewModel kann Override
-```
-
----
-
-## ?? Testbarkeit
-
-### **Unit-Tests (Komponenten isoliert)**
-
-```csharp
-// ViewModelBase-Tests
-var model = new Customer { Name = "Test" };
-var viewModel = new CustomerViewModel(model);
-Assert.Equal("Test", viewModel.Name);
-```
-
-### **Integration-Tests (mit DataStore)**
-
-```csharp
-// CollectionViewModel mit echtem DataStore
-var dataStore = new InMemoryDataStore<Customer>();
-var viewModel = new CollectionViewModel<Customer, CustomerViewModel>(
-    dataStore, factory, comparer);
-
-dataStore.Add(new Customer { Name = "Alice" });
-Assert.Equal(1, viewModel.Count);
-```
-
-### **Behavior-Tests (Commands)**
-
-```csharp
-// EditableCollectionViewModel Commands
-viewModel.CreateModel = () => new Customer();
-viewModel.AddCommand.Execute(null);
-Assert.Equal(1, viewModel.Count);
-```
-
----
-
-## ?? Thread-Safety
-
-### **WPF UI-Thread**
-
-CollectionViewModel respektiert den WPF UI-Thread via:
-- `DataStore` mit `SynchronizationContext`
+CollectionViewModel respektiert WPF UI-Thread:
+- DataStore mit SynchronizationContext
 - Alle Collection-Änderungen auf UI-Thread marshaled
+- ObservableCollection ist nicht thread-safe (Dispatcher verwenden)
 
-```csharp
-// InMemoryDataStore Constructor
-public InMemoryDataStore(
-    IEqualityComparer<T>? comparer = null,
-    SynchronizationContext? context = null)
-{
-    _context = context ?? SynchronizationContext.Current; // ? WPF UI-Thread
-    // ...
-}
-```
+## Siehe auch
 
-### **Concurrency**
-
-Bei concurrent Access:
-- DataStore marshaled auf UI-Thread
-- ObservableCollection ist **nicht** thread-safe
-- Verwenden Sie `Dispatcher` für externe Updates
-
----
-
-## ?? Performance
-
-### **Skalierbarkeit**
-
-| Collection-Größe | Performance | Empfehlung |
-|------------------|-------------|------------|
-| < 100 Items | ? Sehr gut | Ideal |
-| 100-1000 Items | ? Gut | OK |
-| 1000-10000 Items | ?? Mittel | Virtualization empfohlen |
-| > 10000 Items | ? Langsam | Paging/Filtering nötig |
-
-### **Optimierungen**
-
-1. **Virtualization in ListBox:**
-```xml
-<ListBox VirtualizingPanel.IsVirtualizing="True"
-         VirtualizingPanel.VirtualizationMode="Recycling">
-```
-
-2. **Lazy Loading:**
-```csharp
-// Nur sichtbare Items laden
-viewModel.Items.Take(50);
-```
-
-3. **Filtering:**
-```csharp
-// ICollectionView für Filterung
-var view = CollectionViewSource.GetDefaultView(viewModel.Items);
-view.Filter = item => ((CustomerViewModel)item).Name.StartsWith("A");
-```
-
----
-
-## ?? Nächste Schritte
-
-- ?? [ViewModelBase](ViewModelBase.md) - Details zur Basisklasse
-- ?? [CollectionViewModel](CollectionViewModel.md) - Synchronisation
-- ? [Best Practices](Best-Practices.md) - Tipps & Tricks
+- [ViewModelBase](ViewModelBase.md)
+- [CollectionViewModel](CollectionViewModel.md)
+- [API Reference](API-Reference.md)
